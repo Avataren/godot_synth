@@ -20,6 +20,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	private WaveTableBank waveTableBank;
 	float Amplitude = 0.0f;
 	int KeyDownCount = 0;
+	public int BaseOctave = 2;
 
 	public override void _Ready()
 	{
@@ -42,10 +43,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			audioData = new Vector2[num_samples];
 
 			// Initialize nodes
-			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH))
-			{
-				Frequency = 110.0f
-			};
+			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
 
 			sound_thread = new Thread(new ThreadStart(FillBuffer));
 			sound_thread.Start();
@@ -56,16 +54,40 @@ public partial class AudioOutputNode : AudioStreamPlayer
     {
         // Assume A4 is 440 Hz and is the 4th octave
         float baseFrequencyA4 = 440.0f;
-        int octaveDifference = baseOctave - 4;
+        int octaveDifference = baseOctave - 5;
         float baseFrequency = baseFrequencyA4 * (float)Math.Pow(2, octaveDifference);
 
         return (float)(baseFrequency * Math.Pow(2, semitones / 12.0));
     }
 
+	protected void _on_option_octave_item_selected (int index)
+	{
+		BaseOctave = index;
+	}
+
+	protected void _on_option_button_item_selected (int index)
+	{
+		switch (index)
+		{
+			case 0:
+				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.SINE);
+				break;
+			case 1:
+				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.TRIANGLE);
+				break;
+			case 2:
+				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.SQUARE);
+				break;
+			case 3:
+				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+				break;
+		}
+	}
+
 	Godot.Key CurrKey = Key.None;
 	public override void _UnhandledInput(InputEvent @event)
 	{
-		int base_octave = 0;
+		
 		var keyMap = new Dictionary<Godot.Key, int> {
 			{ Key.Q, 0 +12},
 			{ Key.Key2, 1 +12},
@@ -128,7 +150,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 					
 					Amplitude = 1.0f;
 					var semitones = keyMap[eventKey.Keycode];
-					waveTableNode.Frequency = CalculateFrequency(base_octave, semitones);
+					waveTableNode.Frequency = CalculateFrequency(BaseOctave, semitones);
 					Print("Key pressed: " + eventKey.Keycode);
 				}
 			}

@@ -1,0 +1,48 @@
+[gd_resource type="AudioBusLayout" load_steps=7 format=3 uid="uid://b0d0fnld3vv7g"]
+
+[sub_resource type="AudioEffectReverb" id="AudioEffectReverb_1473h"]
+resource_name = "Reverb"
+room_size = 0.36
+damping = 0.66
+spread = 0.55
+dry = 0.6
+wet = 0.29
+
+[sub_resource type="AudioEffectFilter" id="AudioEffectFilter_jcl6u"]
+resource_name = "Filter"
+cutoff_hz = 1000.0
+resonance = 0.6
+
+[sub_resource type="AudioEffectDistortion" id="AudioEffectDistortion_s0k5i"]
+resource_name = "Distortion"
+
+[sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_tlva5"]
+resource_name = "SpectrumAnalyzer"
+
+[sub_resource type="AudioEffectPhaser" id="AudioEffectPhaser_3hog5"]
+resource_name = "Phaser"
+
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_08shd"]
+resource_name = "LowPassFilter"
+cutoff_hz = 4000.0
+resonance = 0.65
+
+[resource]
+bus/1/name = &"New Bus"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = -2.51026
+bus/1/send = &"Master"
+bus/1/effect/0/effect = SubResource("AudioEffectReverb_1473h")
+bus/1/effect/0/enabled = true
+bus/1/effect/1/effect = SubResource("AudioEffectFilter_jcl6u")
+bus/1/effect/1/enabled = false
+bus/1/effect/2/effect = SubResource("AudioEffectDistortion_s0k5i")
+bus/1/effect/2/enabled = true
+bus/1/effect/3/effect = SubResource("AudioEffectSpectrumAnalyzer_tlva5")
+bus/1/effect/3/enabled = false
+bus/1/effect/4/effect = SubResource("AudioEffectPhaser_3hog5")
+bus/1/effect/4/enabled = true
+bus/1/effect/5/effect = SubResource("AudioEffectLowPassFilter_08shd")
+bus/1/effect/5/enabled = true

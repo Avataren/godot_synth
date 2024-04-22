@@ -48,6 +48,7 @@ public class WaveTableOscillatorNode : AudioNode
 				oldMem = _WaveMem;
 			}
 			while (Interlocked.CompareExchange(ref _WaveMem, newMem, oldMem) != oldMem);
+			UpdateWaveTableFrequency(_Frequency);
 		}
 	}
 	
@@ -69,6 +70,7 @@ public class WaveTableOscillatorNode : AudioNode
 
 	protected float GetSample(WaveTable currWaveTable)
 	{
+		
 		float position = (float)(Phase * currWaveTable.WaveTableData.Length);
 		int intPart = (int)position;
 		float fracPart = position - intPart;

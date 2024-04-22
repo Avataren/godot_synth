@@ -50,15 +50,15 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		}
 	}
 
-    private float CalculateFrequency(int baseOctave, int semitones)
-    {
-        // Assume A4 is 440 Hz and is the 4th octave
-        float baseFrequencyA4 = 440.0f;
-        int octaveDifference = baseOctave - 5;
-        float baseFrequency = baseFrequencyA4 * (float)Math.Pow(2, octaveDifference);
+	private float CalculateFrequency(int baseOctave, int semitones)
+	{
+		// Assume A4 is 440 Hz and is the 4th octave
+		float baseFrequencyA4 = 440.0f;
+		int octaveDifference = baseOctave - 5;
+		float baseFrequency = baseFrequencyA4 * (float)Math.Pow(2, octaveDifference);
 
-        return (float)(baseFrequency * Math.Pow(2, semitones / 12.0));
-    }
+		return (float)(baseFrequency * Math.Pow(2, semitones / 12.0));
+	}
 
 	protected void _on_option_octave_item_selected (int index)
 	{
@@ -70,16 +70,16 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		switch (index)
 		{
 			case 0:
-				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.SINE);
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SINE);
 				break;
 			case 1:
-				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.TRIANGLE);
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.TRIANGLE);
 				break;
 			case 2:
-				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.SQUARE);
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SQUARE);
 				break;
 			case 3:
-				waveTableNode.WaveMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
 				break;
 		}
 	}

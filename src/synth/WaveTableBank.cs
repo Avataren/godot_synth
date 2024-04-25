@@ -25,22 +25,22 @@ namespace Synth
 
         public WaveTableBank()
         {
-            // std::vector<double> organ_real = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-            // std::vector<double> organ_imag = {0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1};
+            double[] OrganReal = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+            double[] OrganImag = {0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1};
 
-            // std::vector<double> bass_real = {0, 1, 0.8144329896907216, 0.20618556701030927, 0.020618556701030927};
-            // std::vector<double> bass_imag = {0, 0, 0, 0, 0};
+            double[] BassReal = {0, 1, 0.8144329896907216, 0.20618556701030927, 0.020618556701030927};
+            double[] BassImag = {0, 0, 0, 0, 0};
 
             AddWave(WaveTableWaveType.SINE, WaveTableRepository.SinOsc());
             AddWave(WaveTableWaveType.TRIANGLE, WaveTableRepository.TriangleOsc());
             AddWave(WaveTableWaveType.SQUARE, WaveTableRepository.SquareOsc());
             AddWave(WaveTableWaveType.SAWTOOTH, WaveTableRepository.SawOsc());
             // addWave(WaveTableWaveType::FUZZY, periodicWaveOsc(fuzzy_real, fuzzy_imag));
-            // addWave(WaveTableWaveType::ORGAN, periodicWaveOsc(organ_real, organ_imag));
+            AddWave(WaveTableWaveType.ORGAN, WaveTableRepository.PeriodicWaveOsc(OrganReal, OrganImag));
             // addWave(WaveTableWaveType::ORGAN2, periodicWaveOsc(organ2_real, organ2_imag));
             // addWave(WaveTableWaveType::PIANO, periodicWaveOsc(piano_real, piano_imag));
-            // addWave(WaveTableWaveType::BASS, periodicWaveOsc(bass_real, bass_imag));
-            // addWave(WaveTableWaveType::VOCAL_AHH, periodicWaveOsc(ahh_real, ahh_imag));        
+            AddWave(WaveTableWaveType.BASS, WaveTableRepository.PeriodicWaveOsc(BassReal, BassImag));
+            AddWave(WaveTableWaveType.VOCAL_AHH, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.AhhReal, PeriodicWaves.AhhImag));        
         }
 
 

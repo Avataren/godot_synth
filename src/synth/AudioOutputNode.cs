@@ -15,6 +15,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	float sampleTime = 0.0f;
 	// Define nodes for each channel
 	private WaveTableOscillatorNode waveTableNode;
+	private EnvelopeNode envelopeNode;
 	private Thread sound_thread;
 	private bool run_sound_thread = true;
 	private WaveTableBank waveTableBank;
@@ -44,7 +45,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 			// Initialize nodes
 			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
-
+			envelopeNode = new EnvelopeNode(num_samples);
 			sound_thread = new Thread(new ThreadStart(FillBuffer));
 			sound_thread.Start();
 		}
@@ -81,12 +82,22 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			case 3:
 				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
 				break;
+			case 4:
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.ORGAN);
+				break;
+			case 5:
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.BASS);
+				break;
+			case 6:
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.VOCAL_AHH);
+				break;									
 		}
 	}
 
 	Godot.Key CurrKey = Key.None;
-	public override void _UnhandledInput(InputEvent @event)
-	{
+    public override void _UnhandledInput(InputEvent @event)
+    {
+
 		
 		var keyMap = new Dictionary<Godot.Key, int> {
 			{ Key.Q, 0 +12},
@@ -124,8 +135,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			{ Key.Quoteleft, 15},
 		};
 
-		if (@event is InputEventKey eventKey)
-		{
+        if (@event is InputEventKey eventKey && !eventKey.Echo)
+        {
 			GD.Print("KeyDownCount: " + KeyDownCount);
 			if (!eventKey.Pressed)
 			{
@@ -133,7 +144,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				{
 					KeyDownCount--;
 					if (KeyDownCount <= 0) {
-						Amplitude = 0.0f;
+						//Amplitude = 0.0f;
+						envelopeNode.CloseGate();
 						KeyDownCount = 0;
 						CurrKey = Key.None;
 					}
@@ -148,7 +160,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 						CurrKey = eventKey.Keycode;
 					}
 					
-					Amplitude = 1.0f;
+					//Amplitude = 1.0f;
+					envelopeNode.OpenGate();
 					var semitones = keyMap[eventKey.Keycode];
 					waveTableNode.Frequency = CalculateFrequency(BaseOctave, semitones);
 					Print("Key pressed: " + eventKey.Keycode);
@@ -167,13 +180,15 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			float increment = 1.0f / _sampleHz;
 			if (_playback.CanPushBuffer(num_samples))
 			{
+				envelopeNode.Process(increment);
 				var samples = waveTableNode.Process(increment);
+				samples.ModulateBy(envelopeNode);
 				var left = samples;
 				var right = samples;
 				for (int i = 0; i < num_samples; i++)
 				{
-					audioData[i][0] = left[i] * Amplitude;
-					audioData[i][1] = right[i] * Amplitude;
+					audioData[i][0] = left[i];
+					audioData[i][1] = right[i];
 				}
 				_playback.PushBuffer(audioData);
 			}

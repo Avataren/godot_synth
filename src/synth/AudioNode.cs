@@ -28,7 +28,15 @@ public class AudioNode
 	{
 		get => buffer[index];
 		set => buffer[index] = value;
+	}
+
+	public AudioNode ModulateBy (AudioNode modulator) {
+		for (int i=0;i<NumSamples;i++) {
+			buffer[i] *= modulator[i];
+		}
+		return this;
 	}	
+
 }
 
 public class MonoSineWaveNode : AudioNode

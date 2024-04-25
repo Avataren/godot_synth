@@ -1,4 +1,6 @@
 
+using System;
+
 namespace Synth
 {
     public class WaveTableRepository
@@ -94,9 +96,22 @@ namespace Synth
             }
 
             var osc = new WaveTableMemory();
-
             WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
             return osc;
         }
+
+        public static WaveTableMemory PeriodicWaveOsc(double[] Reals, double[] Imags)
+        {
+            int TableLen = 2048;
+            // Pad arrays with zeros up tableLen
+            double[] paddedReals = new double[TableLen];
+            double[] paddedImags = new double[TableLen];
+            // Copy original arrays to the new larger arrays
+            Array.Copy(Reals, paddedReals, Math.Min(Reals.Length, TableLen));
+            Array.Copy(Imags, paddedImags, Math.Min(Imags.Length, TableLen));
+            var osc = new WaveTableMemory();
+            WaveTableManager.FillTables(osc, paddedImags, paddedReals, TableLen);
+            return osc;
+        }        
     }
 }

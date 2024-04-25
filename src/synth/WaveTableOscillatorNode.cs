@@ -70,7 +70,6 @@ public class WaveTableOscillatorNode : AudioNode
 
 	protected float GetSample(WaveTable currWaveTable)
 	{
-		
 		float position = (float)(Phase * currWaveTable.WaveTableData.Length);
 		int intPart = (int)position;
 		float fracPart = position - intPart;

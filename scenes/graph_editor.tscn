@@ -26,13 +26,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="OptionButton" type="OptionButton" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 514.0
-offset_top = 29.0
-offset_right = 679.0
-offset_bottom = 68.0
-item_count = 7
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
+offset_left = 451.0
+offset_top = 96.0
+offset_right = 641.0
+offset_bottom = 240.0
+
+[node name="OptionButton" type="OptionButton" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+item_count = 8
 selected = 0
 popup/item_0/text = "Sine"
 popup/item_0/id = 1
@@ -44,17 +46,15 @@ popup/item_3/text = "Saw"
 popup/item_3/id = 0
 popup/item_4/text = "Organ"
 popup/item_4/id = 4
-popup/item_5/text = "Bass"
-popup/item_5/id = 5
-popup/item_6/text = "Ahh"
-popup/item_6/id = 6
+popup/item_5/text = "Organ2"
+popup/item_5/id = 7
+popup/item_6/text = "Bass"
+popup/item_6/id = 5
+popup/item_7/text = "Ahh"
+popup/item_7/id = 6
 
-[node name="OptionButton2" type="OptionButton" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 449.0
-offset_top = 29.0
-offset_right = 507.0
-offset_bottom = 68.0
+[node name="OptionButton2" type="OptionButton" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
 button_group = SubResource("ButtonGroup_i3wrb")
 item_count = 6
 selected = 2
@@ -71,7 +71,72 @@ popup/item_4/id = 4
 popup/item_5/text = "5"
 popup/item_5/id = 5
 
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+custom_minimum_size = Vector2(0, 93.88)
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="AttackSlider" type="VSlider" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "A
+"
+horizontal_alignment = 1
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="DecaySlider" type="VSlider" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer2"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "D"
+horizontal_alignment = 1
+
+[node name="VBoxContainer3" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="SustainSlider" type="VSlider" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer3"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer3"]
+layout_mode = 2
+text = "S
+"
+horizontal_alignment = 1
+
+[node name="VBoxContainer4" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="ReleaseSlider" type="VSlider" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer4"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer/HBoxContainer/VBoxContainer4"]
+layout_mode = 2
+text = "R
+"
+horizontal_alignment = 1
+
 [node name="Node2D" type="Node2D" parent="."]
 
-[connection signal="item_selected" from="CanvasLayer/Control/OptionButton" to="AudioStreamPlayer" method="_on_option_button_item_selected"]
-[connection signal="item_selected" from="CanvasLayer/Control/OptionButton2" to="AudioStreamPlayer" method="_on_option_octave_item_selected"]
+[connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/OptionButton" to="AudioStreamPlayer" method="_on_option_button_item_selected"]
+[connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/OptionButton2" to="AudioStreamPlayer" method="_on_option_octave_item_selected"]

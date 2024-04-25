@@ -1,4 +1,4 @@
-[gd_resource type="AudioBusLayout" load_steps=7 format=3 uid="uid://b0d0fnld3vv7g"]
+[gd_resource type="AudioBusLayout" load_steps=9 format=3 uid="uid://b0d0fnld3vv7g"]
 
 [sub_resource type="AudioEffectReverb" id="AudioEffectReverb_1473h"]
 resource_name = "Reverb"
@@ -15,6 +15,8 @@ resonance = 0.6
 
 [sub_resource type="AudioEffectDistortion" id="AudioEffectDistortion_s0k5i"]
 resource_name = "Distortion"
+mode = 4
+drive = 0.8
 
 [sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_tlva5"]
 resource_name = "SpectrumAnalyzer"
@@ -27,8 +29,15 @@ resource_name = "LowPassFilter"
 cutoff_hz = 4000.0
 resonance = 0.65
 
+[sub_resource type="AudioEffectChorus" id="AudioEffectChorus_4qnf3"]
+resource_name = "Chorus"
+
+[sub_resource type="AudioEffectDelay" id="AudioEffectDelay_ttipb"]
+resource_name = "Delay"
+tap1_delay_ms = 500.0
+tap2_delay_ms = 1000.0
+
 [resource]
-bus/0/volume_db = -0.923751
 bus/1/name = &"New Bus"
 bus/1/solo = false
 bus/1/mute = false
@@ -40,10 +49,14 @@ bus/1/effect/0/enabled = true
 bus/1/effect/1/effect = SubResource("AudioEffectFilter_jcl6u")
 bus/1/effect/1/enabled = false
 bus/1/effect/2/effect = SubResource("AudioEffectDistortion_s0k5i")
-bus/1/effect/2/enabled = true
+bus/1/effect/2/enabled = false
 bus/1/effect/3/effect = SubResource("AudioEffectSpectrumAnalyzer_tlva5")
 bus/1/effect/3/enabled = false
 bus/1/effect/4/effect = SubResource("AudioEffectPhaser_3hog5")
 bus/1/effect/4/enabled = false
 bus/1/effect/5/effect = SubResource("AudioEffectLowPassFilter_08shd")
 bus/1/effect/5/enabled = false
+bus/1/effect/6/effect = SubResource("AudioEffectChorus_4qnf3")
+bus/1/effect/6/enabled = false
+bus/1/effect/7/effect = SubResource("AudioEffectDelay_ttipb")
+bus/1/effect/7/enabled = true

@@ -37,7 +37,7 @@ namespace Synth
             AddWave(WaveTableWaveType.SAWTOOTH, WaveTableRepository.SawOsc());
             // addWave(WaveTableWaveType::FUZZY, periodicWaveOsc(fuzzy_real, fuzzy_imag));
             AddWave(WaveTableWaveType.ORGAN, WaveTableRepository.PeriodicWaveOsc(OrganReal, OrganImag));
-            // addWave(WaveTableWaveType::ORGAN2, periodicWaveOsc(organ2_real, organ2_imag));
+            AddWave(WaveTableWaveType.ORGAN2, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.Organ2Real, PeriodicWaves.Organ2Imag));
             // addWave(WaveTableWaveType::PIANO, periodicWaveOsc(piano_real, piano_imag));
             AddWave(WaveTableWaveType.BASS, WaveTableRepository.PeriodicWaveOsc(BassReal, BassImag));
             AddWave(WaveTableWaveType.VOCAL_AHH, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.AhhReal, PeriodicWaves.AhhImag));        

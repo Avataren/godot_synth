@@ -86,9 +86,12 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.ORGAN);
 				break;
 			case 5:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.BASS);
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.ORGAN2);
 				break;
 			case 6:
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.BASS);
+				break;
+			case 7:
 				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.VOCAL_AHH);
 				break;									
 		}

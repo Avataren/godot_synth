@@ -11,11 +11,10 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	public event BufferFilledEventHandler BufferFilled;
 
 	[Export] int num_samples = 1024;
-	const int AUDIOBUFFER_SIZE = 512;
+	private Vector2[] audioData;
+	private float[] buffer_copy;
 	private AudioStreamGeneratorPlayback _playback;
 	private float _sampleHz;
-	private Vector2[] audioData;
-	float sampleTime = 0.0f;
 	// Define nodes for each channel
 	private WaveTableOscillatorNode waveTableNode;
 	private EnvelopeNode envelopeNode;
@@ -30,6 +29,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	{
 
 		base._Ready();
+		buffer_copy = new float[num_samples];
+		audioData = new Vector2[num_samples];
 		if (Stream is AudioStreamGenerator generator)
 		{
 			try
@@ -45,7 +46,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			_sampleHz = generator.MixRate;
 			Play();
 			_playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();
-			audioData = new Vector2[num_samples];
 
 			// Initialize nodes
 			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
@@ -205,7 +205,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 					audioData[i][1] = right[i];
 				}
 				_playback.PushBuffer(audioData);
-				BufferFilled?.Invoke(samples.GetBuffer());
+				System.Array.Copy(samples.GetBuffer(), buffer_copy, num_samples);
 			}
 			else
 			{
@@ -223,6 +223,12 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		run_sound_thread = false;
 		sound_thread.Join();
 		Print("Sound ended!");
+	}
+
+	public override void _PhysicsProcess(double delta)
+	{
+		base._PhysicsProcess(delta);
+		BufferFilled?.Invoke(buffer_copy);
 	}
 
 	public override void _Process(double delta)

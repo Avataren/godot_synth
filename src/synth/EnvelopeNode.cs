@@ -17,10 +17,10 @@ public class EnvelopeNode : AudioNode
 
 	public EnvelopeNode(int numSamples) : base(numSamples)
 	{
-		AttackTime = 0.001f;  // Default values
-		DecayTime = 0.25f;
-		SustainLevel = 0.5f;
-		ReleaseTime = 0.5f;
+		AttackTime = 0.0f;
+		DecayTime = 0.0f;
+		SustainLevel = 1.0f;
+		ReleaseTime = 0.0f;
 	}
 
 	public void OpenGate()
@@ -32,6 +32,7 @@ public class EnvelopeNode : AudioNode
 	public void CloseGate()
 	{
 		timeOffsetUSec = 0;
+		releaseStartAmplitude = currentAmplitude;
 		gateOpen = false;
 	}
 

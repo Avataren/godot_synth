@@ -1,0 +1,88 @@
+[gd_scene load_steps=2 format=3 uid="uid://d33lbw03x3d2y"]
+
+[ext_resource type="Script" path="res://scenes/scripts/adsr_envelope.cs" id="1_fo2o6"]
+
+[node name="ADSR_Envelope" type="VBoxContainer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -54.5
+offset_top = -51.0
+offset_right = 54.5
+offset_bottom = 51.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fo2o6")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(0, 93.88)
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="AttackSlider" type="VSlider" parent="HBoxContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label" type="Label" parent="HBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "A
+"
+horizontal_alignment = 1
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="DecaySlider" type="VSlider" parent="HBoxContainer/HBoxContainer/VBoxContainer2"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label" type="Label" parent="HBoxContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+text = "D"
+horizontal_alignment = 1
+
+[node name="VBoxContainer3" type="VBoxContainer" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="SustainSlider" type="VSlider" parent="HBoxContainer/HBoxContainer/VBoxContainer3"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 1.0
+
+[node name="Label" type="Label" parent="HBoxContainer/HBoxContainer/VBoxContainer3"]
+layout_mode = 2
+text = "S
+"
+horizontal_alignment = 1
+
+[node name="VBoxContainer4" type="VBoxContainer" parent="HBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="ReleaseSlider" type="VSlider" parent="HBoxContainer/HBoxContainer/VBoxContainer4"]
+custom_minimum_size = Vector2(0, 75)
+layout_mode = 2
+max_value = 1000.0
+
+[node name="Label" type="Label" parent="HBoxContainer/HBoxContainer/VBoxContainer4"]
+layout_mode = 2
+text = "R
+"
+horizontal_alignment = 1
+
+[connection signal="value_changed" from="HBoxContainer/HBoxContainer/VBoxContainer/AttackSlider" to="." method="_on_attack_slider_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/HBoxContainer/VBoxContainer2/DecaySlider" to="." method="_on_decay_slider_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/HBoxContainer/VBoxContainer3/SustainSlider" to="." method="_on_sustain_slider_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/HBoxContainer/VBoxContainer4/ReleaseSlider" to="." method="_on_release_slider_value_changed"]

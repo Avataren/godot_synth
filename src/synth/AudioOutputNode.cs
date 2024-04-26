@@ -7,11 +7,6 @@ using Synth;
 
 public partial class AudioOutputNode : AudioStreamPlayer
 {
-	[Export] Godot.VSlider AttackRange;
-	[Export] Godot.VSlider DecayRange;
-	[Export] Godot.VSlider SustainRange;
-	[Export] Godot.VSlider ReleaseRange;
-	
 	[Export] int num_samples = 1024;
 	const int AUDIOBUFFER_SIZE = 512;
 	private AudioStreamGeneratorPlayback _playback;
@@ -52,10 +47,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			// Initialize nodes
 			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
 			envelopeNode = new EnvelopeNode(num_samples);
-			SetSliderValue(AttackRange,envelopeNode.AttackTime*1000.0f);
-			SetSliderValue(DecayRange,envelopeNode.DecayTime*1000.0f);
-			SetSliderValue(SustainRange,envelopeNode.SustainLevel);
-			SetSliderValue(ReleaseRange,envelopeNode.ReleaseTime*1000.0f);
 			
 			sound_thread = new Thread(new ThreadStart(FillBuffer));
 			sound_thread.Start();
@@ -235,30 +226,22 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	{
 		base._Process(delta);
 	}
-	
-	private void _on_attack_slider_value_changed(double value)
+
+	private void _on_adsr_envelope_attack_time_changed(float attackTime)
 	{
-		envelopeNode.AttackTime = (float)(value/1000.0);
+		envelopeNode.AttackTime = attackTime/1000.0f;
+	}
+	private void _on_adsr_envelope_decay_time_changed(float decayTime)
+	{
+		envelopeNode.DecayTime = decayTime/1000.0f;
+	}
+	private void _on_adsr_envelope_release_time_changed(float releaseTime)
+	{
+		envelopeNode.ReleaseTime = releaseTime/1000.0f;
+	}
+	private void _on_adsr_envelope_sustain_level_changed(float sustainLevel)
+	{
+		envelopeNode.SustainLevel = sustainLevel;
 	}
 
-
-	private void _on_decay_slider_value_changed(double value)
-	{
-		envelopeNode.DecayTime = (float)(value/1000.0);
-	}
-
-
-	private void _on_sustain_slider_value_changed(double value)
-	{
-		envelopeNode.SustainLevel = (float)value;
-	}
-
-
-	private void _on_release_slider_value_changed(double value)
-	{
-		envelopeNode.ReleaseTime = (float)(value/1000.0);
-	}	
 }
-
-
-

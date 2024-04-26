@@ -7,6 +7,9 @@ using Synth;
 
 public partial class AudioOutputNode : AudioStreamPlayer
 {
+	public delegate void BufferFilledEventHandler(float[] buffer);
+	public event BufferFilledEventHandler BufferFilled;
+
 	[Export] int num_samples = 1024;
 	const int AUDIOBUFFER_SIZE = 512;
 	private AudioStreamGeneratorPlayback _playback;
@@ -25,7 +28,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public override void _Ready()
 	{
-		
+
 		base._Ready();
 		if (Stream is AudioStreamGenerator generator)
 		{
@@ -47,15 +50,17 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			// Initialize nodes
 			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
 			envelopeNode = new EnvelopeNode(num_samples);
-			
+
 			sound_thread = new Thread(new ThreadStart(FillBuffer));
 			sound_thread.Start();
 		}
 	}
-	
-	private void SetSliderValue (Godot.Slider slider, float val){
-		if (slider == null) {
-			GD.Print ("Slider is NULL!");
+
+	private void SetSliderValue(Godot.Slider slider, float val)
+	{
+		if (slider == null)
+		{
+			GD.Print("Slider is NULL!");
 			return;
 		}
 		slider.Value = val;
@@ -71,12 +76,12 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		return (float)(baseFrequency * Math.Pow(2, semitones / 12.0));
 	}
 
-	protected void _on_option_octave_item_selected (int index)
+	protected void _on_option_octave_item_selected(int index)
 	{
 		BaseOctave = index;
 	}
 
-	protected void _on_option_button_item_selected (int index)
+	protected void _on_option_button_item_selected(int index)
 	{
 		switch (index)
 		{
@@ -103,7 +108,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				break;
 			case 7:
 				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.VOCAL_AHH);
-				break;									
+				break;
 		}
 	}
 
@@ -153,7 +158,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				if (keyMap.ContainsKey(eventKey.Keycode))
 				{
 					KeyDownCount--;
-					if (KeyDownCount <= 0) {
+					if (KeyDownCount <= 0)
+					{
 						envelopeNode.CloseGate();
 						KeyDownCount = 0;
 						CurrKey = Key.None;
@@ -164,11 +170,12 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			{
 				if (keyMap.ContainsKey(eventKey.Keycode))
 				{
-					if (CurrKey != eventKey.Keycode) {
+					if (CurrKey != eventKey.Keycode)
+					{
 						KeyDownCount++;
 						CurrKey = eventKey.Keycode;
 					}
-					
+
 					envelopeNode.OpenGate();
 					var semitones = keyMap[eventKey.Keycode];
 					waveTableNode.Frequency = CalculateFrequency(BaseOctave, semitones);
@@ -198,6 +205,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 					audioData[i][1] = right[i];
 				}
 				_playback.PushBuffer(audioData);
+				BufferFilled?.Invoke(samples.GetBuffer());
 			}
 			else
 			{
@@ -224,15 +232,15 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	private void _on_adsr_envelope_attack_time_changed(float attackTime)
 	{
-		envelopeNode.AttackTime = attackTime/1000.0f;
+		envelopeNode.AttackTime = attackTime / 1000.0f;
 	}
 	private void _on_adsr_envelope_decay_time_changed(float decayTime)
 	{
-		envelopeNode.DecayTime = decayTime/1000.0f;
+		envelopeNode.DecayTime = decayTime / 1000.0f;
 	}
 	private void _on_adsr_envelope_release_time_changed(float releaseTime)
 	{
-		envelopeNode.ReleaseTime = releaseTime/1000.0f;
+		envelopeNode.ReleaseTime = releaseTime / 1000.0f;
 	}
 	private void _on_adsr_envelope_sustain_level_changed(float sustainLevel)
 	{

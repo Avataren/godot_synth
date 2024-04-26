@@ -1,11 +1,19 @@
-[gd_scene load_steps=6 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=10 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/graph_editor.cs" id="1_ci72x"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_0yb7g"]
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="3_ja0re"]
+[ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="4_apql3"]
+[ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="5_e137o"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.03
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8k043"]
+shader = ExtResource("4_apql3")
+shader_parameter/wave_data = null
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_i3wrb"]
 
@@ -18,6 +26,17 @@ bus = &"New Bus"
 script = ExtResource("2_0yb7g")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="AudioVisualizer" type="TextureRect" parent="CanvasLayer" node_paths=PackedStringArray("AudioController")]
+material = SubResource("ShaderMaterial_8k043")
+custom_minimum_size = Vector2(256, 256)
+offset_left = 857.0
+offset_top = 26.0
+offset_right = 1113.0
+offset_bottom = 282.0
+texture = SubResource("CanvasTexture_n0w22")
+script = ExtResource("5_e137o")
+AudioController = NodePath("../../AudioStreamPlayer")
 
 [node name="Control" type="Control" parent="CanvasLayer"]
 layout_mode = 3

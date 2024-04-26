@@ -109,6 +109,9 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			case 7:
 				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.VOCAL_AHH);
 				break;
+			case 8:
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.FUZZY);
+				break;
 		}
 	}
 

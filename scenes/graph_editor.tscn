@@ -55,7 +55,7 @@ offset_bottom = 240.0
 
 [node name="OptionButton" type="OptionButton" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
-item_count = 9
+item_count = 10
 selected = 0
 popup/item_0/text = "Sine"
 popup/item_0/id = 1
@@ -75,6 +75,8 @@ popup/item_7/text = "Ahh"
 popup/item_7/id = 6
 popup/item_8/text = "Fuzzy"
 popup/item_8/id = 8
+popup/item_9/text = "Piano"
+popup/item_9/id = 9
 
 [node name="OptionButton2" type="OptionButton" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2

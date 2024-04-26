@@ -112,6 +112,10 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			case 8:
 				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.FUZZY);
 				break;
+			case 9:
+				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.PIANO);
+				break;
+
 		}
 	}
 

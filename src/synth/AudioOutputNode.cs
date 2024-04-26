@@ -148,14 +148,12 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 		if (@event is InputEventKey eventKey && !eventKey.Echo)
 		{
-			GD.Print("KeyDownCount: " + KeyDownCount);
 			if (!eventKey.Pressed)
 			{
 				if (keyMap.ContainsKey(eventKey.Keycode))
 				{
 					KeyDownCount--;
 					if (KeyDownCount <= 0) {
-						//Amplitude = 0.0f;
 						envelopeNode.CloseGate();
 						KeyDownCount = 0;
 						CurrKey = Key.None;
@@ -171,11 +169,9 @@ public partial class AudioOutputNode : AudioStreamPlayer
 						CurrKey = eventKey.Keycode;
 					}
 					
-					//Amplitude = 1.0f;
 					envelopeNode.OpenGate();
 					var semitones = keyMap[eventKey.Keycode];
 					waveTableNode.Frequency = CalculateFrequency(BaseOctave, semitones);
-					Print("Key pressed: " + eventKey.Keycode);
 				}
 			}
 

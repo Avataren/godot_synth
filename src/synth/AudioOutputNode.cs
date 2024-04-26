@@ -7,6 +7,11 @@ using Synth;
 
 public partial class AudioOutputNode : AudioStreamPlayer
 {
+	[Export] Godot.VSlider AttackRange;
+	[Export] Godot.VSlider DecayRange;
+	[Export] Godot.VSlider SustainRange;
+	[Export] Godot.VSlider ReleaseRange;
+	
 	[Export] int num_samples = 1024;
 	const int AUDIOBUFFER_SIZE = 512;
 	private AudioStreamGeneratorPlayback _playback;
@@ -25,6 +30,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public override void _Ready()
 	{
+		
 		base._Ready();
 		if (Stream is AudioStreamGenerator generator)
 		{
@@ -46,9 +52,22 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			// Initialize nodes
 			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
 			envelopeNode = new EnvelopeNode(num_samples);
+			SetSliderValue(AttackRange,envelopeNode.AttackTime*1000.0f);
+			SetSliderValue(DecayRange,envelopeNode.DecayTime*1000.0f);
+			SetSliderValue(SustainRange,envelopeNode.SustainLevel);
+			SetSliderValue(ReleaseRange,envelopeNode.ReleaseTime*1000.0f);
+			
 			sound_thread = new Thread(new ThreadStart(FillBuffer));
 			sound_thread.Start();
 		}
+	}
+	
+	private void SetSliderValue (Godot.Slider slider, float val){
+		if (slider == null) {
+			GD.Print ("Slider is NULL!");
+			return;
+		}
+		slider.Value = val;
 	}
 
 	private float CalculateFrequency(int baseOctave, int semitones)
@@ -98,10 +117,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	}
 
 	Godot.Key CurrKey = Key.None;
-    public override void _UnhandledInput(InputEvent @event)
-    {
-
-		
+	public override void _UnhandledInput(InputEvent @event)
+	{
 		var keyMap = new Dictionary<Godot.Key, int> {
 			{ Key.Q, 0 +12},
 			{ Key.Key2, 1 +12},
@@ -138,8 +155,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			{ Key.Quoteleft, 15},
 		};
 
-        if (@event is InputEventKey eventKey && !eventKey.Echo)
-        {
+		if (@event is InputEventKey eventKey && !eventKey.Echo)
+		{
 			GD.Print("KeyDownCount: " + KeyDownCount);
 			if (!eventKey.Pressed)
 			{
@@ -218,4 +235,30 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	{
 		base._Process(delta);
 	}
+	
+	private void _on_attack_slider_value_changed(double value)
+	{
+		envelopeNode.AttackTime = (float)(value/1000.0);
+	}
+
+
+	private void _on_decay_slider_value_changed(double value)
+	{
+		envelopeNode.DecayTime = (float)(value/1000.0);
+	}
+
+
+	private void _on_sustain_slider_value_changed(double value)
+	{
+		envelopeNode.SustainLevel = (float)value;
+	}
+
+
+	private void _on_release_slider_value_changed(double value)
+	{
+		envelopeNode.ReleaseTime = (float)(value/1000.0);
+	}	
 }
+
+
+

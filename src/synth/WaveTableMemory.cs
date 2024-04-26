@@ -12,7 +12,6 @@ public struct WaveTable
 public class WaveTableMemory
 {
 	const int MaxWaveTableSlots = 40;  // simplify allocation with reasonable maximum
-
 	WaveTable[] WaveTables = new WaveTable[MaxWaveTableSlots];
 	public int NumWaveTables = 0;  // number of wavetable slots in use
 

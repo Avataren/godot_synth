@@ -61,7 +61,6 @@ public class WaveTableOscillatorNode : AudioNode
 		}		
 	}
 	
-	
 	int _currentWaveTable = 0;
 	public WaveTableOscillatorNode(int num_samples, float sample_frequency, WaveTableMemory WaveMem) : base(num_samples)
 	{

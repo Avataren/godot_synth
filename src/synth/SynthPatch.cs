@@ -23,6 +23,19 @@ public class SynthPatch
         Oscillators[0].Enabled = true;
     }
 
+    public void SetAmplitude(float amplitude, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < Oscillators.Count)
+        {
+            Oscillators[OscillatorIndex].Amplitude = amplitude;
+            return;
+        }
+        
+        for (int idx = 0; idx < Oscillators.Count; idx++)
+        {
+            Oscillators[idx].Amplitude = amplitude;
+        }
+    }
 
 
     public void SetOscillatorEnabled(bool enabled, int OscillatorIndex = -1)
@@ -155,7 +168,7 @@ public class SynthPatch
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             var osc = Oscillators[idx];
-            osc.Amplitude = velocity;
+//            osc.Amplitude = velocity;
             osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
         }
     }

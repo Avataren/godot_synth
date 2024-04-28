@@ -21,7 +21,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	private Thread sound_thread;
 	private bool run_sound_thread = true;
 	private WaveTableBank waveTableBank;
-	float Amplitude = 0.0f;
 	int KeyDownCount = 0;
 	public int BaseOctave = 2;
 	public SynthPatch CurrentPatch;

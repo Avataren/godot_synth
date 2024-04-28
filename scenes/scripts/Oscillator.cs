@@ -19,6 +19,8 @@ public partial class Oscillator : Control
 	public delegate void OscillatorEnabledToggledEventHandler(bool enabled);
 	[Signal]
 	public delegate void WaveformChangedEventHandler(int waveformIndex);
+	[Signal]
+	public delegate void VolumeChangedEventHandler(float volume);
 
 	public void Enable()
 	{
@@ -35,6 +37,10 @@ public partial class Oscillator : Control
 		return OscillatorEnabled.ButtonPressed;
 	}
 
+	private void _On_Volume_Changed(double value)
+	{
+		EmitSignal("VolumeChanged", (float)value);
+	}
 
 	private void _on_waveform_select_item_selected (int index)
 	{

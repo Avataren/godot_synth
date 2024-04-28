@@ -5,7 +5,6 @@ using Godot;
 public class WaveTableOscillatorNode : AudioNode
 {
 	private ReaderWriterLockSlim lockSlim = new ReaderWriterLockSlim();
-
 	public float _Frequency = 440.0f;
 	public new float Frequency
 	{

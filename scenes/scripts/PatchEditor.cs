@@ -27,7 +27,7 @@ public partial class PatchEditor : Node2D
 			Oscillator1.Enable();
 			for (int i = 0; i < oscs.Length; i++)
 			{
-				ConnectOscillatorSignals(oscs[i], i + 1);
+				ConnectOscillatorSignals(oscs[i], i);
 			}
 
 		}
@@ -71,27 +71,31 @@ public partial class PatchEditor : Node2D
 	{
 		osc.WaveformChanged += (waveformIndex) =>
 		{
-			AudioOutputNode.CurrentPatch.SetWaveform(GetWaveformFromIndex(waveformIndex), oscNum - 1);
+			AudioOutputNode.CurrentPatch.SetWaveform(GetWaveformFromIndex(waveformIndex), oscNum);
 		};
 		osc.OscillatorEnabledToggled += (enabled) =>
 		{
-			AudioOutputNode.CurrentPatch.SetOscillatorEnabled(enabled, oscNum - 1);
+			AudioOutputNode.CurrentPatch.SetOscillatorEnabled(enabled, oscNum);
 		};
 		osc.AttackTimeChanged += (attackTime) =>
 		{
-			AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f, oscNum - 1);
+			AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f, oscNum );
 		};
 		osc.DecayTimeChanged += (decayTime) =>
 		{
-			AudioOutputNode.CurrentPatch.SetDecay(decayTime / 1000.0f, oscNum - 1);
+			AudioOutputNode.CurrentPatch.SetDecay(decayTime / 1000.0f, oscNum);
 		};
 		osc.SustainLevelChanged += (sustainLevel) =>
 		{
-			AudioOutputNode.CurrentPatch.SetSustain(sustainLevel, oscNum - 1);
+			AudioOutputNode.CurrentPatch.SetSustain(sustainLevel, oscNum);
 		};
 		osc.ReleaseTimeChanged += (releaseTime) =>
 		{
-			AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f, oscNum - 1);
+			AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f, oscNum);
+		};
+		osc.VolumeChanged += (volume) =>
+		{
+			AudioOutputNode.CurrentPatch.SetAmplitude(volume / 100.0f, oscNum);
 		};
 	}
 

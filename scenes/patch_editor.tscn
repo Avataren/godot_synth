@@ -80,16 +80,31 @@ layout_mode = 2
 theme_override_constants/separation = 25
 alignment = 1
 
+[node name="VSeparator5" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+layout_mode = 2
+
 [node name="Oscillator1" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+layout_mode = 2
+
+[node name="VSeparator" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
 [node name="Oscillator2" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
+[node name="VSeparator2" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+layout_mode = 2
+
 [node name="Oscillator3" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
+[node name="VSeparator3" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+layout_mode = 2
+
 [node name="Oscillator4" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+layout_mode = 2
+
+[node name="VSeparator4" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]

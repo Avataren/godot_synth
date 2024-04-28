@@ -101,3 +101,6 @@ layout_mode = 2
 [connection signal="DecayTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_decay_time_changed"]
 [connection signal="ReleaseTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_release_time_changed"]
 [connection signal="SustainLevelChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_sustain_level_changed"]
+[connection signal="CentsChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_cents_changed"]
+[connection signal="OctaveChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_octave_changed"]
+[connection signal="SemiChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_semi_changed"]

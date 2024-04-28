@@ -97,6 +97,22 @@ public partial class PatchEditor : Node2D
 		{
 			AudioOutputNode.CurrentPatch.SetAmplitude(volume / 100.0f, oscNum);
 		};
+		osc.DetuneOctavesChanged += (detuneOctaves) =>
+		{
+			GD.Print("Detune Octaves Changed");
+			AudioOutputNode.CurrentPatch.SetDetuneOctaves(detuneOctaves, oscNum);
+		};
+		osc.DetuneSemiChanged += (detuneSemi) =>
+		{
+			GD.Print("Detune Semi Changed");
+			AudioOutputNode.CurrentPatch.SetDetuneSemi(detuneSemi, oscNum);
+		};
+		osc.DetuneCentsChanged += (detuneCents) =>
+		{
+			GD.Print("Detune Cents Changed");
+			AudioOutputNode.CurrentPatch.SetDetuneCents(detuneCents, oscNum);
+		};
+
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

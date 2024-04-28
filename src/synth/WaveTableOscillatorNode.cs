@@ -6,31 +6,44 @@ public class WaveTableOscillatorNode : AudioNode
 {
 	private ReaderWriterLockSlim lockSlim = new ReaderWriterLockSlim();
 	public float _Frequency = 440.0f;
+	public float DetuneCents = 0.0f;
+	public float DetuneSemitones = 0.0f;
+	public float DetuneOctaves = 0.0f;
+
 	public new float Frequency
 	{
 		get
 		{
 			lockSlim.EnterReadLock();
-			try	{
+			try
+			{
 				return _Frequency;
 			}
-			finally {
+			finally
+			{
 				lockSlim.ExitReadLock();
 			}
 		}
 		set
 		{
 			lockSlim.EnterWriteLock();
-			try	{
-				_Frequency = value;
-				UpdateWaveTableFrequency(value);
+			try
+			{
+				float detuneFactor =
+					(float)Math.Pow(2, DetuneCents / 1200.0f) *
+					(float)Math.Pow(2, DetuneSemitones / 12.0f) *
+					(float)Math.Pow(2, DetuneOctaves);
+
+				_Frequency = value * detuneFactor;
+				UpdateWaveTableFrequency(_Frequency);
 			}
-			finally {
-				 lockSlim.ExitWriteLock();
+			finally
+			{
+				lockSlim.ExitWriteLock();
 			}
 		}
 	}
-	
+
 	private volatile WaveTableMemory _WaveMem;
 	public WaveTableMemory WaveTableMem
 	{
@@ -50,16 +63,17 @@ public class WaveTableOscillatorNode : AudioNode
 			UpdateWaveTableFrequency(_Frequency);
 		}
 	}
-	
-	private void UpdateWaveTableFrequency(float freq) {
+
+	private void UpdateWaveTableFrequency(float freq)
+	{
 		var mPhaseInc = (float)(freq / SampleFrequency);
 		_currentWaveTable = 0;
 		while ((mPhaseInc >= _WaveMem.GetWaveTable(_currentWaveTable).TopFreq) && (_currentWaveTable < (_WaveMem.NumWaveTables - 1)))
 		{
 			++_currentWaveTable;
-		}		
+		}
 	}
-	
+
 	int _currentWaveTable = 0;
 	public WaveTableOscillatorNode(int num_samples, float sample_frequency, WaveTableMemory WaveMem) : base(num_samples)
 	{

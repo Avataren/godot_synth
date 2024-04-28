@@ -51,10 +51,6 @@ text = "Cents
 layout_mode = 2
 min_value = -100.0
 
-[node name="Tuning" type="Control" parent="."]
-layout_mode = 2
-script = ExtResource("1_vmaqn")
-
-[connection signal="value_changed" from="HBoxContainer/OctSpinBox" to="Tuning" method="_on_oct_spin_box_value_changed"]
-[connection signal="value_changed" from="HBoxContainer2/SemiSpinBox" to="Tuning" method="_on_semi_spin_box_value_changed"]
-[connection signal="value_changed" from="HBoxContainer3/CentsSpinBox" to="Tuning" method="_on_cents_spin_box_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/OctSpinBox" to="." method="_on_oct_spin_box_value_changed"]
+[connection signal="value_changed" from="HBoxContainer2/SemiSpinBox" to="." method="_on_semi_spin_box_value_changed"]
+[connection signal="value_changed" from="HBoxContainer3/CentsSpinBox" to="." method="_on_cents_spin_box_value_changed"]

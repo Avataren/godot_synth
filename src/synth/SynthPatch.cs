@@ -156,6 +156,48 @@ public class SynthPatch
         return AmpEnvelopes[idx];
     }
 
+    public void SetDetuneOctaves(float detuneOctaves, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < Oscillators.Count)
+        {
+            Oscillators[OscillatorIndex].DetuneOctaves = detuneOctaves;
+            return;
+        }
+        
+        for (int idx = 0; idx < Oscillators.Count; idx++)
+        {
+            Oscillators[idx].DetuneOctaves = detuneOctaves;
+        }
+    }
+
+    public void SetDetuneSemi(float detuneSemi, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < Oscillators.Count)
+        {
+            Oscillators[OscillatorIndex].DetuneSemitones = detuneSemi;
+            return;
+        }
+        
+        for (int idx = 0; idx < Oscillators.Count; idx++)
+        {
+            Oscillators[idx].DetuneSemitones = detuneSemi;
+        }
+    }
+
+    public void SetDetuneCents(float detuneCents, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < Oscillators.Count)
+        {
+            Oscillators[OscillatorIndex].DetuneCents = detuneCents;
+            return;
+        }
+        
+        for (int idx = 0; idx < Oscillators.Count; idx++)
+        {
+            Oscillators[idx].DetuneCents = detuneCents;
+        }
+    }
+
     public void NoteOn(int note, float velocity = 1.0f)
     {
         // Start the envelope

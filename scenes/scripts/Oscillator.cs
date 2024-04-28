@@ -22,6 +22,14 @@ public partial class Oscillator : Control
 	[Signal]
 	public delegate void VolumeChangedEventHandler(float volume);
 
+	[Signal]
+	public delegate void DetuneOctavesChangedEventHandler(float detuneOctaves);
+	[Signal]
+	public delegate void DetuneSemiChangedEventHandler(float detuneSemi);
+	[Signal]
+	public delegate void DetuneCentsChangedEventHandler(float detuneCents);
+
+
 	public void Enable()
 	{
 		OscillatorEnabled.ButtonPressed = true;
@@ -72,4 +80,21 @@ public partial class Oscillator : Control
 		EmitSignal("ReleaseTimeChanged", (float)value);
 	}
 
+	private void _on_tuning_octave_changed(float value)
+	{
+		Print("_on_detune_octaves_changed");
+		EmitSignal("DetuneOctavesChanged", value);
+	}
+
+	private void _on_tuning_semi_changed(float value)
+	{
+		Print ("_on_detune_semi_changed");
+		EmitSignal("DetuneSemiChanged", value);
+	}
+
+	private void _on_tuning_cents_changed(float value)
+	{
+		Print ("_on_detune_cents_changed");
+		EmitSignal("DetuneCentsChanged", value);
+	}
 }

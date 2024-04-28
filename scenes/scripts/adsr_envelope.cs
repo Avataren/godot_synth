@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class adsr_envelope : VBoxContainer
+public partial class ADSR_Envelope : VBoxContainer
 {
 	[Signal]
 	public delegate void AttackTimeChangedEventHandler(float attackTime);

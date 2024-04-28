@@ -1,0 +1,166 @@
+[gd_scene load_steps=12 format=3 uid="uid://0idual1an6x7"]
+
+[ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
+[ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
+[ext_resource type="PackedScene" uid="uid://cbymyl68u2edq" path="res://scenes/oscillator.tscn" id="3_p4jms"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="4_lv3dd"]
+[ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
+[ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
+
+[sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
+buffer_length = 0.03
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_chx7t"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_i3wrb"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8k043"]
+shader = ExtResource("5_61qe6")
+shader_parameter/wave_data = null
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
+
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "AudioOutputNode")]
+script = ExtResource("1_ox65v")
+Oscillator1 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator1")
+Oscillator2 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator2")
+Oscillator3 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator3")
+Oscillator4 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator4")
+AudioOutputNode = NodePath("AudioOutputNode")
+
+[node name="AudioOutputNode" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamGenerator_whm0j")
+bus = &"New Bus"
+script = ExtResource("2_5you6")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 25
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Base Octave 
+"
+
+[node name="OctaveSelect" type="OptionButton" parent="CanvasLayer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+button_group = SubResource("ButtonGroup_chx7t")
+item_count = 8
+selected = 2
+popup/item_0/text = "0"
+popup/item_0/id = 1
+popup/item_1/text = "1"
+popup/item_1/id = 3
+popup/item_2/text = "2"
+popup/item_2/id = 2
+popup/item_3/text = "3"
+popup/item_3/id = 0
+popup/item_4/text = "4"
+popup/item_4/id = 4
+popup/item_5/text = "5"
+popup/item_5/id = 5
+popup/item_6/text = "6"
+popup/item_6/id = 6
+popup/item_7/text = "7"
+popup/item_7/id = 7
+
+[node name="OscillatorsContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 25
+alignment = 1
+
+[node name="Oscillator1" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+layout_mode = 2
+
+[node name="Oscillator2" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+layout_mode = 2
+
+[node name="Oscillator3" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+layout_mode = 2
+
+[node name="Oscillator4" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+visible = false
+layout_mode = 2
+
+[node name="OptionButton" type="OptionButton" parent="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer"]
+layout_mode = 2
+item_count = 10
+selected = 0
+popup/item_0/text = "Sine"
+popup/item_0/id = 1
+popup/item_1/text = "Triangle"
+popup/item_1/id = 3
+popup/item_2/text = "Square"
+popup/item_2/id = 2
+popup/item_3/text = "Saw"
+popup/item_3/id = 0
+popup/item_4/text = "Organ"
+popup/item_4/id = 4
+popup/item_5/text = "Organ2"
+popup/item_5/id = 7
+popup/item_6/text = "Bass"
+popup/item_6/id = 5
+popup/item_7/text = "Ahh"
+popup/item_7/id = 6
+popup/item_8/text = "Fuzzy"
+popup/item_8/id = 8
+popup/item_9/text = "Piano"
+popup/item_9/id = 9
+
+[node name="OptionButton2" type="OptionButton" parent="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer"]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_i3wrb")
+item_count = 8
+selected = 2
+popup/item_0/text = "0"
+popup/item_0/id = 1
+popup/item_1/text = "1"
+popup/item_1/id = 3
+popup/item_2/text = "2"
+popup/item_2/id = 2
+popup/item_3/text = "3"
+popup/item_3/id = 0
+popup/item_4/text = "4"
+popup/item_4/id = 4
+popup/item_5/text = "5"
+popup/item_5/id = 5
+popup/item_6/text = "6"
+popup/item_6/id = 6
+popup/item_7/text = "7"
+popup/item_7/id = 7
+
+[node name="ADSR_Envelope" parent="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="AudioVisualizer" type="TextureRect" parent="CanvasLayer/VBoxContainer/HBoxContainer2" node_paths=PackedStringArray("AudioController")]
+material = SubResource("ShaderMaterial_8k043")
+custom_minimum_size = Vector2(1024, 128)
+layout_mode = 2
+texture = SubResource("CanvasTexture_n0w22")
+script = ExtResource("6_psdfa")
+AudioController = NodePath("../../../../AudioOutputNode")
+
+[connection signal="item_selected" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/OptionButton" to="AudioOutputNode" method="_on_option_button_item_selected"]
+[connection signal="item_selected" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/OptionButton2" to="AudioOutputNode" method="_on_option_octave_item_selected"]
+[connection signal="AttackTimeChanged" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/ADSR_Envelope" to="AudioOutputNode" method="_on_adsr_envelope_attack_time_changed"]
+[connection signal="DecayTimeChanged" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/ADSR_Envelope" to="AudioOutputNode" method="_on_adsr_envelope_decay_time_changed"]
+[connection signal="ReleaseTimeChanged" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/ADSR_Envelope" to="AudioOutputNode" method="_on_adsr_envelope_release_time_changed"]
+[connection signal="SustainLevelChanged" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/ADSR_Envelope" to="AudioOutputNode" method="_on_adsr_envelope_sustain_level_changed"]

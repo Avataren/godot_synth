@@ -2,8 +2,11 @@
 
 [sub_resource type="AudioEffectReverb" id="AudioEffectReverb_1473h"]
 resource_name = "Reverb"
-predelay_feedback = 0.3
-room_size = 0.3
+room_size = 0.36
+damping = 0.66
+spread = 0.55
+dry = 0.6
+wet = 0.29
 
 [sub_resource type="AudioEffectFilter" id="AudioEffectFilter_jcl6u"]
 resource_name = "Filter"
@@ -12,9 +15,8 @@ resonance = 0.6
 
 [sub_resource type="AudioEffectDistortion" id="AudioEffectDistortion_s0k5i"]
 resource_name = "Distortion"
-mode = 1
-pre_gain = 11.89
-drive = 0.84
+mode = 4
+drive = 0.8
 
 [sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_tlva5"]
 resource_name = "SpectrumAnalyzer"
@@ -29,14 +31,13 @@ resonance = 0.65
 
 [sub_resource type="AudioEffectChorus" id="AudioEffectChorus_4qnf3"]
 resource_name = "Chorus"
-wet = 0.2
 
 [sub_resource type="AudioEffectDelay" id="AudioEffectDelay_ttipb"]
 resource_name = "Delay"
 tap1_delay_ms = 500.0
 tap2_delay_ms = 1000.0
 
-[sub_resource type="AudioEffectCompressor" id="AudioEffectCompressor_to6pb"]
+[sub_resource type="AudioEffectCompressor" id="AudioEffectCompressor_5ytxn"]
 resource_name = "Compressor"
 
 [resource]
@@ -47,7 +48,7 @@ bus/1/bypass_fx = false
 bus/1/volume_db = -2.51026
 bus/1/send = &"Master"
 bus/1/effect/0/effect = SubResource("AudioEffectReverb_1473h")
-bus/1/effect/0/enabled = true
+bus/1/effect/0/enabled = false
 bus/1/effect/1/effect = SubResource("AudioEffectFilter_jcl6u")
 bus/1/effect/1/enabled = false
 bus/1/effect/2/effect = SubResource("AudioEffectDistortion_s0k5i")
@@ -62,5 +63,5 @@ bus/1/effect/6/effect = SubResource("AudioEffectChorus_4qnf3")
 bus/1/effect/6/enabled = false
 bus/1/effect/7/effect = SubResource("AudioEffectDelay_ttipb")
 bus/1/effect/7/enabled = false
-bus/1/effect/8/effect = SubResource("AudioEffectCompressor_to6pb")
+bus/1/effect/8/effect = SubResource("AudioEffectCompressor_5ytxn")
 bus/1/effect/8/enabled = true

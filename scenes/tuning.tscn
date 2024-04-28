@@ -1,0 +1,60 @@
+[gd_scene load_steps=2 format=3 uid="uid://d2107ijw5cg87"]
+
+[ext_resource type="Script" path="res://scenes/scripts/Tuning.cs" id="1_vmaqn"]
+
+[node name="Tuning" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_vmaqn")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Oct" type="Label" parent="HBoxContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Oct
+"
+
+[node name="OctSpinBox" type="SpinBox" parent="HBoxContainer"]
+layout_mode = 2
+min_value = -6.0
+max_value = 6.0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Semi" type="Label" parent="HBoxContainer2"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Semi
+"
+
+[node name="SemiSpinBox" type="SpinBox" parent="HBoxContainer2"]
+layout_mode = 2
+min_value = -12.0
+max_value = 12.0
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Cents" type="Label" parent="HBoxContainer3"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+text = "Cents
+"
+
+[node name="CentsSpinBox" type="SpinBox" parent="HBoxContainer3"]
+layout_mode = 2
+min_value = -100.0
+
+[node name="Tuning" type="Control" parent="."]
+layout_mode = 2
+script = ExtResource("1_vmaqn")
+
+[connection signal="value_changed" from="HBoxContainer/OctSpinBox" to="Tuning" method="_on_oct_spin_box_value_changed"]
+[connection signal="value_changed" from="HBoxContainer2/SemiSpinBox" to="Tuning" method="_on_semi_spin_box_value_changed"]
+[connection signal="value_changed" from="HBoxContainer3/CentsSpinBox" to="Tuning" method="_on_cents_spin_box_value_changed"]

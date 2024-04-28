@@ -24,7 +24,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	float Amplitude = 0.0f;
 	int KeyDownCount = 0;
 	public int BaseOctave = 2;
-
+	public SynthPatch CurrentPatch;
 	public override void _Ready()
 	{
 
@@ -36,6 +36,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			try
 			{
 				waveTableBank = new WaveTableBank();
+				CurrentPatch = new SynthPatch(waveTableBank);
 			}
 			catch (Exception e)
 			{
@@ -48,8 +49,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			_playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();
 
 			// Initialize nodes
-			waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
-			envelopeNode = new EnvelopeNode(num_samples);
+			//waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
+			//envelopeNode = new EnvelopeNode(num_samples);
 
 			sound_thread = new Thread(new ThreadStart(FillBuffer));
 			sound_thread.Start();
@@ -81,8 +82,9 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		BaseOctave = index;
 	}
 
-	protected void _on_option_button_item_selected(int index)
+	protected void _on_option_button_item_selected(int index, int oscIndex)
 	{
+
 		switch (index)
 		{
 			case 0:
@@ -167,7 +169,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 					KeyDownCount--;
 					if (KeyDownCount <= 0)
 					{
-						envelopeNode.CloseGate();
+						//envelopeNode.CloseGate();
+						CurrentPatch.NoteOff();
 						KeyDownCount = 0;
 						CurrKey = Key.None;
 					}
@@ -183,9 +186,10 @@ public partial class AudioOutputNode : AudioStreamPlayer
 						CurrKey = eventKey.Keycode;
 					}
 
-					envelopeNode.OpenGate();
+					//envelopeNode.OpenGate();
 					var semitones = keyMap[eventKey.Keycode];
-					waveTableNode.Frequency = CalculateFrequency(BaseOctave, semitones);
+					//waveTableNode.Frequency = CalculateFrequency(BaseOctave, semitones);
+					CurrentPatch.NoteOn(semitones + 12 * BaseOctave);
 				}
 			}
 
@@ -196,23 +200,21 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public void FillBuffer()
 	{
+		var mix_buffer = new float[num_samples];
+		float increment = 1.0f / _sampleHz;
 		while (run_sound_thread)
 		{
-			float increment = 1.0f / _sampleHz;
 			if (_playback.CanPushBuffer(num_samples))
 			{
-				envelopeNode.Process(increment);
-				var samples = waveTableNode.Process(increment);
-				samples.ModulateBy(envelopeNode);
-				var left = samples;
-				var right = samples;
+				CurrentPatch.Process(increment, mix_buffer);
+
 				for (int i = 0; i < num_samples; i++)
 				{
-					audioData[i][0] = left[i];
-					audioData[i][1] = right[i];
+					audioData[i][0] = mix_buffer[i];
+					audioData[i][1] = mix_buffer[i];
 				}
 				_playback.PushBuffer(audioData);
-				System.Array.Copy(samples.GetBuffer(), buffer_copy, num_samples);
+				System.Array.Copy(mix_buffer, buffer_copy, num_samples);
 			}
 			else
 			{
@@ -221,7 +223,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			}
 		}
 	}
-
 
 	public override void _ExitTree()
 	{
@@ -246,18 +247,22 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	private void _on_adsr_envelope_attack_time_changed(float attackTime)
 	{
 		envelopeNode.AttackTime = attackTime / 1000.0f;
+		Print ("Setting Attack time to " + envelopeNode.AttackTime);
 	}
 	private void _on_adsr_envelope_decay_time_changed(float decayTime)
 	{
 		envelopeNode.DecayTime = decayTime / 1000.0f;
+		Print ("Setting Decay time to " + envelopeNode.DecayTime);
 	}
 	private void _on_adsr_envelope_release_time_changed(float releaseTime)
 	{
 		envelopeNode.ReleaseTime = releaseTime / 1000.0f;
+		Print ("Setting Release time to " + envelopeNode.ReleaseTime);
 	}
 	private void _on_adsr_envelope_sustain_level_changed(float sustainLevel)
 	{
 		envelopeNode.SustainLevel = sustainLevel;
+		Print ("Setting Sustain level to " + envelopeNode.SustainLevel);
 	}
 
 }

@@ -65,6 +65,7 @@ public class WaveTableOscillatorNode : AudioNode
 	public WaveTableOscillatorNode(int num_samples, float sample_frequency, WaveTableMemory WaveMem) : base(num_samples)
 	{
 		this.WaveTableMem = WaveMem;
+		this.Enabled = false;
 	}
 
 	protected float GetSample(WaveTable currWaveTable)

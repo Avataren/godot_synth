@@ -1,0 +1,70 @@
+[gd_scene load_steps=4 format=3 uid="uid://cbymyl68u2edq"]
+
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="1_rr1vg"]
+[ext_resource type="Script" path="res://scenes/scripts/Oscillator.cs" id="1_tg6q3"]
+[ext_resource type="PackedScene" uid="uid://d2107ijw5cg87" path="res://scenes/tuning.tscn" id="3_baww2"]
+
+[node name="Oscillator" type="MarginContainer" node_paths=PackedStringArray("OscillatorEnabled")]
+offset_right = 129.0
+offset_bottom = 196.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("1_tg6q3")
+OscillatorEnabled = NodePath("VBoxContainer/CheckBox")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+text = "Enabled"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="WaveformSelect" type="OptionButton" parent="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+item_count = 10
+selected = 0
+popup/item_0/text = "Sine"
+popup/item_0/id = 1
+popup/item_1/text = "Triangle"
+popup/item_1/id = 3
+popup/item_2/text = "Square"
+popup/item_2/id = 2
+popup/item_3/text = "Saw"
+popup/item_3/id = 0
+popup/item_4/text = "Organ"
+popup/item_4/id = 4
+popup/item_5/text = "Organ2"
+popup/item_5/id = 7
+popup/item_6/text = "Bass"
+popup/item_6/id = 5
+popup/item_7/text = "Ahh"
+popup/item_7/id = 6
+popup/item_8/text = "Fuzzy"
+popup/item_8/id = 8
+popup/item_9/text = "Piano"
+popup/item_9/id = 9
+
+[node name="ADSR_Envelope" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("1_rr1vg")]
+layout_mode = 2
+
+[node name="Tuning" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("3_baww2")]
+layout_mode = 2
+
+[connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]
+[connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_item_selected"]
+[connection signal="AttackTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_attack_time_changed"]
+[connection signal="DecayTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_decay_time_changed"]
+[connection signal="ReleaseTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_release_time_changed"]
+[connection signal="SustainLevelChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_sustain_level_changed"]

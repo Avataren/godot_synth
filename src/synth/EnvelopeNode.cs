@@ -3,7 +3,7 @@ using System;
 
 public class EnvelopeNode : AudioNode
 {
-	private ulong timeOffsetUSec = 0;
+	private float timeOffsetSec = 0;
 	private bool gateOpen = false;
 
 	public float AttackTime { get; set; }
@@ -26,12 +26,12 @@ public class EnvelopeNode : AudioNode
 	public void OpenGate()
 	{
 		gateOpen = true;
-		timeOffsetUSec =0;
+		timeOffsetSec = 0.0f;
 	}
 
 	public void CloseGate()
 	{
-		timeOffsetUSec = 0;
+		timeOffsetSec = 0.0f;
 		releaseStartAmplitude = currentAmplitude;
 		gateOpen = false;
 	}
@@ -72,12 +72,10 @@ public class EnvelopeNode : AudioNode
 
 	public override AudioNode Process(float increment)
 	{
-		ulong sampleIncrementUSec = (ulong)(1_000_000 / SampleFrequency);  // Time per sample in microseconds
 		for (int i = 0; i < NumSamples; i++)
 		{
-			float elapsedTimeSec = timeOffsetUSec / 1_000_000.0f;  // Convert microseconds to seconds
-			buffer[i] = GetEnvelopeValue(elapsedTimeSec);  // Get the envelope value for the accumulated time
-			timeOffsetUSec += sampleIncrementUSec;  // Increment by the time taken for one sample
+			buffer[i] = GetEnvelopeValue(timeOffsetSec); 
+			timeOffsetSec += increment;
 		}
 		return this;
 	}

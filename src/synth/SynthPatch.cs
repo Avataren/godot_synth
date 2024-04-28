@@ -4,7 +4,7 @@ using Godot;
 using Synth;
 public class SynthPatch
 {
-    public const int MaxOscillators = 4;
+    public const int MaxOscillators = 5;
     const int BufferSize = 1024;
     const int SampleRate = 44100;
     List<WaveTableOscillatorNode> Oscillators = new List<WaveTableOscillatorNode>();
@@ -210,8 +210,12 @@ public class SynthPatch
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             var osc = Oscillators[idx];
+            if (!osc.Enabled){
+                continue;
+            }
 //            osc.Amplitude = velocity;
             osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
+            osc.Phase = 0.0f;
         }
     }
 

@@ -20,12 +20,13 @@ shader_parameter/wave_data = null
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
 
-[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "AudioOutputNode")]
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "AudioOutputNode")]
 script = ExtResource("1_ox65v")
 Oscillator1 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator1")
 Oscillator2 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator2")
 Oscillator3 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator3")
 Oscillator4 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator4")
+Oscillator5 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator5")
 AudioOutputNode = NodePath("AudioOutputNode")
 
 [node name="AudioOutputNode" type="AudioStreamPlayer" parent="."]
@@ -107,6 +108,13 @@ layout_mode = 2
 [node name="VSeparator4" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
+[node name="Oscillator5" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" node_paths=PackedStringArray("OscillatorEnabled") instance=ExtResource("3_p4jms")]
+layout_mode = 2
+OscillatorEnabled = NodePath("../Oscillator4/VBoxContainer/CheckBox")
+
+[node name="VSeparator6" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+layout_mode = 2
+
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
 visible = false
 layout_mode = 2
@@ -173,6 +181,7 @@ texture = SubResource("CanvasTexture_n0w22")
 script = ExtResource("6_psdfa")
 AudioController = NodePath("../../../../AudioOutputNode")
 
+[connection signal="item_selected" from="CanvasLayer/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
 [connection signal="item_selected" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/OptionButton" to="AudioOutputNode" method="_on_option_button_item_selected"]
 [connection signal="item_selected" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/OptionButton2" to="AudioOutputNode" method="_on_option_octave_item_selected"]
 [connection signal="AttackTimeChanged" from="CanvasLayer/VBoxContainer/OscillatorsContainer/VBoxContainer/ADSR_Envelope" to="AudioOutputNode" method="_on_adsr_envelope_attack_time_changed"]

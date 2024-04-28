@@ -13,6 +13,8 @@ public partial class PatchEditor : Node2D
 	private Oscillator Oscillator3;
 	[Export]
 	private Oscillator Oscillator4;
+	[Export]
+	private Oscillator Oscillator5;	
 
 	[Export]
 	private AudioOutputNode AudioOutputNode;
@@ -20,7 +22,7 @@ public partial class PatchEditor : Node2D
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		var oscs = new Oscillator[] { Oscillator1, Oscillator2, Oscillator3, Oscillator4 };
+		var oscs = new Oscillator[] { Oscillator1, Oscillator2, Oscillator3, Oscillator4, Oscillator5 };
 		try
 		{
 			Print("Patch Editor Ready");
@@ -65,6 +67,11 @@ public partial class PatchEditor : Node2D
 			default:
 				return WaveTableWaveType.SINE;
 		}
+	}
+
+	private void _on_octave_select_item_selected(int index)
+	{
+		AudioOutputNode.BaseOctave = index;
 	}
 
 	private void ConnectOscillatorSignals(Oscillator osc, int oscNum)

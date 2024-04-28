@@ -8,7 +8,7 @@ public class AudioNode
     public float SampleFrequency = 44100.0f;
     public float Amplitude { get; set; } = 1.0f;
 	public float Frequency {get; set;} = 440.0f;
-	protected float Phase = 0.0f;
+	public float Phase = 0.0f;
 	protected float[] buffer;
 	public int NumSamples;
 	

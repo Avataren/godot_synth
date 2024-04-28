@@ -15,9 +15,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	private float[] buffer_copy;
 	private AudioStreamGeneratorPlayback _playback;
 	private float _sampleHz;
-	// Define nodes for each channel
-	private WaveTableOscillatorNode waveTableNode;
-	private EnvelopeNode envelopeNode;
 	private Thread sound_thread;
 	private bool run_sound_thread = true;
 	private WaveTableBank waveTableBank;
@@ -79,45 +76,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	protected void _on_option_octave_item_selected(int index)
 	{
 		BaseOctave = index;
-	}
-
-	protected void _on_option_button_item_selected(int index, int oscIndex)
-	{
-
-		switch (index)
-		{
-			case 0:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SINE);
-				break;
-			case 1:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.TRIANGLE);
-				break;
-			case 2:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SQUARE);
-				break;
-			case 3:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
-				break;
-			case 4:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.ORGAN);
-				break;
-			case 5:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.ORGAN2);
-				break;
-			case 6:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.BASS);
-				break;
-			case 7:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.VOCAL_AHH);
-				break;
-			case 8:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.FUZZY);
-				break;
-			case 9:
-				waveTableNode.WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.PIANO);
-				break;
-
-		}
 	}
 
 	Godot.Key CurrKey = Key.None;
@@ -241,27 +199,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
-	}
-
-	private void _on_adsr_envelope_attack_time_changed(float attackTime)
-	{
-		envelopeNode.AttackTime = attackTime / 1000.0f;
-		Print ("Setting Attack time to " + envelopeNode.AttackTime);
-	}
-	private void _on_adsr_envelope_decay_time_changed(float decayTime)
-	{
-		envelopeNode.DecayTime = decayTime / 1000.0f;
-		Print ("Setting Decay time to " + envelopeNode.DecayTime);
-	}
-	private void _on_adsr_envelope_release_time_changed(float releaseTime)
-	{
-		envelopeNode.ReleaseTime = releaseTime / 1000.0f;
-		Print ("Setting Release time to " + envelopeNode.ReleaseTime);
-	}
-	private void _on_adsr_envelope_sustain_level_changed(float sustainLevel)
-	{
-		envelopeNode.SustainLevel = sustainLevel;
-		Print ("Setting Sustain level to " + envelopeNode.SustainLevel);
 	}
 
 }

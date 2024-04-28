@@ -79,6 +79,7 @@ public class WaveTableOscillatorNode : AudioNode
 	{
 		this.WaveTableMem = WaveMem;
 		this.Enabled = false;
+		// this.HardSync = false;
 	}
 
 	protected float GetSample(WaveTable currWaveTable)

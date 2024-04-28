@@ -119,6 +119,10 @@ public partial class PatchEditor : Node2D
 			GD.Print("Detune Cents Changed");
 			AudioOutputNode.CurrentPatch.SetDetuneCents(detuneCents, oscNum);
 		};
+		osc.HardSyncToggled += (enabled) =>
+		{
+			AudioOutputNode.CurrentPatch.SetHardSync(enabled, oscNum);
+		};
 
 	}
 

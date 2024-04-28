@@ -22,6 +22,18 @@ public class SynthPatch
         }
         Oscillators[0].Enabled = true;
     }
+    public void SetHardSync(bool enabled, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < Oscillators.Count)
+        {
+            Oscillators[OscillatorIndex].HardSync = enabled;
+            return;
+        }
+        for (int idx = 0; idx < Oscillators.Count; idx++)
+        {
+            Oscillators[idx].HardSync = enabled;
+        }
+    }
 
     public void SetAmplitude(float amplitude, int OscillatorIndex = -1)
     {
@@ -215,7 +227,9 @@ public class SynthPatch
             }
 //            osc.Amplitude = velocity;
             osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
-            osc.Phase = 0.0f;
+            if (osc.HardSync){
+                osc.Phase = 0.0f;
+            }
         }
     }
 

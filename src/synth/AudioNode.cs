@@ -11,6 +11,7 @@ public class AudioNode
 	public float Phase = 0.0f;
 	protected float[] buffer;
 	public int NumSamples;
+	public bool HardSync = false;
 	
 	public AudioNode(int NumSamples){
 		this.NumSamples = NumSamples;

@@ -21,6 +21,10 @@ layout_mode = 2
 layout_mode = 2
 text = "Enabled"
 
+[node name="HardSyncCheckBox" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+text = "Hard Sync"
+
 [node name="HSeparator3" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -95,6 +99,7 @@ text = "Tuning
 layout_mode = 2
 
 [connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]
+[connection signal="toggled" from="VBoxContainer/HardSyncCheckBox" to="." method="_on_hard_sync_check_box_toggled"]
 [connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_item_selected"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HSlider" to="." method="_On_Volume_Changed"]
 [connection signal="AttackTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_attack_time_changed"]

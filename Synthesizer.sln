@@ -1,6 +1,6 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synthesizer", "Synthesizer.csproj", "{779C343B-DC13-46DF-B3EE-D6231E747E9F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synthesizer", "Synthesizer.csproj", "{B8D0D247-DC5E-4FF5-B1C6-BFA57CC3731C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,11 +9,11 @@ Global
 	ExportRelease|Any CPU = ExportRelease|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{779C343B-DC13-46DF-B3EE-D6231E747E9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{779C343B-DC13-46DF-B3EE-D6231E747E9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{779C343B-DC13-46DF-B3EE-D6231E747E9F}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
-		{779C343B-DC13-46DF-B3EE-D6231E747E9F}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
-		{779C343B-DC13-46DF-B3EE-D6231E747E9F}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
-		{779C343B-DC13-46DF-B3EE-D6231E747E9F}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{B8D0D247-DC5E-4FF5-B1C6-BFA57CC3731C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8D0D247-DC5E-4FF5-B1C6-BFA57CC3731C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8D0D247-DC5E-4FF5-B1C6-BFA57CC3731C}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{B8D0D247-DC5E-4FF5-B1C6-BFA57CC3731C}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{B8D0D247-DC5E-4FF5-B1C6-BFA57CC3731C}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{B8D0D247-DC5E-4FF5-B1C6-BFA57CC3731C}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
 	EndGlobalSection
 EndGlobal

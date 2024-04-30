@@ -4,8 +4,8 @@
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
 [ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="3_fpync"]
 [ext_resource type="PackedScene" uid="uid://cbymyl68u2edq" path="res://scenes/oscillator.tscn" id="3_p4jms"]
+[ext_resource type="Texture2D" uid="uid://df7mck8vnomus" path="res://assets/brushedsteel4.jpg" id="4_101k7"]
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="4_lv3dd"]
-[ext_resource type="Texture2D" uid="uid://clcfds6s2ylr6" path="res://assets/Texturelabs_Fabric_194M.jpg" id="4_v57m2"]
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
 
@@ -47,13 +47,14 @@ grow_vertical = 2
 theme = ExtResource("3_fpync")
 
 [node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control"]
+self_modulate = Color(0.43134, 0.43134, 0.43134, 1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("4_v57m2")
+texture = ExtResource("4_101k7")
 stretch_mode = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]

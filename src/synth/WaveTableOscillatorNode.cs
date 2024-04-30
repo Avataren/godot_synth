@@ -66,7 +66,7 @@ public class WaveTableOscillatorNode : AudioNode
 
 	private void UpdateWaveTableFrequency(float freq)
 	{
-		float topFreq = freq / SampleFrequency;
+		float topFreq = freq / SampleFrequency * 3.0f;
 		_currentWaveTable = 0;
 		for (int i = 0; i < _WaveMem.NumWaveTables; i++)
 		{
@@ -77,7 +77,7 @@ public class WaveTableOscillatorNode : AudioNode
 				break;
 			}
 		}
-		GD.Print("Current Wave Table: ", _currentWaveTable);
+		GD.Print("Current Wave Table: ", _currentWaveTable, " out of ",_WaveMem.NumWaveTables, " with note topFreq ", topFreq, " and top frequency ", _WaveMem.GetWaveTable(_currentWaveTable).TopFreq);
 	}
 
 

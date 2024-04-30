@@ -20,8 +20,9 @@ namespace Synth
                 --maxHarmonic;
 
             // Calculate the top frequency for the initial wave table
-            double topFreq = 2.0 / 3.0 / maxHarmonic; // Allowing for some aliasing
+            //double topFreq = 2.0 / 3.0 / maxHarmonic; // Allowing for some aliasing
                                                       // double topFreq = 1.0 / (2.0 * maxHarmonic); // Without aliasing
+            double topFreq = 1.0 / (2.0 * maxHarmonic); // Without aliasing
 
             // Prepare for subsequent tables: double topFreq and remove upper half of harmonics
             double[] ar = new double[numSamples];

@@ -40,7 +40,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				PrintErr(e.StackTrace);
 			}
 
-			_sampleHz = generator.MixRate;
+			_sampleHz = 44100.0f;// generator.MixRate;
 			Play();
 			_playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();
 

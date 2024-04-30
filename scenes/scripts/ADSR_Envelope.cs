@@ -25,12 +25,18 @@ public partial class ADSR_Envelope : VBoxContainer
 
 	private void _on_attack_slider_value_changed(double value)
 	{
-		EmitSignal("AttackTimeChanged", (float)value);
+		var maxVal = (float)GetNode<Slider>("%AttackSlider").MaxValue;
+		var val = (float)value / maxVal;
+		val*=val;
+		EmitSignal("AttackTimeChanged", (float)val*maxVal);
 	}
 
 	private void _on_decay_slider_value_changed(double value)
 	{
-		EmitSignal("DecayTimeChanged", (float)value);
+		var maxVal = (float)GetNode<Slider>("%DecaySlider").MaxValue;
+		var val = (float)value / maxVal;
+		val*=val;
+		EmitSignal("DecayTimeChanged", (float)val*maxVal);
 	}
 
 	private void _on_sustain_slider_value_changed(double value)

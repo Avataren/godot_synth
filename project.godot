@@ -15,10 +15,6 @@ run/main_scene="res://scenes/patch_editor.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
-[audio]
-
-driver/mix_rate=48000
-
 [display]
 
 window/size/viewport_width=1920

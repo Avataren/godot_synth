@@ -45,6 +45,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 theme = ExtResource("3_fpync")
 
 [node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control"]
@@ -156,7 +157,7 @@ text = "Amplitude Envelope
 [node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
 layout_mode = 2
 
-[node name="Knob" parent="CanvasLayer/Control/VBoxContainer" instance=ExtResource("7_0gjwc")]
+[node name="Knob2" parent="CanvasLayer/Control/VBoxContainer" instance=ExtResource("7_0gjwc")]
 layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]

@@ -1,22 +1,26 @@
-[gd_resource type="AudioBusLayout" load_steps=10 format=3 uid="uid://b0d0fnld3vv7g"]
+[gd_resource type="AudioBusLayout" load_steps=12 format=3 uid="uid://b0d0fnld3vv7g"]
 
 [sub_resource type="AudioEffectReverb" id="AudioEffectReverb_1473h"]
 resource_name = "Reverb"
-room_size = 0.36
-damping = 0.66
-spread = 0.55
-dry = 0.6
-wet = 0.29
+predelay_msec = 50.0
+room_size = 0.17
+damping = 0.74
+spread = 0.6
+dry = 0.8
+wet = 0.35
 
 [sub_resource type="AudioEffectFilter" id="AudioEffectFilter_jcl6u"]
 resource_name = "Filter"
 cutoff_hz = 1000.0
 resonance = 0.6
 
+[sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_47n75"]
+resource_name = "LowPassFilter"
+
 [sub_resource type="AudioEffectDistortion" id="AudioEffectDistortion_s0k5i"]
 resource_name = "Distortion"
-mode = 4
-drive = 0.8
+mode = 3
+drive = 0.6
 
 [sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_tlva5"]
 resource_name = "SpectrumAnalyzer"
@@ -40,6 +44,9 @@ tap2_delay_ms = 1000.0
 [sub_resource type="AudioEffectCompressor" id="AudioEffectCompressor_5ytxn"]
 resource_name = "Compressor"
 
+[sub_resource type="AudioEffectSpectrumAnalyzer" id="AudioEffectSpectrumAnalyzer_6ds8j"]
+resource_name = "SpectrumAnalyzer"
+
 [resource]
 bus/1/name = &"New Bus"
 bus/1/solo = false
@@ -48,7 +55,7 @@ bus/1/bypass_fx = false
 bus/1/volume_db = -2.51026
 bus/1/send = &"Master"
 bus/1/effect/0/effect = SubResource("AudioEffectReverb_1473h")
-bus/1/effect/0/enabled = false
+bus/1/effect/0/enabled = true
 bus/1/effect/1/effect = SubResource("AudioEffectFilter_jcl6u")
 bus/1/effect/1/enabled = false
 bus/1/effect/2/effect = SubResource("AudioEffectDistortion_s0k5i")
@@ -65,3 +72,7 @@ bus/1/effect/7/effect = SubResource("AudioEffectDelay_ttipb")
 bus/1/effect/7/enabled = false
 bus/1/effect/8/effect = SubResource("AudioEffectCompressor_5ytxn")
 bus/1/effect/8/enabled = true
+bus/1/effect/9/effect = SubResource("AudioEffectSpectrumAnalyzer_6ds8j")
+bus/1/effect/9/enabled = true
+bus/1/effect/10/effect = SubResource("AudioEffectLowPassFilter_47n75")
+bus/1/effect/10/enabled = true

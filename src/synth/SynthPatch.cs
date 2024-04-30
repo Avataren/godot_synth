@@ -6,7 +6,7 @@ public class SynthPatch
 {
     public const int MaxOscillators = 5;
     const int BufferSize = 1024;
-    const int SampleRate = 44100;
+    float SampleRate = 44100;
     List<WaveTableOscillatorNode> Oscillators = new List<WaveTableOscillatorNode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     EnvelopeNode AmpEnvelope;
@@ -14,6 +14,8 @@ public class SynthPatch
 
     public SynthPatch(WaveTableBank waveTableBank)
     {
+        SampleRate = AudioServer.GetMixRate();
+        GD.Print("Sample Rate: " + SampleRate);
         this.waveTableBank = waveTableBank;
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)

@@ -1,9 +1,11 @@
-[gd_scene load_steps=11 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=13 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
+[ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="3_fpync"]
 [ext_resource type="PackedScene" uid="uid://cbymyl68u2edq" path="res://scenes/oscillator.tscn" id="3_p4jms"]
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="4_lv3dd"]
+[ext_resource type="Texture2D" uid="uid://clcfds6s2ylr6" path="res://assets/Texturelabs_Fabric_194M.jpg" id="4_v57m2"]
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
 
@@ -20,12 +22,12 @@ shader_parameter/wave_data = null
 
 [node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "ADSREnvelope", "AudioOutputNode")]
 script = ExtResource("1_ox65v")
-Oscillator1 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator1")
-Oscillator2 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator2")
-Oscillator3 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator3")
-Oscillator4 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator4")
-Oscillator5 = NodePath("CanvasLayer/VBoxContainer/OscillatorsContainer/Oscillator5")
-ADSREnvelope = NodePath("CanvasLayer/VBoxContainer/VBoxContainer/ADSR_Envelope")
+Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator1")
+Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator2")
+Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator3")
+Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator4")
+Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator5")
+ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
 
 [node name="AudioOutputNode" type="AudioStreamPlayer" parent="."]
@@ -35,24 +37,50 @@ script = ExtResource("2_5you6")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer"]
+[node name="Control" type="Control" parent="CanvasLayer"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("3_fpync")
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_v57m2")
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -532.0
+offset_top = -358.5
+offset_right = 532.0
+offset_bottom = 358.5
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 25
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Base Octave 
 "
 
-[node name="OctaveSelect" type="OptionButton" parent="CanvasLayer/VBoxContainer/HBoxContainer"]
+[node name="OctaveSelect" type="OptionButton" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 button_group = SubResource("ButtonGroup_chx7t")
@@ -75,67 +103,67 @@ popup/item_6/id = 6
 popup/item_7/text = "7"
 popup/item_7/id = 7
 
-[node name="OscillatorsContainer" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+[node name="OscillatorsContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 25
 alignment = 1
 
-[node name="VSeparator5" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+[node name="VSeparator5" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator1" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator1" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+[node name="VSeparator" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator2" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator2" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator2" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+[node name="VSeparator2" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator3" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator3" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator3" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+[node name="VSeparator3" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator4" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator4" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator4" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+[node name="VSeparator4" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator5" parent="CanvasLayer/VBoxContainer/OscillatorsContainer" node_paths=PackedStringArray("OscillatorEnabled") instance=ExtResource("3_p4jms")]
+[node name="Oscillator5" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer" node_paths=PackedStringArray("OscillatorEnabled") instance=ExtResource("3_p4jms")]
 layout_mode = 2
 OscillatorEnabled = NodePath("../Oscillator4/VBoxContainer/CheckBox")
 
-[node name="VSeparator6" type="VSeparator" parent="CanvasLayer/VBoxContainer/OscillatorsContainer"]
+[node name="VSeparator6" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="Label" type="Label" parent="CanvasLayer/VBoxContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer"]
 layout_mode = 2
 text = "Amplitude Envelope
 "
 
-[node name="ADSR_Envelope" parent="CanvasLayer/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
+[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
 layout_mode = 2
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="AudioVisualizer" type="TextureRect" parent="CanvasLayer/VBoxContainer/HBoxContainer2" node_paths=PackedStringArray("AudioController")]
+[node name="AudioVisualizer" type="TextureRect" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" node_paths=PackedStringArray("AudioController")]
 material = SubResource("ShaderMaterial_8k043")
 custom_minimum_size = Vector2(1024, 128)
 layout_mode = 2
 texture = SubResource("CanvasTexture_n0w22")
 script = ExtResource("6_psdfa")
-AudioController = NodePath("../../../../AudioOutputNode")
+AudioController = NodePath("../../../../../AudioOutputNode")
 
-[connection signal="item_selected" from="CanvasLayer/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
+[connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]

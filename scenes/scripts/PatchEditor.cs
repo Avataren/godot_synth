@@ -14,7 +14,9 @@ public partial class PatchEditor : Node2D
 	[Export]
 	private Oscillator Oscillator4;
 	[Export]
-	private Oscillator Oscillator5;	
+	private Oscillator Oscillator5;
+	[Export]
+	private ADSR_Envelope ADSREnvelope;
 
 	[Export]
 	private AudioOutputNode AudioOutputNode;
@@ -31,6 +33,7 @@ public partial class PatchEditor : Node2D
 			{
 				ConnectOscillatorSignals(oscs[i], i);
 			}
+			ConnectAmplitudeEnvelope();
 
 		}
 		catch (Exception e)
@@ -86,7 +89,7 @@ public partial class PatchEditor : Node2D
 		};
 		osc.AttackTimeChanged += (attackTime) =>
 		{
-			AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f, oscNum );
+			AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f, oscNum);
 		};
 		osc.DecayTimeChanged += (decayTime) =>
 		{
@@ -124,6 +127,31 @@ public partial class PatchEditor : Node2D
 			AudioOutputNode.CurrentPatch.SetHardSync(enabled, oscNum);
 		};
 
+		osc.ADSRToggled += (enabled) =>
+		{
+			AudioOutputNode.CurrentPatch.SetADSREnabled(enabled, oscNum);
+		};
+
+	}
+
+	protected void ConnectAmplitudeEnvelope()
+	{
+		ADSREnvelope.AttackTimeChanged += (attackTime) =>
+		{
+			AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f);
+		};
+		ADSREnvelope.DecayTimeChanged += (decayTime) =>
+		{
+			AudioOutputNode.CurrentPatch.SetDecay(decayTime / 1000.0f);
+		};
+		ADSREnvelope.SustainLevelChanged += (sustainLevel) =>
+		{
+			AudioOutputNode.CurrentPatch.SetSustain(sustainLevel);
+		};
+		ADSREnvelope.ReleaseTimeChanged += (releaseTime) =>
+		{
+			AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f);
+		};
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

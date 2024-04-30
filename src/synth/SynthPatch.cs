@@ -9,6 +9,7 @@ public class SynthPatch
     const int SampleRate = 44100;
     List<WaveTableOscillatorNode> Oscillators = new List<WaveTableOscillatorNode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
+    EnvelopeNode AmpEnvelope;
     WaveTableBank waveTableBank;
 
     public SynthPatch(WaveTableBank waveTableBank)
@@ -18,9 +19,41 @@ public class SynthPatch
         for (int idx = 0; idx < MaxOscillators; idx++)
         {
             Oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate, WaveTableRepository.SinOsc()));
-            AmpEnvelopes.Add(new EnvelopeNode(BufferSize));
+            AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
         }
+        AmpEnvelope = new EnvelopeNode(BufferSize);
         Oscillators[0].Enabled = true;
+    }
+    public void SetAttack(float attack)
+    {
+        AmpEnvelope.AttackTime = attack;
+    }
+    public void SetDecay(float decay)
+    {
+        AmpEnvelope.DecayTime = decay;
+    }
+    public void SetSustain(float sustain)
+    {
+        AmpEnvelope.SustainLevel = sustain;
+    }
+    public void SetRelease(float release)
+    {
+        AmpEnvelope.ReleaseTime = release;
+    }
+
+
+    public void SetADSREnabled(bool enabled, int EnvelopeIndex = -1)
+    {
+        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
+        {
+            AmpEnvelopes[EnvelopeIndex].Enabled = enabled;
+            return;
+        }
+
+        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
+        {
+            AmpEnvelopes[idx].Enabled = enabled;
+        }
     }
     public void SetHardSync(bool enabled, int OscillatorIndex = -1)
     {
@@ -42,7 +75,7 @@ public class SynthPatch
             Oscillators[OscillatorIndex].Amplitude = amplitude;
             return;
         }
-        
+
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             Oscillators[idx].Amplitude = amplitude;
@@ -57,7 +90,7 @@ public class SynthPatch
             Oscillators[OscillatorIndex].Enabled = enabled;
             return;
         }
-        
+
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             Oscillators[idx].Enabled = enabled;
@@ -72,7 +105,7 @@ public class SynthPatch
             AmpEnvelopes[EnvelopeIndex].AttackTime = attack;
             return;
         }
-        
+
         for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
             AmpEnvelopes[idx].AttackTime = attack;
@@ -87,7 +120,7 @@ public class SynthPatch
             AmpEnvelopes[EnvelopeIndex].DecayTime = decay;
             return;
         }
-        
+
         for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
             AmpEnvelopes[idx].DecayTime = decay;
@@ -102,7 +135,7 @@ public class SynthPatch
             AmpEnvelopes[EnvelopeIndex].SustainLevel = sustain;
             return;
         }
-        
+
         for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
             AmpEnvelopes[idx].SustainLevel = sustain;
@@ -117,7 +150,7 @@ public class SynthPatch
             AmpEnvelopes[EnvelopeIndex].ReleaseTime = release;
             return;
         }
-        
+
         for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
             AmpEnvelopes[idx].ReleaseTime = release;
@@ -131,7 +164,7 @@ public class SynthPatch
             Oscillators[OscillatorIndex].WaveTableMem = waveTableBank.GetWave(waveType);
             return;
         }
-        
+
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             Oscillators[idx].WaveTableMem = waveTableBank.GetWave(waveType);
@@ -148,7 +181,7 @@ public class SynthPatch
             AmpEnvelopes[EnvelopeIndex].ReleaseTime = release;
             return;
         }
-        
+
         for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
             AmpEnvelopes[idx].AttackTime = attack;
@@ -175,7 +208,7 @@ public class SynthPatch
             Oscillators[OscillatorIndex].DetuneOctaves = detuneOctaves;
             return;
         }
-        
+
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             Oscillators[idx].DetuneOctaves = detuneOctaves;
@@ -189,7 +222,7 @@ public class SynthPatch
             Oscillators[OscillatorIndex].DetuneSemitones = detuneSemi;
             return;
         }
-        
+
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             Oscillators[idx].DetuneSemitones = detuneSemi;
@@ -203,7 +236,7 @@ public class SynthPatch
             Oscillators[OscillatorIndex].DetuneCents = detuneCents;
             return;
         }
-        
+
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             Oscillators[idx].DetuneCents = detuneCents;
@@ -212,6 +245,7 @@ public class SynthPatch
 
     public void NoteOn(int note, float velocity = 1.0f)
     {
+        AmpEnvelope.OpenGate();
         // Start the envelope
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
@@ -222,12 +256,14 @@ public class SynthPatch
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
             var osc = Oscillators[idx];
-            if (!osc.Enabled){
+            if (!osc.Enabled)
+            {
                 continue;
             }
-//            osc.Amplitude = velocity;
+            //            osc.Amplitude = velocity;
             osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
-            if (osc.HardSync){
+            if (osc.HardSync)
+            {
                 osc.Phase = 0.0f;
             }
         }
@@ -235,6 +271,7 @@ public class SynthPatch
 
     public void NoteOff()
     {
+        AmpEnvelope.CloseGate();
         // Stop the envelope
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
@@ -245,41 +282,47 @@ public class SynthPatch
     public void Process(float increment, float[] buffer)
     {
         Array.Clear(buffer, 0, BufferSize);
-        
+        AmpEnvelope.Process(increment);
         // Mix the oscillators
         for (int oscIdx = 0; oscIdx < Oscillators.Count; oscIdx++)
         {
             var osc = Oscillators[oscIdx];
-            if (!osc.Enabled){
+            if (!osc.Enabled)
+            {
                 continue;
             }
             var env = AmpEnvelopes[oscIdx];
 
             osc.Process(increment);
-            env.Process(increment);
-        }
-        
-        for (int oscIdx = 0; oscIdx < Oscillators.Count; oscIdx++)
-        {
-            var osc = Oscillators[oscIdx];
-            if (!osc.Enabled){
-                continue;
-            }            
-            var env = AmpEnvelopes[oscIdx];
-
-            for (int i = 0; i < BufferSize; i++)
+            if (env.Enabled)
             {
-                buffer[i] += osc[i] * env[i];
+                env.Process(increment);
             }
         }
 
-        float maxVal = float.MinValue;
-        float minVal = float.MaxValue;
-        for (int i = 0; i < BufferSize; i++)
+        for (int oscIdx = 0; oscIdx < Oscillators.Count; oscIdx++)
         {
-            maxVal = Math.Max(maxVal, buffer[i]);
-            minVal = Math.Min(minVal, buffer[i]);
+            var osc = Oscillators[oscIdx];
+            if (!osc.Enabled)
+            {
+                continue;
+            }
+            var env = AmpEnvelopes[oscIdx];
+            if (env.Enabled)
+            {
+                for (int i = 0; i < BufferSize; i++)
+                {
+                    buffer[i] += osc[i] * env[i] * AmpEnvelope[i];
+                }
+            }
+            else
+            {
+                for (int i = 0; i < BufferSize; i++)
+                {
+                    buffer[i] += osc[i] * AmpEnvelope[i];
+                }
+            }
         }
-        // GD.Print("Max: " + maxVal + " Min: " + minVal);
+
     }
 }

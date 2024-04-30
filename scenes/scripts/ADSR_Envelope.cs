@@ -12,6 +12,17 @@ public partial class ADSR_Envelope : VBoxContainer
 	[Signal]
 	public delegate void ReleaseTimeChangedEventHandler(float releaseTime);
 
+	public void Enable()
+	{
+		Visible = true;
+		QueueSort();
+	}
+
+	public void Disable()
+	{
+		Visible = false;
+	}
+
 	private void _on_attack_slider_value_changed(double value)
 	{
 		EmitSignal("AttackTimeChanged", (float)value);

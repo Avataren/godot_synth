@@ -66,13 +66,20 @@ public class WaveTableOscillatorNode : AudioNode
 
 	private void UpdateWaveTableFrequency(float freq)
 	{
-		var mPhaseInc = (float)(freq / SampleFrequency);
+		float topFreq = freq / SampleFrequency;
 		_currentWaveTable = 0;
-		while ((mPhaseInc >= _WaveMem.GetWaveTable(_currentWaveTable).TopFreq) && (_currentWaveTable < (_WaveMem.NumWaveTables - 1)))
+		for (int i = 0; i < _WaveMem.NumWaveTables; i++)
 		{
-			++_currentWaveTable;
+			var waveTableTopFreq = _WaveMem.GetWaveTable(i).TopFreq;
+			if (topFreq <= waveTableTopFreq)
+			{
+				_currentWaveTable = i;
+				break;
+			}
 		}
+		GD.Print("Current Wave Table: ", _currentWaveTable);
 	}
+
 
 	int _currentWaveTable = 0;
 	public WaveTableOscillatorNode(int num_samples, float sample_frequency, WaveTableMemory WaveMem) : base(num_samples)

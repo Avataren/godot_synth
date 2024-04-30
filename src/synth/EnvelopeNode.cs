@@ -15,12 +15,13 @@ public class EnvelopeNode : AudioNode
 	private float releaseStartAmplitude = 0.0f;
 	private const float smoothingFactor = 0.05f;  // Smoothing factor is constant
 
-	public EnvelopeNode(int numSamples) : base(numSamples)
+	public EnvelopeNode(int numSamples, bool enabled = true) : base(numSamples)
 	{
 		AttackTime = 0.0f;
 		DecayTime = 0.0f;
 		SustainLevel = 1.0f;
 		ReleaseTime = 0.0f;
+		this.Enabled = enabled;
 	}
 
 	public void OpenGate()
@@ -74,7 +75,7 @@ public class EnvelopeNode : AudioNode
 	{
 		for (int i = 0; i < NumSamples; i++)
 		{
-			buffer[i] = GetEnvelopeValue(timeOffsetSec); 
+			buffer[i] = GetEnvelopeValue(timeOffsetSec);
 			timeOffsetSec += increment;
 		}
 		return this;

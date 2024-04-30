@@ -26,9 +26,16 @@ public partial class Oscillator : Control
 	public delegate void DetuneOctavesChangedEventHandler(float detuneOctaves);
 	[Signal]
 	public delegate void DetuneSemiChangedEventHandler(float detuneSemi);
+
+	[Signal]
+	public delegate void ADSRToggledEventHandler(bool enabled);
+
 	[Signal]
 	public delegate void DetuneCentsChangedEventHandler(float detuneCents);
+	[Export]
+	private ADSR_Envelope ADSREnvelope;
 
+	public bool ADSREnvelopeEnabled { get; set; } = true;
 
 	public void Enable()
 	{
@@ -42,11 +49,33 @@ public partial class Oscillator : Control
 	{
 		return OscillatorEnabled.ButtonPressed;
 	}
+
+	private void _on_adsr_check_box_toggled(bool value)
+	{
+		ADSREnvelopeEnabled = value;
+
+		if (ADSREnvelope != null)
+		{
+			if (ADSREnvelopeEnabled)
+			{
+				ADSREnvelope.Enable();
+			}
+			else
+			{
+				ADSREnvelope.Disable();
+			}
+			EmitSignal("ADSRToggled", ADSREnvelopeEnabled);
+		}
+		else
+		{
+			PrintErr("ADSR_Envelope node not found.");
+		}
+	}
 	private void _On_Volume_Changed(double value)
 	{
 		EmitSignal("VolumeChanged", (float)value);
 	}
-	private void _on_waveform_select_item_selected (int index)
+	private void _on_waveform_select_item_selected(int index)
 	{
 		EmitSignal("WaveformChanged", index);
 	}
@@ -81,12 +110,12 @@ public partial class Oscillator : Control
 	}
 	private void _on_tuning_semi_changed(float value)
 	{
-		Print ("_on_detune_semi_changed");
+		Print("_on_detune_semi_changed");
 		EmitSignal("DetuneSemiChanged", value);
 	}
 	private void _on_tuning_cents_changed(float value)
 	{
-		Print ("_on_detune_cents_changed");
+		Print("_on_detune_cents_changed");
 		EmitSignal("DetuneCentsChanged", value);
 	}
 }

@@ -132,6 +132,11 @@ public partial class PatchEditor : Node2D
 			AudioOutputNode.CurrentPatch.SetADSREnabled(enabled, oscNum);
 		};
 
+		osc.PWMChanged += (pwm) =>
+		{
+			AudioOutputNode.CurrentPatch.SetPWM(pwm, oscNum);
+		};
+
 	}
 
 	protected void ConnectAmplitudeEnvelope()

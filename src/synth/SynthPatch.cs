@@ -43,6 +43,19 @@ public class SynthPatch
         AmpEnvelope.ReleaseTime = release;
     }
 
+    public void SetPWM(float pwm, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < Oscillators.Count)
+        {
+            Oscillators[OscillatorIndex].PWMDutyCycle = pwm;
+            return;
+        }
+
+        for (int idx = 0; idx < Oscillators.Count; idx++)
+        {
+            Oscillators[idx].PWMDutyCycle = pwm;
+        }
+    }
 
     public void SetADSREnabled(bool enabled, int EnvelopeIndex = -1)
     {

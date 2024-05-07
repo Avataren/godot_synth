@@ -7,6 +7,7 @@ public struct WaveTable
 	public double TopFreq;
 	public int WaveTableLen;
 	public float[] WaveTableData;
+
 };
 
 public class WaveTableMemory

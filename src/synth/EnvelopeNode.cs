@@ -71,7 +71,7 @@ public class EnvelopeNode : AudioNode
 		}
 	}
 
-	public override AudioNode Process(float increment)
+	public override AudioNode Process(float increment, LFONode FrequencyLFO = null)
 	{
 		for (int i = 0; i < NumSamples; i++)
 		{

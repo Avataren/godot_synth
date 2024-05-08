@@ -12,6 +12,8 @@ public class SynthPatch
     EnvelopeNode AmpEnvelope;
     WaveTableBank waveTableBank;
 
+    LFONode FrequencyLFO;
+
     public SynthPatch(WaveTableBank waveTableBank)
     {
         SampleRate = AudioServer.GetMixRate();
@@ -25,6 +27,9 @@ public class SynthPatch
         }
         AmpEnvelope = new EnvelopeNode(BufferSize);
         Oscillators[0].Enabled = true;
+
+        FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
+
     }
     public void SetAttack(float attack)
     {
@@ -297,6 +302,7 @@ public class SynthPatch
     public void Process(float increment, float[] buffer)
     {
         Array.Clear(buffer, 0, BufferSize);
+        FrequencyLFO.Process(increment);
         AmpEnvelope.Process(increment);
         // Mix the oscillators
         for (int oscIdx = 0; oscIdx < Oscillators.Count; oscIdx++)
@@ -308,7 +314,7 @@ public class SynthPatch
             }
             var env = AmpEnvelopes[oscIdx];
 
-            osc.Process(increment);
+            osc.Process(increment, FrequencyLFO);
             if (env.Enabled)
             {
                 env.Process(increment);

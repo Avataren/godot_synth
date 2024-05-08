@@ -265,14 +265,14 @@ public class WaveTableOscillatorNode : AudioNode
 	// }
 
 
-	public override AudioNode Process(float increment)
+	public override AudioNode Process(float increment, LFONode FrequencyLFO)
 	{
 		var freq = Frequency;
 		var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 		for (int i = 0; i < NumSamples; i++)
 		{
 			buffer[i] = GetSample(currWaveTable) * Amplitude;
-			Phase += increment * freq;
+			Phase += increment * (freq + FrequencyLFO[i]);
 			Phase = Mathf.PosMod(Phase, 1.0f);
 		}
 		return this;

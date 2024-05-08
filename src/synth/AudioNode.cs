@@ -25,7 +25,7 @@ public class AudioNode
 		return this.buffer;
 	}
 
-	public virtual AudioNode Process(float increment)
+	public virtual AudioNode Process(float increment, LFONode LFO = null)
 	{
 		return this;
 	}
@@ -57,7 +57,7 @@ public class MonoSineWaveNode : AudioNode
 
 	}
 
-	public override AudioNode Process(float increment)
+	public override AudioNode Process(float increment, LFONode LFO = null)
 	{
 		for (int i = 0; i < NumSamples; i++)
 		{

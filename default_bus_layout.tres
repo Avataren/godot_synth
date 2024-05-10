@@ -75,4 +75,4 @@ bus/1/effect/8/enabled = true
 bus/1/effect/9/effect = SubResource("AudioEffectSpectrumAnalyzer_6ds8j")
 bus/1/effect/9/enabled = true
 bus/1/effect/10/effect = SubResource("AudioEffectLowPassFilter_47n75")
-bus/1/effect/10/enabled = true
+bus/1/effect/10/enabled = false

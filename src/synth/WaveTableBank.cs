@@ -15,6 +15,7 @@ namespace Synth
 		PIANO,
 		BASS,
 		VOCAL_AHH,
+		PWM,
 		CUSTOM,
 		_WavetableWaveCount
 	};

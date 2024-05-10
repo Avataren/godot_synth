@@ -181,13 +181,35 @@ public class SynthPatch
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < Oscillators.Count)
         {
-            Oscillators[OscillatorIndex].WaveTableMem = waveTableBank.GetWave(waveType);
+            if (waveType == WaveTableWaveType.PWM)
+            {
+                Oscillators[OscillatorIndex].Is_PWM = true;
+                Oscillators[OscillatorIndex].WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+                Oscillators[OscillatorIndex].UpdateSampleFunction();
+            }
+            else
+            {
+                Oscillators[OscillatorIndex].Is_PWM = false;
+                Oscillators[OscillatorIndex].WaveTableMem = waveTableBank.GetWave(waveType);
+                Oscillators[OscillatorIndex].UpdateSampleFunction();
+            }
             return;
         }
 
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
-            Oscillators[idx].WaveTableMem = waveTableBank.GetWave(waveType);
+            if (waveType == WaveTableWaveType.PWM)
+            {
+                Oscillators[idx].Is_PWM = true;
+                Oscillators[idx].WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+                Oscillators[idx].UpdateSampleFunction();
+            }
+            else
+            {
+                Oscillators[idx].Is_PWM = false;
+                Oscillators[idx].WaveTableMem = waveTableBank.GetWave(waveType);
+                Oscillators[idx].UpdateSampleFunction();
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cbymyl68u2edq"]
 
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="1_rr1vg"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="1_rr1vg"]
 [ext_resource type="Script" path="res://scenes/scripts/Oscillator.cs" id="1_tg6q3"]
 [ext_resource type="PackedScene" uid="uid://d2107ijw5cg87" path="res://scenes/tuning.tscn" id="3_baww2"]
 
@@ -48,7 +48,7 @@ text = "Waveform
 [node name="WaveformSelect" type="OptionButton" parent="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer"]
 layout_mode = 2
 selected = 0
-item_count = 10
+item_count = 11
 popup/item_0/text = "Sine"
 popup/item_0/id = 1
 popup/item_1/text = "Triangle"
@@ -56,6 +56,7 @@ popup/item_1/id = 3
 popup/item_2/text = "Square"
 popup/item_2/id = 2
 popup/item_3/text = "Saw"
+popup/item_3/id = 3
 popup/item_4/text = "Organ"
 popup/item_4/id = 4
 popup/item_5/text = "Organ2"
@@ -68,6 +69,8 @@ popup/item_8/text = "Fuzzy"
 popup/item_8/id = 8
 popup/item_9/text = "Piano"
 popup/item_9/id = 9
+popup/item_10/text = "PWM"
+popup/item_10/id = 10
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2

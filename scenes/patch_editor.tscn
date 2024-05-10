@@ -5,7 +5,7 @@
 [ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="3_fpync"]
 [ext_resource type="PackedScene" uid="uid://cbymyl68u2edq" path="res://scenes/oscillator.tscn" id="3_p4jms"]
 [ext_resource type="Texture2D" uid="uid://df7mck8vnomus" path="res://assets/brushedsteel4.jpg" id="4_101k7"]
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="4_lv3dd"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="4_lv3dd"]
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="7_0gjwc"]
@@ -30,6 +30,7 @@ Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/O
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator5")
 ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
+metadata/_edit_vertical_guides_ = [-573.0]
 
 [node name="AudioOutputNode" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamGenerator_whm0j")
@@ -158,15 +159,15 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 4
 
+[node name="Knob" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer" instance=ExtResource("7_0gjwc")]
+layout_mode = 2
+
 [node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer"]
 layout_mode = 2
 text = "Amplitude Envelope
 "
 
 [node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
-layout_mode = 2
-
-[node name="Knob2" parent="CanvasLayer/Control/VBoxContainer" instance=ExtResource("7_0gjwc")]
 layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]

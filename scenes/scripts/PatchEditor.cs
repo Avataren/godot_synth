@@ -67,6 +67,8 @@ public partial class PatchEditor : Node2D
 				return WaveTableWaveType.FUZZY;
 			case 9:
 				return WaveTableWaveType.PIANO;
+			case 10:
+				return WaveTableWaveType.PWM;				
 			default:
 				return WaveTableWaveType.SINE;
 		}

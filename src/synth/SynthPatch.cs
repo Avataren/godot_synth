@@ -294,6 +294,8 @@ public class SynthPatch
             AmpEnvelopes[idx].OpenGate();
         }
 
+        FrequencyLFO.OpenGate();
+
         // Set the frequency of the oscillators
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {
@@ -313,6 +315,7 @@ public class SynthPatch
 
     public void NoteOff()
     {
+        FrequencyLFO.CloseGate();
         AmpEnvelope.CloseGate();
         // Stop the envelope
         for (int idx = 0; idx < Oscillators.Count; idx++)

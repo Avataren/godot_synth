@@ -12,11 +12,14 @@ public class LFONode : AudioNode
 
     private float phase;
     public LFOWaveform CurrentWaveform { get; set; }
+    public EnvelopeNode ADSR { get; set; }
     public bool UseAbsoluteValue { get; set; }
 
     public LFONode(int numSamples, float frequency, float amplitude, LFOWaveform waveform = LFOWaveform.Sine, bool useAbsoluteValue = false)
         : base(numSamples)
     {
+        ADSR = new EnvelopeNode(numSamples, true);
+        ADSR.AttackTime = 0.5f;
         Frequency = frequency;
         Amplitude = amplitude;
         CurrentWaveform = waveform;
@@ -45,8 +48,6 @@ public class LFONode : AudioNode
                 break;
         }
 
-        sample *= Amplitude;
-
         if (UseAbsoluteValue)
         {
             sample = Math.Abs(sample);
@@ -59,11 +60,22 @@ public class LFONode : AudioNode
         return sample;
     }
 
+	public override void OpenGate()
+	{
+        ADSR.OpenGate();
+	}
+
+	public override void CloseGate()
+    {
+        ADSR.CloseGate();
+    }
+
     public override AudioNode Process(float increment, LFONode LFO = null)
     {
+        ADSR.Process(increment);
         for (int i = 0; i < NumSamples; i++)
         {
-            buffer[i] = GetNextSample(increment);
+            buffer[i] = GetNextSample(increment) * ADSR[i] * Amplitude;
         }
         return this;
     }

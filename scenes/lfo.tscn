@@ -1,0 +1,82 @@
+[gd_scene load_steps=4 format=3 uid="uid://chrddluikt6ro"]
+
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_7ovjp"]
+[ext_resource type="Script" path="res://scenes/scripts/lfo.gd" id="1_k6fmy"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="2_w58r0"]
+
+[node name="LFO" type="Control"]
+custom_minimum_size = Vector2(240, 360)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_k6fmy")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "LFO"
+horizontal_alignment = 1
+
+[node name="AbsCheckButton" type="CheckButton" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Absolute"
+
+[node name="TargetOptions" type="OptionButton" parent="VBoxContainer"]
+layout_mode = 2
+selected = 0
+item_count = 1
+popup/item_0/text = "Frequency"
+
+[node name="WaveformOptions" type="OptionButton" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 1
+item_count = 4
+popup/item_0/text = "Sine"
+popup/item_1/text = "Triangle"
+popup/item_1/id = 1
+popup/item_2/text = "Saw"
+popup/item_2/id = 2
+popup/item_3/text = "Square"
+popup/item_3/id = 3
+
+[node name="ADSR_Envelope" parent="VBoxContainer" instance=ExtResource("2_w58r0")]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="FreqKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 100.0
+step = 0.5
+title = "Frequency"
+
+[node name="GainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
+unique_name_in_owner = true
+layout_mode = 2
+title = "Gain"
+
+[node name="BiasKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -2.0
+max_value = 2.0
+title = "Bias"

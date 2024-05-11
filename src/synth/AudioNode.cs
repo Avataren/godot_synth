@@ -45,6 +45,9 @@ public class AudioNode
 		return this;
 	}
 
+	virtual public void OpenGate(){}
+	virtual public void CloseGate(){}
+
 }
 
 public class MonoSineWaveNode : AudioNode

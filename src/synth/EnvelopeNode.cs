@@ -24,13 +24,13 @@ public class EnvelopeNode : AudioNode
 		this.Enabled = enabled;
 	}
 
-	public void OpenGate()
+	public override void OpenGate()
 	{
 		gateOpen = true;
 		timeOffsetSec = 0.0f;
 	}
 
-	public void CloseGate()
+	public override void CloseGate()
 	{
 		timeOffsetSec = 0.0f;
 		releaseStartAmplitude = currentAmplitude;

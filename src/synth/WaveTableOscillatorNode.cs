@@ -20,8 +20,8 @@ public class WaveTableOscillatorNode : AudioNode
 		get => _PWMDutyCycle;
 		set
 		{
-			if (value <= 0.0f) value = 0.0001f;
-			if (value >= 1.0f) value = 0.9999f;
+			if (value <= 0.0f) value = 0.001f;
+			if (value >= 1.0f) value = 0.999f;
 			_PWMDutyCycle = value;
 		}
 	}

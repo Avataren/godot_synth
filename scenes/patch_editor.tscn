@@ -7,8 +7,8 @@
 [ext_resource type="Texture2D" uid="uid://df7mck8vnomus" path="res://assets/brushedsteel4.jpg" id="4_101k7"]
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="4_lv3dd"]
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
+[ext_resource type="PackedScene" uid="uid://chrddluikt6ro" path="res://scenes/lfo.tscn" id="6_4sevq"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
-[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="7_0gjwc"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.03
@@ -155,12 +155,27 @@ ADSREnvelope = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope
 [node name="VSeparator6" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
+[node name="HBoxContainer_LFOs" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+custom_minimum_size = Vector2(0, 356)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 25
+
+[node name="LFO" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+
+[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+
+[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+
+[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-
-[node name="Knob" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer" instance=ExtResource("7_0gjwc")]
-layout_mode = 2
 
 [node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer"]
 layout_mode = 2

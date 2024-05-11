@@ -62,22 +62,16 @@ stretch_mode = 5
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -532.0
-offset_top = -358.5
-offset_right = 532.0
-offset_bottom = 358.5
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 1145.0
 grow_horizontal = 2
-grow_vertical = 2
 theme_override_constants/separation = 25
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_constants/separation = 25
 
 [node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
 layout_mode = 2
@@ -106,6 +100,14 @@ popup/item_6/text = "6"
 popup/item_6/id = 6
 popup/item_7/text = "7"
 popup/item_7/id = 7
+
+[node name="AudioVisualizer" type="TextureRect" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer" node_paths=PackedStringArray("AudioController")]
+material = SubResource("ShaderMaterial_8k043")
+custom_minimum_size = Vector2(256, 64)
+layout_mode = 2
+texture = SubResource("CanvasTexture_n0w22")
+script = ExtResource("6_psdfa")
+AudioController = NodePath("../../../../../AudioOutputNode")
 
 [node name="OscillatorsContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
@@ -155,22 +157,22 @@ ADSREnvelope = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope
 [node name="VSeparator6" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="HBoxContainer_LFOs" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
-custom_minimum_size = Vector2(0, 356)
+[node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 25
 
-[node name="LFO" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
-[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
-[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
-[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer_LFOs" instance=ExtResource("6_4sevq")]
+[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
@@ -184,17 +186,5 @@ text = "Amplitude Envelope
 
 [node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
 layout_mode = 2
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="AudioVisualizer" type="TextureRect" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" node_paths=PackedStringArray("AudioController")]
-material = SubResource("ShaderMaterial_8k043")
-custom_minimum_size = Vector2(1024, 128)
-layout_mode = 2
-texture = SubResource("CanvasTexture_n0w22")
-script = ExtResource("6_psdfa")
-AudioController = NodePath("../../../../../AudioOutputNode")
 
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]

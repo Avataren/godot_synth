@@ -1,5 +1,6 @@
 using static Godot.GD;
 using Godot;
+using System.Collections.Generic;
 using System;
 using Synth;
 
@@ -21,9 +22,12 @@ public partial class PatchEditor : Node2D
 	[Export]
 	private AudioOutputNode AudioOutputNode;
 
+	private Control lfoContainer;
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		lfoContainer = GetNode<Control>("%LFOContainer");
+		ConnectToLFOSignals();
 		var oscs = new Oscillator[] { Oscillator1, Oscillator2, Oscillator3, Oscillator4, Oscillator5 };
 		try
 		{
@@ -34,12 +38,27 @@ public partial class PatchEditor : Node2D
 				ConnectOscillatorSignals(oscs[i], i);
 			}
 			ConnectAmplitudeEnvelope();
-
 		}
 		catch (Exception e)
 		{
 			PrintErr(e.Message);
 			PrintErr(e.StackTrace);
+		}
+	}
+
+	private void ConnectToLFOSignals()
+	{
+		Print("Connecting to LFO Signals:", lfoContainer);
+		foreach (Node lfoNode in lfoContainer.GetChildren())
+		{
+			if (lfoNode.HasMeta("isLFO") && (bool)lfoNode.GetMeta("isLFO"))
+			{
+				Print("LFO Node Found:", lfoNode.Name);
+			}
+			else
+			{
+				Print("Node is not an LFO_UI:", lfoNode.GetClass());
+			}
 		}
 	}
 
@@ -68,7 +87,7 @@ public partial class PatchEditor : Node2D
 			case 9:
 				return WaveTableWaveType.PIANO;
 			case 10:
-				return WaveTableWaveType.PWM;				
+				return WaveTableWaveType.PWM;
 			default:
 				return WaveTableWaveType.SINE;
 		}

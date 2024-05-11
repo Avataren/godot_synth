@@ -63,7 +63,7 @@ public class WaveTableOscillatorNode : AudioNode
 
     public void UpdateSampleFunction()
     {
-        GetSampleFunc = Is_PWM ? (WaveTableFunction)GetSample_PWM : GetSample;
+        GetSampleFunc = Is_PWM ? (WaveTableFunction)GetSample_PWM : GetSample_GenericPWM;
     }	
 
 	private volatile WaveTableMemory _WaveMem;
@@ -112,34 +112,34 @@ public class WaveTableOscillatorNode : AudioNode
 		UpdateSampleFunction();
 	}
 
-	// protected float GetSample(WaveTable currWaveTable)
-	// {
-	// 	float position;
-	// 	float length = currWaveTable.WaveTableData.Length;
-	// 	float normalizationFactor;
+	protected float GetSample_GenericPWM(WaveTable currWaveTable)
+	{
+		float position;
+		float length = currWaveTable.WaveTableData.Length;
+		float normalizationFactor;
 
-	// 	if (Phase < PWMDutyCycle)
-	// 	{
-	// 		// For the "on" phase
-	// 		position = Phase / PWMDutyCycle * length / 2;
-	// 		normalizationFactor = 1.0f / PWMDutyCycle;
-	// 	}
-	// 	else
-	// 	{
-	// 		// For the "off" phase
-	// 		position = ((Phase - PWMDutyCycle) / (1 - PWMDutyCycle) * length / 2) + length / 2;
-	// 		normalizationFactor = 1.0f / (1 - PWMDutyCycle);
-	// 	}
+		if (Phase < PWMDutyCycle)
+		{
+			// For the "on" phase
+			position = Phase / PWMDutyCycle * length / 2;
+			normalizationFactor = 1.0f / PWMDutyCycle;
+		}
+		else
+		{
+			// For the "off" phase
+			position = ((Phase - PWMDutyCycle) / (1 - PWMDutyCycle) * length / 2) + length / 2;
+			normalizationFactor = 1.0f / (1 - PWMDutyCycle);
+		}
 
-	// 	int intPart = (int)position % (int)length;
-	// 	float fracPart = position - intPart;
+		int intPart = (int)position % (int)length;
+		float fracPart = position - intPart;
 
-	// 	// Linear interpolation
-	// 	float sample0 = currWaveTable.WaveTableData[intPart];
-	// 	float sample1 = currWaveTable.WaveTableData[(intPart + 1) % (int)length];
+		// Linear interpolation
+		float sample0 = currWaveTable.WaveTableData[intPart];
+		float sample1 = currWaveTable.WaveTableData[(intPart + 1) % (int)length];
 
-	// 	return (sample0 + (sample1 - sample0) * fracPart) * normalizationFactor * 0.5f;
-	// }
+		return (sample0 + (sample1 - sample0) * fracPart) * normalizationFactor * 0.5f;
+	}
 
 	//saw subtraction
 	protected float GetSample_PWM(WaveTable currWaveTable)

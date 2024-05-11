@@ -51,25 +51,51 @@ public class EnvelopeNode : AudioNode
 		{
 			if (elapsedTimeSec < AttackTime)
 			{
-				return elapsedTimeSec / AttackTime;
+				return elapsedTimeSec / AttackTime;  // Attack phase
 			}
 			else if (elapsedTimeSec < AttackTime + DecayTime)
 			{
-				return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);
+				return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);  // Decay phase
 			}
 			else
 			{
-				return SustainLevel;
+				return SustainLevel;  // Sustain phase
 			}
 		}
 		else
 		{
 			if (elapsedTimeSec < ReleaseTime)
-				return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);
+				return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);  // Release phase starting from releaseStartAmplitude
 			else
-				return 0.0f;
+				return 0.0f;  // After release completes
 		}
 	}
+
+	// private float CalculateTargetAmplitude(float elapsedTimeSec)
+	// {
+	// 	if (gateOpen)
+	// 	{
+	// 		if (elapsedTimeSec < AttackTime)
+	// 		{
+	// 			return elapsedTimeSec / AttackTime;
+	// 		}
+	// 		else if (elapsedTimeSec < AttackTime + DecayTime)
+	// 		{
+	// 			return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);
+	// 		}
+	// 		else
+	// 		{
+	// 			return SustainLevel;
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		if (elapsedTimeSec < ReleaseTime)
+	// 			return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);
+	// 		else
+	// 			return 0.0f;
+	// 	}
+	// }
 
 	public override AudioNode Process(float increment, LFONode FrequencyLFO = null)
 	{

@@ -11,11 +11,12 @@ public class SynthPatch
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     EnvelopeNode AmpEnvelope;
     WaveTableBank waveTableBank;
-
+    LFOManager LFO_Manager;
     LFONode FrequencyLFO;
 
     public SynthPatch(WaveTableBank waveTableBank)
     {
+        LFO_Manager = new LFOManager();
         SampleRate = AudioServer.GetMixRate();
         GD.Print("Sample Rate: " + SampleRate);
         this.waveTableBank = waveTableBank;

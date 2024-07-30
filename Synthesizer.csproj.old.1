@@ -1,14 +1,14 @@
-<Project Sdk="Godot.NET.Sdk/4.3.0-rc.1">
+<Project Sdk="Godot.NET.Sdk/4.3.0-dev.6">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net7.0</TargetFramework>
     <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'ios' ">net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <PublishAot>true</PublishAot>
+	<PublishAot>true</PublishAot>
   </PropertyGroup>
   <ItemGroup>
     <!-- Root the assemblies to avoid trimming. -->
     <TrimmerRootAssembly Include="GodotSharp" />
     <TrimmerRootAssembly Include="$(TargetName)" />
-  </ItemGroup>
+  </ItemGroup>  
 </Project>

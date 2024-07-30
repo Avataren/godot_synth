@@ -1,110 +1,113 @@
 using Godot;
 using System;
 
-public class EnvelopeNode : AudioNode
+namespace Synth
 {
-	private float timeOffsetSec = 0;
-	private bool gateOpen = false;
-
-	public float AttackTime { get; set; }
-	public float DecayTime { get; set; }
-	public float SustainLevel { get; set; }
-	public float ReleaseTime { get; set; }
-
-	private float currentAmplitude = 0.0f;
-	private float releaseStartAmplitude = 0.0f;
-	private const float smoothingFactor = 0.05f;  // Smoothing factor is constant
-
-	public EnvelopeNode(int numSamples, bool enabled = true) : base(numSamples)
+	public class EnvelopeNode : AudioNode
 	{
-		AttackTime = 0.0f;
-		DecayTime = 0.0f;
-		SustainLevel = 1.0f;
-		ReleaseTime = 0.0f;
-		this.Enabled = enabled;
-	}
+		private float timeOffsetSec = 0;
+		private bool gateOpen = false;
 
-	public override void OpenGate()
-	{
-		gateOpen = true;
-		timeOffsetSec = 0.0f;
-	}
+		public float AttackTime { get; set; }
+		public float DecayTime { get; set; }
+		public float SustainLevel { get; set; }
+		public float ReleaseTime { get; set; }
 
-	public override void CloseGate()
-	{
-		timeOffsetSec = 0.0f;
-		releaseStartAmplitude = currentAmplitude;
-		gateOpen = false;
-	}
+		private float currentAmplitude = 0.0f;
+		private float releaseStartAmplitude = 0.0f;
+		private const float smoothingFactor = 0.05f;  // Smoothing factor is constant
 
-	public float GetEnvelopeValue(float elapsedTimeSec)
-	{
-		float targetAmplitude = CalculateTargetAmplitude(elapsedTimeSec);
-		// Smooth transition to avoid clicks
-		currentAmplitude += (targetAmplitude - currentAmplitude) * smoothingFactor;
-		return currentAmplitude;
-	}
-
-	private float CalculateTargetAmplitude(float elapsedTimeSec)
-	{
-		if (gateOpen)
+		public EnvelopeNode(ModulationManager ModulationMgr, int numSamples, bool enabled = true) : base(ModulationMgr, numSamples)
 		{
-			if (elapsedTimeSec < AttackTime)
+			AttackTime = 0.0f;
+			DecayTime = 0.0f;
+			SustainLevel = 1.0f;
+			ReleaseTime = 0.0f;
+			this.Enabled = enabled;
+		}
+
+		public override void OpenGate()
+		{
+			gateOpen = true;
+			timeOffsetSec = 0.0f;
+		}
+
+		public override void CloseGate()
+		{
+			timeOffsetSec = 0.0f;
+			releaseStartAmplitude = currentAmplitude;
+			gateOpen = false;
+		}
+
+		public float GetEnvelopeValue(float elapsedTimeSec)
+		{
+			float targetAmplitude = CalculateTargetAmplitude(elapsedTimeSec);
+			// Smooth transition to avoid clicks
+			currentAmplitude += (targetAmplitude - currentAmplitude) * smoothingFactor;
+			return currentAmplitude;
+		}
+
+		private float CalculateTargetAmplitude(float elapsedTimeSec)
+		{
+			if (gateOpen)
 			{
-				return elapsedTimeSec / AttackTime;  // Attack phase
-			}
-			else if (elapsedTimeSec < AttackTime + DecayTime)
-			{
-				return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);  // Decay phase
+				if (elapsedTimeSec < AttackTime)
+				{
+					return elapsedTimeSec / AttackTime;  // Attack phase
+				}
+				else if (elapsedTimeSec < AttackTime + DecayTime)
+				{
+					return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);  // Decay phase
+				}
+				else
+				{
+					return SustainLevel;  // Sustain phase
+				}
 			}
 			else
 			{
-				return SustainLevel;  // Sustain phase
+				if (elapsedTimeSec < ReleaseTime)
+					return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);  // Release phase starting from releaseStartAmplitude
+				else
+					return 0.0f;  // After release completes
 			}
 		}
-		else
+
+		// private float CalculateTargetAmplitude(float elapsedTimeSec)
+		// {
+		// 	if (gateOpen)
+		// 	{
+		// 		if (elapsedTimeSec < AttackTime)
+		// 		{
+		// 			return elapsedTimeSec / AttackTime;
+		// 		}
+		// 		else if (elapsedTimeSec < AttackTime + DecayTime)
+		// 		{
+		// 			return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);
+		// 		}
+		// 		else
+		// 		{
+		// 			return SustainLevel;
+		// 		}
+		// 	}
+		// 	else
+		// 	{
+		// 		if (elapsedTimeSec < ReleaseTime)
+		// 			return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);
+		// 		else
+		// 			return 0.0f;
+		// 	}
+		// }
+
+		public override AudioNode Process(float increment, LFOManager LFO_Manager = null)
 		{
-			if (elapsedTimeSec < ReleaseTime)
-				return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);  // Release phase starting from releaseStartAmplitude
-			else
-				return 0.0f;  // After release completes
+			for (int i = 0; i < NumSamples; i++)
+			{
+				buffer[i] = GetEnvelopeValue(timeOffsetSec);
+				timeOffsetSec += increment;
+			}
+			return this;
 		}
+
 	}
-
-	// private float CalculateTargetAmplitude(float elapsedTimeSec)
-	// {
-	// 	if (gateOpen)
-	// 	{
-	// 		if (elapsedTimeSec < AttackTime)
-	// 		{
-	// 			return elapsedTimeSec / AttackTime;
-	// 		}
-	// 		else if (elapsedTimeSec < AttackTime + DecayTime)
-	// 		{
-	// 			return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);
-	// 		}
-	// 		else
-	// 		{
-	// 			return SustainLevel;
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		if (elapsedTimeSec < ReleaseTime)
-	// 			return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);
-	// 		else
-	// 			return 0.0f;
-	// 	}
-	// }
-
-	public override AudioNode Process(float increment, LFONode FrequencyLFO = null)
-	{
-		for (int i = 0; i < NumSamples; i++)
-		{
-			buffer[i] = GetEnvelopeValue(timeOffsetSec);
-			timeOffsetSec += increment;
-		}
-		return this;
-	}
-
 }

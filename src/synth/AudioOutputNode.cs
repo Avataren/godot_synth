@@ -175,7 +175,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			}
 			else
 			{
-				int SleepTime = (int)(num_samples * 0.5 / _sampleHz * 1000);
+				int SleepTime = (int)(num_samples * 0.25 / _sampleHz * 1000);
 				Thread.Sleep(SleepTime);
 			}
 		}

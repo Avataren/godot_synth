@@ -13,7 +13,7 @@ public class SynthPatch
     WaveTableBank waveTableBank;
     LFOManager LFO_Manager;
     LFONode FrequencyLFO;
-
+    ModulationManager ModulationMgr = new ModulationManager();
     public SynthPatch(WaveTableBank waveTableBank)
     {
         LFO_Manager = new LFOManager();
@@ -23,13 +23,13 @@ public class SynthPatch
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)
         {
-            Oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate, WaveTableRepository.SinOsc()));
-            AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
+            Oscillators.Add(new WaveTableOscillatorNode(ModulationMgr, BufferSize, SampleRate, WaveTableRepository.SinOsc()));
+            AmpEnvelopes.Add(new EnvelopeNode(ModulationMgr, BufferSize, false));
         }
-        AmpEnvelope = new EnvelopeNode(BufferSize);
+        AmpEnvelope = new EnvelopeNode(ModulationMgr, BufferSize);
         Oscillators[0].Enabled = true;
 
-        FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
+        FrequencyLFO = new LFONode(ModulationMgr, BufferSize, 4.0f, 5.0f);
 
     }
     public void SetAttack(float attack)
@@ -295,7 +295,7 @@ public class SynthPatch
             AmpEnvelopes[idx].OpenGate();
         }
 
-        FrequencyLFO.OpenGate();
+        LFO_Manager.OpenGate();
 
         // Set the frequency of the oscillators
         for (int idx = 0; idx < Oscillators.Count; idx++)
@@ -316,7 +316,7 @@ public class SynthPatch
 
     public void NoteOff()
     {
-        FrequencyLFO.CloseGate();
+        LFO_Manager.CloseGate();
         AmpEnvelope.CloseGate();
         // Stop the envelope
         for (int idx = 0; idx < Oscillators.Count; idx++)
@@ -328,7 +328,7 @@ public class SynthPatch
     public void Process(float increment, float[] buffer)
     {
         Array.Clear(buffer, 0, BufferSize);
-        FrequencyLFO.Process(increment);
+        LFO_Manager.Process(increment);
         AmpEnvelope.Process(increment);
         // Mix the oscillators
         for (int oscIdx = 0; oscIdx < Oscillators.Count; oscIdx++)
@@ -340,7 +340,7 @@ public class SynthPatch
             }
             var env = AmpEnvelopes[oscIdx];
 
-            osc.Process(increment, FrequencyLFO);
+            osc.Process(increment, LFO_Manager);
             if (env.Enabled)
             {
                 env.Process(increment);

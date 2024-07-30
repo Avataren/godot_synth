@@ -2,200 +2,217 @@ using System;
 using System.Threading;
 using Godot;
 
-public class WaveTableOscillatorNode : AudioNode
+namespace Synth
 {
-	private ReaderWriterLockSlim lockSlim = new ReaderWriterLockSlim();
-	public float _Frequency = 440.0f;
-	public float DetuneCents = 0.0f;
-	public float DetuneSemitones = 0.0f;
-	public float DetuneOctaves = 0.0f;
-	public bool Is_PWM {get; set;} = false;
-
-    public delegate float WaveTableFunction(WaveTable waveTable);
-    public WaveTableFunction GetSampleFunc;
-
-	private float _PWMDutyCycle = 0.5f; // 50% duty cycle by default
-	public float PWMDutyCycle
+	public class WaveTableOscillatorNode : AudioNode
 	{
-		get => _PWMDutyCycle;
-		set
-		{
-			if (value <= 0.0f) value = 0.001f;
-			if (value >= 1.0f) value = 0.999f;
-			_PWMDutyCycle = value;
-		}
-	}
+		private ReaderWriterLockSlim lockSlim = new ReaderWriterLockSlim();
+		public float _Frequency = 440.0f;
+		public float DetuneCents = 0.0f;
+		public float DetuneSemitones = 0.0f;
+		public float DetuneOctaves = 0.0f;
+		public bool Is_PWM { get; set; } = false;
 
+		public delegate float WaveTableFunction(WaveTable waveTable);
+		public WaveTableFunction GetSampleFunc;
 
-	public new float Frequency
-	{
-		get
+		private float _PWMDutyCycle = 0.5f; // 50% duty cycle by default
+		public float PWMDutyCycle
 		{
-			lockSlim.EnterReadLock();
-			try
+			get => _PWMDutyCycle;
+			set
 			{
-				return _Frequency;
-			}
-			finally
-			{
-				lockSlim.ExitReadLock();
+				if (value <= 0.0f) value = 0.001f;
+				if (value >= 1.0f) value = 0.999f;
+				_PWMDutyCycle = value;
 			}
 		}
-		set
-		{
-			lockSlim.EnterWriteLock();
-			try
-			{
-				float detuneFactor =
-					(float)Math.Pow(2, DetuneCents / 1200.0f) *
-					(float)Math.Pow(2, DetuneSemitones / 12.0f) *
-					(float)Math.Pow(2, DetuneOctaves);
 
-				_Frequency = value * detuneFactor;
+
+		public new float Frequency
+		{
+			get
+			{
+				lockSlim.EnterReadLock();
+				try
+				{
+					return _Frequency;
+				}
+				finally
+				{
+					lockSlim.ExitReadLock();
+				}
+			}
+			set
+			{
+				lockSlim.EnterWriteLock();
+				try
+				{
+					float detuneFactor =
+						(float)Math.Pow(2, DetuneCents / 1200.0f) *
+						(float)Math.Pow(2, DetuneSemitones / 12.0f) *
+						(float)Math.Pow(2, DetuneOctaves);
+
+					_Frequency = value * detuneFactor;
+					UpdateWaveTableFrequency(_Frequency);
+				}
+				finally
+				{
+					lockSlim.ExitWriteLock();
+				}
+			}
+		}
+
+		public void UpdateSampleFunction()
+		{
+			GetSampleFunc = Is_PWM ? (WaveTableFunction)GetSample_PWM : GetSample;
+		}
+
+		private volatile WaveTableMemory _WaveMem;
+		public WaveTableMemory WaveTableMem
+		{
+			get
+			{
+				return _WaveMem;
+			}
+			set
+			{
+				WaveTableMemory oldMem;
+				WaveTableMemory newMem = value;  // Assume new value is a completely new immutable object
+				do
+				{
+					oldMem = _WaveMem;
+				}
+				while (Interlocked.CompareExchange(ref _WaveMem, newMem, oldMem) != oldMem);
 				UpdateWaveTableFrequency(_Frequency);
 			}
-			finally
+		}
+
+		private void UpdateWaveTableFrequency(float freq)
+		{
+			float topFreq = freq / SampleFrequency * 3.0f;
+			_currentWaveTable = 0;
+			for (int i = 0; i < _WaveMem.NumWaveTables; i++)
 			{
-				lockSlim.ExitWriteLock();
+				var waveTableTopFreq = _WaveMem.GetWaveTable(i).TopFreq;
+				if (topFreq <= waveTableTopFreq)
+				{
+					_currentWaveTable = i;
+					break;
+				}
 			}
+			GD.Print("Current Wave Table: ", _currentWaveTable, " out of ", _WaveMem.NumWaveTables, " with note topFreq ", topFreq, " and top frequency ", _WaveMem.GetWaveTable(_currentWaveTable).TopFreq);
 		}
-	}
 
-    public void UpdateSampleFunction()
-    {
-        GetSampleFunc = Is_PWM ? (WaveTableFunction)GetSample_PWM : GetSample_GenericPWM;
-    }	
 
-	private volatile WaveTableMemory _WaveMem;
-	public WaveTableMemory WaveTableMem
-	{
-		get
+		int _currentWaveTable = 0;
+		public WaveTableOscillatorNode(ModulationManager ModulationMgr, int num_samples, float sample_frequency, WaveTableMemory WaveMem) : base(ModulationMgr, num_samples, sample_frequency)
 		{
-			return _WaveMem;
+			this.WaveTableMem = WaveMem;
+			this.Enabled = false;
+			// this.HardSync = false;
+			UpdateSampleFunction();
 		}
-		set
+
+		protected float GetSample_GenericPWM(WaveTable currWaveTable)
 		{
-			WaveTableMemory oldMem;
-			WaveTableMemory newMem = value;  // Assume new value is a completely new immutable object
-			do
+			float position;
+			float length = currWaveTable.WaveTableData.Length;
+			float normalizationFactor;
+
+			if (Phase < PWMDutyCycle)
 			{
-				oldMem = _WaveMem;
+				// For the "on" phase
+				position = Phase / PWMDutyCycle * length / 2;
+				normalizationFactor = 1.0f / PWMDutyCycle;
 			}
-			while (Interlocked.CompareExchange(ref _WaveMem, newMem, oldMem) != oldMem);
-			UpdateWaveTableFrequency(_Frequency);
-		}
-	}
-
-	private void UpdateWaveTableFrequency(float freq)
-	{
-		float topFreq = freq / SampleFrequency * 3.0f;
-		_currentWaveTable = 0;
-		for (int i = 0; i < _WaveMem.NumWaveTables; i++)
-		{
-			var waveTableTopFreq = _WaveMem.GetWaveTable(i).TopFreq;
-			if (topFreq <= waveTableTopFreq)
+			else
 			{
-				_currentWaveTable = i;
-				break;
+				// For the "off" phase
+				position = ((Phase - PWMDutyCycle) / (1 - PWMDutyCycle) * length / 2) + length / 2;
+				normalizationFactor = 1.0f / (1 - PWMDutyCycle);
 			}
+
+			int intPart = (int)position % (int)length;
+			float fracPart = position - intPart;
+
+			// Linear interpolation
+			float sample0 = currWaveTable.WaveTableData[intPart];
+			float sample1 = currWaveTable.WaveTableData[(intPart + 1) % (int)length];
+
+			return (sample0 + (sample1 - sample0) * fracPart) * normalizationFactor * 0.5f;
 		}
-		GD.Print("Current Wave Table: ", _currentWaveTable, " out of ", _WaveMem.NumWaveTables, " with note topFreq ", topFreq, " and top frequency ", _WaveMem.GetWaveTable(_currentWaveTable).TopFreq);
-	}
 
-
-	int _currentWaveTable = 0;
-	public WaveTableOscillatorNode(int num_samples, float sample_frequency, WaveTableMemory WaveMem) : base(num_samples, sample_frequency)
-	{
-		this.WaveTableMem = WaveMem;
-		this.Enabled = false;
-		// this.HardSync = false;
-		UpdateSampleFunction();
-	}
-
-	protected float GetSample_GenericPWM(WaveTable currWaveTable)
-	{
-		float position;
-		float length = currWaveTable.WaveTableData.Length;
-		float normalizationFactor;
-
-		if (Phase < PWMDutyCycle)
+		//saw subtraction
+		protected float GetSample_PWM(WaveTable currWaveTable)
 		{
-			// For the "on" phase
-			position = Phase / PWMDutyCycle * length / 2;
-			normalizationFactor = 1.0f / PWMDutyCycle;
+			float position = Phase * currWaveTable.WaveTableData.Length;
+			int intPart = (int)position;
+			float fracPart = position - intPart;
+
+			// Linear interpolation for the original phase
+			float sample0 = currWaveTable.WaveTableData[intPart % currWaveTable.WaveTableData.Length];
+			float sample1 = currWaveTable.WaveTableData[(intPart + 1) % currWaveTable.WaveTableData.Length];
+			float sample = sample0 + (sample1 - sample0) * fracPart;
+
+			// Offset phase calculation for PWM
+			float offsetPhase = Phase + PWMDutyCycle;
+			if (offsetPhase > 1.0f)
+			{
+				offsetPhase -= 1.0f;
+			}
+
+			position = offsetPhase * currWaveTable.WaveTableData.Length;
+			intPart = (int)position;
+			fracPart = position - intPart;
+
+			// Linear interpolation for the offset phase
+			sample0 = currWaveTable.WaveTableData[intPart % currWaveTable.WaveTableData.Length];
+			sample1 = currWaveTable.WaveTableData[(intPart + 1) % currWaveTable.WaveTableData.Length];
+			float offsetSample = sample0 + (sample1 - sample0) * fracPart;
+
+			// Return the difference between the original and offset samples
+			return sample - offsetSample;
 		}
-		else
+
+		protected float GetSample(WaveTable currWaveTable)
 		{
-			// For the "off" phase
-			position = ((Phase - PWMDutyCycle) / (1 - PWMDutyCycle) * length / 2) + length / 2;
-			normalizationFactor = 1.0f / (1 - PWMDutyCycle);
+			float position = Phase * currWaveTable.WaveTableData.Length;
+			int intPart = (int)position;
+			float fracPart = position - intPart;
+
+			// Linear interpolation for the original phase
+			float sample0 = currWaveTable.WaveTableData[intPart % currWaveTable.WaveTableData.Length];
+			float sample1 = currWaveTable.WaveTableData[(intPart + 1) % currWaveTable.WaveTableData.Length];
+			return sample0 + (sample1 - sample0) * fracPart;
 		}
 
-		int intPart = (int)position % (int)length;
-		float fracPart = position - intPart;
-
-		// Linear interpolation
-		float sample0 = currWaveTable.WaveTableData[intPart];
-		float sample1 = currWaveTable.WaveTableData[(intPart + 1) % (int)length];
-
-		return (sample0 + (sample1 - sample0) * fracPart) * normalizationFactor * 0.5f;
-	}
-
-	//saw subtraction
-	protected float GetSample_PWM(WaveTable currWaveTable)
-	{
-		float position = Phase * currWaveTable.WaveTableData.Length;
-		int intPart = (int)position;
-		float fracPart = position - intPart;
-
-		// Linear interpolation for the original phase
-		float sample0 = currWaveTable.WaveTableData[intPart % currWaveTable.WaveTableData.Length];
-		float sample1 = currWaveTable.WaveTableData[(intPart + 1) % currWaveTable.WaveTableData.Length];
-		float sample = sample0 + (sample1 - sample0) * fracPart;
-
-		// Offset phase calculation for PWM
-		float offsetPhase = Phase + PWMDutyCycle;
-		if (offsetPhase > 1.0f)
+		public override AudioNode Process(float increment, LFOManager LFO_Manager = null)
 		{
-			offsetPhase -= 1.0f;
+			var freq = Frequency;
+			var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
+			//var FrequencyLFO = LFO_Manager.GetRoutedLFO(LFOName.Frequency);
+			var FrequencyLFO = LFO_Manager?.GetRoutedLFO(LFOName.Frequency);
+			if (FrequencyLFO == null)
+			{
+				for (int i = 0; i < NumSamples; i++)
+				{
+					buffer[i] = GetSampleFunc(currWaveTable) * Amplitude;
+					Phase += increment * freq;
+					Phase = Mathf.PosMod(Phase, 1.0f);
+				}
+			}
+			else
+			{
+				for (int i = 0; i < NumSamples; i++)
+				{
+					buffer[i] = GetSampleFunc(currWaveTable) * Amplitude;
+					Phase += increment * (freq + FrequencyLFO[i]);
+					Phase = Mathf.PosMod(Phase, 1.0f);
+				}
+			}
+			return this;
 		}
 
-		position = offsetPhase * currWaveTable.WaveTableData.Length;
-		intPart = (int)position;
-		fracPart = position - intPart;
-
-		// Linear interpolation for the offset phase
-		sample0 = currWaveTable.WaveTableData[intPart % currWaveTable.WaveTableData.Length];
-		sample1 = currWaveTable.WaveTableData[(intPart + 1) % currWaveTable.WaveTableData.Length];
-		float offsetSample = sample0 + (sample1 - sample0) * fracPart;
-
-		// Return the difference between the original and offset samples
-		return sample - offsetSample;
 	}
-
-	protected float GetSample(WaveTable currWaveTable)
-	{
-		float position = Phase * currWaveTable.WaveTableData.Length;
-		int intPart = (int)position;
-		float fracPart = position - intPart;
-
-		// Linear interpolation for the original phase
-		float sample0 = currWaveTable.WaveTableData[intPart % currWaveTable.WaveTableData.Length];
-		float sample1 = currWaveTable.WaveTableData[(intPart + 1) % currWaveTable.WaveTableData.Length];
-		return sample0 + (sample1 - sample0) * fracPart;
-	}	
-	
-	public override AudioNode Process(float increment, LFONode FrequencyLFO)
-	{
-		var freq = Frequency;
-		var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
-		for (int i = 0; i < NumSamples; i++)
-		{
-			buffer[i] = GetSampleFunc(currWaveTable) * Amplitude;
-			Phase += increment * (freq + FrequencyLFO[i]);
-			Phase = Mathf.PosMod(Phase, 1.0f);
-		}
-		return this;
-	}
-
 }

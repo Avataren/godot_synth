@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3 uid="uid://dlxqhw8ow38i2"]
+
+[ext_resource type="Script" path="res://scenes/scripts/output_routing.gd" id="1_3iggg"]
+
+[node name="OutputRouting" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3iggg")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 242.0
+offset_bottom = 62.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+offset_left = 41.0
+offset_right = 145.0
+offset_bottom = 50.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Output"
+
+[node name="OutputNode" type="OptionButton" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Property"
+
+[node name="OutputNode" type="OptionButton" parent="Panel/VBoxContainer/HBoxContainer2"]
+layout_mode = 2

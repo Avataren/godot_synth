@@ -16,7 +16,7 @@ namespace Synth
 		public int NumSamples;
 		public bool HardSync = false;
 		public ModulationManager ModulationMgr = null;
-
+		public string Name { get; set; }
 		public Dictionary<AudioParam, List<AudioNode>> AudioParameters = new Dictionary<AudioParam, List<AudioNode>>();
 
 		public float GetParameter(AudioParam param, int sampleIndex)

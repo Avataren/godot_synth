@@ -4,8 +4,8 @@ namespace Synth
 {
     public class AudioGraph
     {
-        AudioGraph _instance = null;
-        public AudioGraph GetInstance()
+        static AudioGraph _instance = null;
+        public static AudioGraph GetInstance()
         {
             if (_instance == null)
             {
@@ -13,17 +13,28 @@ namespace Synth
             }
             return _instance;
         }
-        public List<AudioNode> Nodes = new List<AudioNode>();
-        public List<AudioNode> SortedNodes = null;
-        public void AddNode(AudioNode node)
+
+        public static void CreateNode<T>(string name) where T : AudioNode, new()
+        {
+            AudioNode node = new T
+            {
+                Name = name
+            };
+            GetInstance().RegisterNode(node);
+        }
+
+        protected List<AudioNode> Nodes = new List<AudioNode>();
+        protected List<AudioNode> SortedNodes = null;
+
+        public void RegisterNode(AudioNode node)
         {
             Nodes.Add(node);
             SortedNodes = null;
         }
 
-        public void RemoveNode(AudioNode node)
+        public void RemoveNode(string name)
         {
-            Nodes.Remove(node);
+            Nodes.RemoveAll(node => node.Name == name);
             SortedNodes = null;
         }
 

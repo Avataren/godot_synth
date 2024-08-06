@@ -340,7 +340,7 @@ public class SynthPatch
             }
             var env = AmpEnvelopes[oscIdx];
 
-            osc.Process(increment, LFO_Manager);
+            osc.Process(increment);
             if (env.Enabled)
             {
                 env.Process(increment);

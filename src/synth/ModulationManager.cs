@@ -5,29 +5,15 @@ using System.Collections.Generic;
 
 namespace Synth
 {
-    public enum AudioNodeParameter{
-        Frequency,
-        Amplitude,
-        PulseWidth,
-        DetuneCents,
-        DetuneSemitones,
-        DetuneOctaves,
-        PWMDutyCycle,
-        AttackTime,
-        DecayTime,
-        SustainLevel,
-        ReleaseTime,
-        ModulationAmount
-    }
 
     public class ModulationConnection {
         public AudioNode Source { get; set; } // typically an LFO
         public AudioNode Destination { get; set; } // typically an oscillator
         public string DestinationProperty { get; set; }
-        public AudioNodeParameter Amount { get; set; }
+        public AudioParam Amount { get; set; }
         public bool HardSync { get; set; }
 
-        public ModulationConnection(AudioNode source, AudioNode destination, string destinationProperty, AudioNodeParameter amount, bool hardSync){
+        public ModulationConnection(AudioNode source, AudioNode destination, string destinationProperty, AudioParam amount, bool hardSync){
             Source = source;
             Destination = destination;
             DestinationProperty = destinationProperty;
@@ -40,7 +26,7 @@ namespace Synth
 
         public Dictionary<AudioNode, List<ModulationConnection>> ModulationConnections = new Dictionary<AudioNode, List<ModulationConnection>>();
 
-        public void AddConnection(AudioNode source, AudioNode destination, string destinationProperty, AudioNodeParameter amount, bool hardSync){
+        public void AddConnection(AudioNode source, AudioNode destination, string destinationProperty, AudioParam amount, bool hardSync){
             if(!ModulationConnections.ContainsKey(destination)){
                 ModulationConnections[destination] = new List<ModulationConnection>();
             }

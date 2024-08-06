@@ -99,14 +99,13 @@ namespace Synth
 		// 	}
 		// }
 
-		public override AudioNode Process(float increment, LFOManager LFO_Manager = null)
+		public override void Process(float increment)
 		{
 			for (int i = 0; i < NumSamples; i++)
 			{
 				buffer[i] = GetEnvelopeValue(timeOffsetSec);
 				timeOffsetSec += increment;
 			}
-			return this;
 		}
 
 	}

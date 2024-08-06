@@ -71,14 +71,13 @@ namespace Synth
             ADSR.CloseGate();
         }
 
-        public override AudioNode Process(float increment, LFOManager LFO_Manager = null)
+        public override void Process(float increment)
         {
             ADSR.Process(increment);
             for (int i = 0; i < NumSamples; i++)
             {
                 buffer[i] = GetNextSample(increment) * ADSR[i] * Amplitude;
             }
-            return this;
         }
     }
 }

@@ -187,31 +187,17 @@ namespace Synth
 			return sample0 + (sample1 - sample0) * fracPart;
 		}
 
-		public override AudioNode Process(float increment, LFOManager LFO_Manager = null)
+		public override void Process(float increment)
 		{
 			var freq = Frequency;
 			var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 			//var FrequencyLFO = LFO_Manager.GetRoutedLFO(LFOName.Frequency);
-			var FrequencyLFO = LFO_Manager?.GetRoutedLFO(LFOName.Frequency);
-			if (FrequencyLFO == null)
+			for (int i = 0; i < NumSamples; i++)
 			{
-				for (int i = 0; i < NumSamples; i++)
-				{
-					buffer[i] = GetSampleFunc(currWaveTable) * Amplitude;
-					Phase += increment * freq;
-					Phase = Mathf.PosMod(Phase, 1.0f);
-				}
+				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude;
+				Phase += increment * (freq + GetParameter(AudioParam.Frequency, i));
+				Phase = Mathf.PosMod(Phase, 1.0f);
 			}
-			else
-			{
-				for (int i = 0; i < NumSamples; i++)
-				{
-					buffer[i] = GetSampleFunc(currWaveTable) * Amplitude;
-					Phase += increment * (freq + FrequencyLFO[i]);
-					Phase = Mathf.PosMod(Phase, 1.0f);
-				}
-			}
-			return this;
 		}
 
 	}

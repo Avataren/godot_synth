@@ -1,10 +1,11 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 namespace Synth
 {
 	// Interface for audio processing nodes
-	public class AudioNode
+	public abstract class AudioNode
 	{
 		public bool Enabled = true;
 		public float SampleFrequency = 44100.0f;
@@ -15,6 +16,22 @@ namespace Synth
 		public int NumSamples;
 		public bool HardSync = false;
 		public ModulationManager ModulationMgr = null;
+
+		public Dictionary<AudioParam, List<AudioNode>> AudioParameters = new Dictionary<AudioParam, List<AudioNode>>();
+
+		public float GetParameter(AudioParam param, int sampleIndex)
+		{
+			float value = 0.0f;
+			if (!AudioParameters.ContainsKey(param))
+			{
+				return value;
+			}
+			foreach (AudioNode node in AudioParameters[param])
+			{
+				value += node[sampleIndex];
+			}
+			return value;
+		}
 
 		public AudioNode(ModulationManager modulationManager, int NumSamples, float SampleFrequency = 44100.0f)
 		{
@@ -29,9 +46,8 @@ namespace Synth
 			return this.buffer;
 		}
 
-		public virtual AudioNode Process(float increment, LFOManager LFO_Manager = null)
+		public virtual void Process(float increment)
 		{
-			return this;
 		}
 
 		public float this[int index]

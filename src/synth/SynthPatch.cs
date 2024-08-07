@@ -14,8 +14,12 @@ public class SynthPatch
     LFOManager LFO_Manager;
     LFONode FrequencyLFO;
     ModulationManager ModulationMgr = new ModulationManager();
+    AudioGraph AudioGraph = new AudioGraph();
     public SynthPatch(WaveTableBank waveTableBank)
     {
+
+        //var osc1 = AudioGraph.CreateNode<WaveTableOscillatorNode>("Osc1")
+
         LFO_Manager = new LFOManager();
         SampleRate = AudioServer.GetMixRate();
         GD.Print("Sample Rate: " + SampleRate);
@@ -23,7 +27,7 @@ public class SynthPatch
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)
         {
-            Oscillators.Add(new WaveTableOscillatorNode(ModulationMgr, BufferSize, SampleRate, WaveTableRepository.SinOsc()));
+            Oscillators.Add(new WaveTableOscillatorNode(ModulationMgr, BufferSize, SampleRate));
             AmpEnvelopes.Add(new EnvelopeNode(ModulationMgr, BufferSize, false));
         }
         AmpEnvelope = new EnvelopeNode(ModulationMgr, BufferSize);

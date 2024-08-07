@@ -14,13 +14,14 @@ namespace Synth
             return _instance;
         }
 
-        public static void CreateNode<T>(string name) where T : AudioNode, new()
+        public static T CreateNode<T>(string name) where T : AudioNode, new()
         {
             AudioNode node = new T
             {
                 Name = name
             };
             GetInstance().RegisterNode(node);
+            return (T)node;
         }
 
         protected List<AudioNode> Nodes = new List<AudioNode>();
@@ -88,8 +89,10 @@ namespace Synth
                 return;
             }
             visited.Add(node);
-            foreach (var paramlist in node.AudioParameters.Values){
-                foreach (AudioNode param in paramlist){
+            foreach (var paramlist in node.AudioParameters.Values)
+            {
+                foreach (AudioNode param in paramlist)
+                {
                     Visit(param, visited);
                 }
             }

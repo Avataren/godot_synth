@@ -159,25 +159,23 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	{
 		var mix_buffer = new float[num_samples];
 		float increment = 1.0f / _sampleHz;
+
 		while (run_sound_thread)
 		{
-			if (_playback.CanPushBuffer(num_samples))
-			{
-				CurrentPatch.Process(increment, mix_buffer);
+			CurrentPatch.Process(increment, mix_buffer);
 
-				for (int i = 0; i < num_samples; i++)
-				{
-					audioData[i][0] = mix_buffer[i];
-					audioData[i][1] = mix_buffer[i];
-				}
-				_playback.PushBuffer(audioData);
-				System.Array.Copy(mix_buffer, buffer_copy, num_samples);
-			}
-			else
+			for (int i = 0; i < num_samples; i++)
 			{
-				int SleepTime = (int)(num_samples * 0.25 / _sampleHz * 1000);
-				Thread.Sleep(SleepTime);
+				audioData[i][0] = mix_buffer[i];
+				audioData[i][1] = mix_buffer[i];
 			}
+			while (!_playback.CanPushBuffer(num_samples))
+			{
+				Thread.Sleep(1);
+			}
+			_playback.PushBuffer(audioData);
+			System.Array.Copy(mix_buffer, buffer_copy, num_samples);
+
 		}
 	}
 

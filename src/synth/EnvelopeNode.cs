@@ -5,7 +5,8 @@ namespace Synth
 {
 	public class EnvelopeNode : AudioNode
 	{
-		private float timeOffsetSec = 0;
+		private float envelopePosition = 0.0f;
+		private float releaseStartPosition = 0.0f;
 		private bool gateOpen = false;
 
 		public float AttackTime { get; set; }
@@ -15,7 +16,7 @@ namespace Synth
 
 		private float currentAmplitude = 0.0f;
 		private float releaseStartAmplitude = 0.0f;
-		private const float smoothingFactor = 0.05f;  // Smoothing factor is constant
+		private const float smoothingFactor = 0.1f;  // Increased smoothing factor
 
 		public EnvelopeNode(ModulationManager ModulationMgr, int numSamples, bool enabled = true) : base(ModulationMgr, numSamples)
 		{
@@ -29,35 +30,51 @@ namespace Synth
 		public override void OpenGate()
 		{
 			gateOpen = true;
-			timeOffsetSec = 0.0f;
+			envelopePosition = 0.0f;
+			currentAmplitude = 0.0f;  // Reset to ensure starting from zero
 		}
 
 		public override void CloseGate()
 		{
-			timeOffsetSec = 0.0f;
+			releaseStartPosition = envelopePosition;
 			releaseStartAmplitude = currentAmplitude;
 			gateOpen = false;
 		}
 
-		public float GetEnvelopeValue(float elapsedTimeSec)
+		// public float GetEnvelopeValue(float position)
+		// {
+		// 	float targetAmplitude = CalculateTargetAmplitude(position);
+		// 	return targetAmplitude;
+		// }
+
+		public float GetEnvelopeValue(float position)
 		{
-			float targetAmplitude = CalculateTargetAmplitude(elapsedTimeSec);
-			// Smooth transition to avoid clicks
-			currentAmplitude += (targetAmplitude - currentAmplitude) * smoothingFactor;
+			float targetAmplitude = CalculateTargetAmplitude(position);
+			float changeRate = Math.Abs(targetAmplitude - currentAmplitude);
+
+			// Calculate a dynamic smoothing factor based on the rate of change
+			// Smaller changeRate will lead to a higher smoothing factor, and vice versa
+			float dynamicSmoothing = 0.1f / (changeRate + 0.1f);  // Adding a small constant to prevent division by zero
+			dynamicSmoothing = Math.Clamp(dynamicSmoothing, 0.01f, 1.0f);  // Ensuring the smoothing factor stays within reasonable bounds
+
+			// Apply the dynamic smoothing
+			currentAmplitude += (targetAmplitude - currentAmplitude) * dynamicSmoothing;
+
 			return currentAmplitude;
 		}
 
-		private float CalculateTargetAmplitude(float elapsedTimeSec)
+
+		private float CalculateTargetAmplitude(float position)
 		{
 			if (gateOpen)
 			{
-				if (elapsedTimeSec < AttackTime)
+				if (position < AttackTime)
 				{
-					return elapsedTimeSec / AttackTime;  // Attack phase
+					return position / AttackTime;  // Attack phase
 				}
-				else if (elapsedTimeSec < AttackTime + DecayTime)
+				else if (position < AttackTime + DecayTime)
 				{
-					return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);  // Decay phase
+					return 1 - (position - AttackTime) / DecayTime * (1 - SustainLevel);  // Decay phase
 				}
 				else
 				{
@@ -66,47 +83,25 @@ namespace Synth
 			}
 			else
 			{
-				if (elapsedTimeSec < ReleaseTime)
-					return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);  // Release phase starting from releaseStartAmplitude
-				else
-					return 0.0f;  // After release completes
+				float releasePosition = position - releaseStartPosition;
+				if (releasePosition < ReleaseTime)
+				{
+					return releaseStartAmplitude * (1 - (releasePosition / ReleaseTime));
+				}
+				return 0.0f;
 			}
 		}
-
-		// private float CalculateTargetAmplitude(float elapsedTimeSec)
-		// {
-		// 	if (gateOpen)
-		// 	{
-		// 		if (elapsedTimeSec < AttackTime)
-		// 		{
-		// 			return elapsedTimeSec / AttackTime;
-		// 		}
-		// 		else if (elapsedTimeSec < AttackTime + DecayTime)
-		// 		{
-		// 			return 1 - (elapsedTimeSec - AttackTime) / DecayTime * (1 - SustainLevel);
-		// 		}
-		// 		else
-		// 		{
-		// 			return SustainLevel;
-		// 		}
-		// 	}
-		// 	else
-		// 	{
-		// 		if (elapsedTimeSec < ReleaseTime)
-		// 			return releaseStartAmplitude * (1 - elapsedTimeSec / ReleaseTime);
-		// 		else
-		// 			return 0.0f;
-		// 	}
-		// }
 
 		public override void Process(float increment)
 		{
+			float newPosition = envelopePosition;
 			for (int i = 0; i < NumSamples; i++)
 			{
-				buffer[i] = GetEnvelopeValue(timeOffsetSec);
-				timeOffsetSec += increment;
+				buffer[i] = GetEnvelopeValue(newPosition);
+				newPosition += increment;
 			}
+			// Smooth handling of envelope position updates
+			envelopePosition = newPosition;
 		}
-
 	}
 }

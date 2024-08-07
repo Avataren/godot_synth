@@ -106,7 +106,7 @@ namespace Synth
 
 
 		int _currentWaveTable = 0;
-		public WaveTableOscillatorNode(ModulationManager ModulationMgr, int num_samples, float sample_frequency) : base(ModulationMgr, num_samples, sample_frequency)
+		public WaveTableOscillatorNode(int num_samples, float sample_frequency) : base(num_samples, sample_frequency)
 		{
 			this.WaveTableMem = WaveTableRepository.SinOsc();
 			this.Enabled = false;

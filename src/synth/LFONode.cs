@@ -16,10 +16,10 @@ namespace Synth
         public EnvelopeNode ADSR { get; set; }
         public bool UseAbsoluteValue { get; set; }
 
-        public LFONode(ModulationManager ModulationMgr, int numSamples, float frequency, float amplitude, LFOWaveform waveform = LFOWaveform.Sine, bool useAbsoluteValue = false)
-            : base(ModulationMgr, numSamples)
+        public LFONode(int numSamples, float frequency, float amplitude, LFOWaveform waveform = LFOWaveform.Sine, bool useAbsoluteValue = false)
+            : base(numSamples)
         {
-            ADSR = new EnvelopeNode(ModulationMgr, numSamples, true);
+            ADSR = new EnvelopeNode(numSamples, true);
             ADSR.AttackTime = 0.5f;
             Frequency = frequency;
             Amplitude = amplitude;

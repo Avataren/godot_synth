@@ -18,7 +18,18 @@ namespace Synth
 		private float releaseStartAmplitude = 0.0f;
 		private const float smoothingFactor = 0.1f;  // Increased smoothing factor
 
-		public EnvelopeNode(ModulationManager ModulationMgr, int numSamples, bool enabled = true) : base(ModulationMgr, numSamples)
+
+		public EnvelopeNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples)
+		{
+			SampleFrequency = sampleFrequency;
+			AttackTime = 0.0f;
+			DecayTime = 0.0f;
+			SustainLevel = 1.0f;
+			ReleaseTime = 0.0f;
+			this.Enabled = true;
+		}
+
+		public EnvelopeNode(int numSamples, bool enabled = true) : base(numSamples)
 		{
 			AttackTime = 0.0f;
 			DecayTime = 0.0f;
@@ -50,15 +61,16 @@ namespace Synth
 		public float GetEnvelopeValue(float position)
 		{
 			float targetAmplitude = CalculateTargetAmplitude(position);
-			float changeRate = Math.Abs(targetAmplitude - currentAmplitude);
+			currentAmplitude = targetAmplitude;
+			// float changeRate = Math.Abs(targetAmplitude - currentAmplitude);
 
-			// Calculate a dynamic smoothing factor based on the rate of change
-			// Smaller changeRate will lead to a higher smoothing factor, and vice versa
-			float dynamicSmoothing = 0.1f / (changeRate + 0.1f);  // Adding a small constant to prevent division by zero
-			dynamicSmoothing = Math.Clamp(dynamicSmoothing, 0.01f, 1.0f);  // Ensuring the smoothing factor stays within reasonable bounds
+			// // Calculate a dynamic smoothing factor based on the rate of change
+			// // Smaller changeRate will lead to a higher smoothing factor, and vice versa
+			// float dynamicSmoothing = 0.1f / (changeRate + 0.1f);  // Adding a small constant to prevent division by zero
+			// dynamicSmoothing = Math.Clamp(dynamicSmoothing, 0.01f, 1.0f);  // Ensuring the smoothing factor stays within reasonable bounds
 
-			// Apply the dynamic smoothing
-			currentAmplitude += (targetAmplitude - currentAmplitude) * dynamicSmoothing;
+			// // Apply the dynamic smoothing
+			// currentAmplitude += (targetAmplitude - currentAmplitude) * dynamicSmoothing;
 
 			return currentAmplitude;
 		}

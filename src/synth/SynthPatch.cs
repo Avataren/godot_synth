@@ -14,11 +14,18 @@ public class SynthPatch
     LFOManager LFO_Manager;
     LFONode FrequencyLFO;
     ModulationManager ModulationMgr = new ModulationManager();
-    AudioGraph AudioGraph = new AudioGraph();
+    AudioGraph graph = new AudioGraph();
+    List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     public SynthPatch(WaveTableBank waveTableBank)
     {
+        var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
+        var osc1 = graph.CreateNode<WaveTableOscillatorNode>("Osc1", BufferSize, SampleRate);
+        var env1 = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
+        envelopes.Add(env1);
+        graph.Connect(osc1, mix1, AudioParam.Input);
+        graph.Connect(env1, mix1, AudioParam.Gain);
 
-        //var osc1 = AudioGraph.CreateNode<WaveTableOscillatorNode>("Osc1")
+        graph.DebugPrint();
 
         LFO_Manager = new LFOManager();
         SampleRate = AudioServer.GetMixRate();
@@ -27,13 +34,13 @@ public class SynthPatch
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)
         {
-            Oscillators.Add(new WaveTableOscillatorNode(ModulationMgr, BufferSize, SampleRate));
-            AmpEnvelopes.Add(new EnvelopeNode(ModulationMgr, BufferSize, false));
+            Oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
+            AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
         }
-        AmpEnvelope = new EnvelopeNode(ModulationMgr, BufferSize);
+        AmpEnvelope = new EnvelopeNode(BufferSize, true);
         Oscillators[0].Enabled = true;
 
-        FrequencyLFO = new LFONode(ModulationMgr, BufferSize, 4.0f, 5.0f);
+        FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
     }
     public void SetAttack(float attack)
@@ -292,6 +299,11 @@ public class SynthPatch
 
     public void NoteOn(int note, float velocity = 1.0f)
     {
+        foreach (var env in envelopes)
+        {
+            env.OpenGate();
+        }
+
         AmpEnvelope.OpenGate();
         // Start the envelope
         for (int idx = 0; idx < Oscillators.Count; idx++)
@@ -320,6 +332,10 @@ public class SynthPatch
 
     public void NoteOff()
     {
+        foreach (var env in envelopes)
+        {
+            env.CloseGate();
+        }
         LFO_Manager.CloseGate();
         AmpEnvelope.CloseGate();
         // Stop the envelope
@@ -332,6 +348,7 @@ public class SynthPatch
     public void Process(float increment, float[] buffer)
     {
         Array.Clear(buffer, 0, BufferSize);
+        /*
         LFO_Manager.Process(increment);
         AmpEnvelope.Process(increment);
         // Mix the oscillators
@@ -374,6 +391,8 @@ public class SynthPatch
                 }
             }
         }
-
+*/
+        graph.Process(increment);
+        Array.Copy(graph.GetNode("Mix1").GetBuffer(), buffer, BufferSize);
     }
 }

@@ -15,7 +15,6 @@ namespace Synth
 		protected float[] buffer;
 		public int NumSamples;
 		public bool HardSync = false;
-		public ModulationManager ModulationMgr = null;
 		public string Name { get; set; }
 		public Dictionary<AudioParam, List<AudioNode>> AudioParameters = new Dictionary<AudioParam, List<AudioNode>>();
 
@@ -33,9 +32,8 @@ namespace Synth
 			return value;
 		}
 
-		public AudioNode(ModulationManager modulationManager, int NumSamples, float SampleFrequency = 44100.0f)
+		public AudioNode(int NumSamples, float SampleFrequency = 44100.0f)
 		{
-			this.ModulationMgr = modulationManager;
 			this.SampleFrequency = SampleFrequency;
 			this.NumSamples = NumSamples;
 			buffer = new float[NumSamples];

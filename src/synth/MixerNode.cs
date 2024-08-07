@@ -5,8 +5,9 @@ namespace Synth
 
     public class MixerNode : AudioNode
     {
-        public MixerNode(ModulationManager ModulationMgr, int numSamples) : base(ModulationMgr, numSamples)
+        public MixerNode(int numSamples, float sampleFrequency) : base(numSamples)
         {
+            SampleFrequency = sampleFrequency;
         }
 
         public override void Process(float increment)
@@ -14,7 +15,7 @@ namespace Synth
             Array.Clear(buffer);
             for (int i = 0; i < NumSamples; i++)
             {
-                buffer[i] = GetParameter(AudioParam.Input, i); ;
+                buffer[i] = GetParameter(AudioParam.Input, i) * GetParameter(AudioParam.Gain, i);
             }
         }
     }

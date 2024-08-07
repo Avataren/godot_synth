@@ -1,6 +1,9 @@
-namespace Synth{
-    public enum AudioParam{
+namespace Synth
+{
+    public enum AudioParam
+    {
         Input,
+        Gain,
         Frequency,
         Amplitude,
         PulseWidth,
@@ -14,5 +17,5 @@ namespace Synth{
         ReleaseTime,
         ModulationAmount
     }
-        
+
 }

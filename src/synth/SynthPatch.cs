@@ -9,22 +9,25 @@ public class SynthPatch
     float SampleRate = 44100;
     List<WaveTableOscillatorNode> Oscillators = new List<WaveTableOscillatorNode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
-    EnvelopeNode AmpEnvelope;
+    EnvelopeNode ampEnvelope;
     WaveTableBank waveTableBank;
     LFOManager LFO_Manager;
     LFONode FrequencyLFO;
     ModulationManager ModulationMgr = new ModulationManager();
     AudioGraph graph = new AudioGraph();
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
+    ConstantNode freq;
     public SynthPatch(WaveTableBank waveTableBank)
     {
+        freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         var osc1 = graph.CreateNode<WaveTableOscillatorNode>("Osc1", BufferSize, SampleRate);
-        var env1 = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
-        envelopes.Add(env1);
+        ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
+        
+        envelopes.Add(ampEnvelope);
         graph.Connect(osc1, mix1, AudioParam.Input);
-        graph.Connect(env1, mix1, AudioParam.Gain);
-
+        graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
+        graph.Connect(freq, osc1, AudioParam.Frequency);
         graph.DebugPrint();
 
         LFO_Manager = new LFOManager();
@@ -37,7 +40,7 @@ public class SynthPatch
             Oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
             AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
         }
-        AmpEnvelope = new EnvelopeNode(BufferSize, true);
+        //ampEnvelope = new EnvelopeNode(BufferSize, true);
         Oscillators[0].Enabled = true;
 
         FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
@@ -45,19 +48,19 @@ public class SynthPatch
     }
     public void SetAttack(float attack)
     {
-        AmpEnvelope.AttackTime = attack;
+        ampEnvelope.AttackTime = attack;
     }
     public void SetDecay(float decay)
     {
-        AmpEnvelope.DecayTime = decay;
+        ampEnvelope.DecayTime = decay;
     }
     public void SetSustain(float sustain)
     {
-        AmpEnvelope.SustainLevel = sustain;
+        ampEnvelope.SustainLevel = sustain;
     }
     public void SetRelease(float release)
     {
-        AmpEnvelope.ReleaseTime = release;
+        ampEnvelope.ReleaseTime = release;
     }
 
     public void SetPWM(float pwm, int OscillatorIndex = -1)
@@ -299,35 +302,36 @@ public class SynthPatch
 
     public void NoteOn(int note, float velocity = 1.0f)
     {
+        freq.Value = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
         foreach (var env in envelopes)
         {
             env.OpenGate();
         }
+        
+        // AmpEnvelope.OpenGate();
+        // // Start the envelope
+        // for (int idx = 0; idx < Oscillators.Count; idx++)
+        // {
+        //     AmpEnvelopes[idx].OpenGate();
+        // }
 
-        AmpEnvelope.OpenGate();
-        // Start the envelope
-        for (int idx = 0; idx < Oscillators.Count; idx++)
-        {
-            AmpEnvelopes[idx].OpenGate();
-        }
+        // LFO_Manager.OpenGate();
 
-        LFO_Manager.OpenGate();
-
-        // Set the frequency of the oscillators
-        for (int idx = 0; idx < Oscillators.Count; idx++)
-        {
-            var osc = Oscillators[idx];
-            if (!osc.Enabled)
-            {
-                continue;
-            }
-            //            osc.Amplitude = velocity;
-            osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
-            if (osc.HardSync)
-            {
-                osc.Phase = 0.0f;
-            }
-        }
+        // // Set the frequency of the oscillators
+        // for (int idx = 0; idx < Oscillators.Count; idx++)
+        // {
+        //     var osc = Oscillators[idx];
+        //     if (!osc.Enabled)
+        //     {
+        //         continue;
+        //     }
+        //     //            osc.Amplitude = velocity;
+        //     osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
+        //     if (osc.HardSync)
+        //     {
+        //         osc.Phase = 0.0f;
+        //     }
+        // }
     }
 
     public void NoteOff()
@@ -337,7 +341,7 @@ public class SynthPatch
             env.CloseGate();
         }
         LFO_Manager.CloseGate();
-        AmpEnvelope.CloseGate();
+        ampEnvelope.CloseGate();
         // Stop the envelope
         for (int idx = 0; idx < Oscillators.Count; idx++)
         {

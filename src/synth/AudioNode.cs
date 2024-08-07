@@ -48,7 +48,7 @@ namespace Synth
 		{
 		}
 
-		public float this[int index]
+		public virtual float this[int index]
 		{
 			get => buffer[index];
 			set => buffer[index] = value;

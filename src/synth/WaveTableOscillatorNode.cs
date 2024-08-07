@@ -7,7 +7,7 @@ namespace Synth
 	public class WaveTableOscillatorNode : AudioNode
 	{
 		private ReaderWriterLockSlim lockSlim = new ReaderWriterLockSlim();
-		public float _Frequency = 440.0f;
+		public float _Frequency = 0.0f;
 		public float DetuneCents = 0.0f;
 		public float DetuneSemitones = 0.0f;
 		public float DetuneOctaves = 0.0f;

@@ -15,7 +15,7 @@ namespace Synth
 
         private float currentAmplitude = 0.0f;
         private float releaseStartAmplitude = 0.0f;
-        private const float smoothingFactor = 0.01f;  // Reduced smoothing factor for finer control
+        private float smoothingFactor = 0.02f;
 
         public EnvelopeNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples)
         {
@@ -86,21 +86,48 @@ namespace Synth
             }
         }
 
-        public override void Process(float increment)
-        {
+        // public override void Process(float increment)
+        // {
+		// 	if (!Enabled)
+		// 	{
+		// 		Godot.GD.Print("EnvelopeNode is not enabled");
+		// 		return;
+		// 	}
+        //     float newPosition = envelopePosition;
+        //     for (int i = 0; i < NumSamples; i++)
+        //     {
+        //         buffer[i] = GetEnvelopeValue(newPosition);
+        //         newPosition += increment;
+        //     }
+        //     // Smooth handling of envelope position updates
+        //     envelopePosition = newPosition;
+        // }
+
+		public override void Process(float increment)
+		{
 			if (!Enabled)
 			{
 				Godot.GD.Print("EnvelopeNode is not enabled");
 				return;
 			}
-            float newPosition = envelopePosition;
-            for (int i = 0; i < NumSamples; i++)
-            {
-                buffer[i] = GetEnvelopeValue(newPosition);
-                newPosition += increment;
-            }
-            // Smooth handling of envelope position updates
-            envelopePosition = newPosition;
-        }
+			float newPosition = envelopePosition;
+			float previousAmplitude = currentAmplitude;
+			for (int i = 0; i < NumSamples; i++)
+			{
+				float newAmplitude = GetEnvelopeValue(newPosition);
+				float amplitudeChange = Math.Abs(newAmplitude - previousAmplitude);
+
+				// Adjust smoothing factor based on amplitude change
+				smoothingFactor = Math.Clamp(0.01f + amplitudeChange * 0.1f, 0.01f, 0.1f);
+
+				// Update current amplitude with new smoothing factor
+				currentAmplitude += (newAmplitude - currentAmplitude) * smoothingFactor;
+				buffer[i] = currentAmplitude;
+
+				previousAmplitude = newAmplitude;
+				newPosition += increment;
+			}
+			envelopePosition = newPosition;
+		}		
     }
 }

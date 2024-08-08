@@ -39,7 +39,7 @@ namespace Synth
         {
             if (SortedNodes == null)
             {
-                TopoligicalSort();
+                TopologicalSort();
             }
             Godot.GD.Print("AudioGraph debug print:");
             foreach (AudioNode node in SortedNodes)
@@ -71,7 +71,7 @@ namespace Synth
         {
             if (SortedNodes == null)
             {
-                TopoligicalSort();
+                TopologicalSort();
             }
 
             foreach (AudioNode node in SortedNodes)
@@ -103,33 +103,47 @@ namespace Synth
             SortedNodes = null;
         }
 
-        void TopoligicalSort()
+        void TopologicalSort()
         {
             SortedNodes = new List<AudioNode>();
-            List<AudioNode> visited = new List<AudioNode>();
+            HashSet<AudioNode> visited = new HashSet<AudioNode>();
+            HashSet<AudioNode> stack = new HashSet<AudioNode>();
+
             foreach (AudioNode node in Nodes)
             {
-                Visit(node, visited);
-            }
-            //SortedNodes.Reverse();
-        }
-
-        void Visit(AudioNode node, List<AudioNode> visited)
-        {
-            if (visited.Contains(node))
-            {
-                return;
-            }
-            visited.Add(node);
-            foreach (var paramlist in node.AudioParameters.Values)
-            {
-                foreach (AudioNode param in paramlist)
+                if (!visited.Contains(node))
                 {
-                    Visit(param, visited);
+                    Visit(node, visited, stack);
                 }
             }
-            SortedNodes.Add(node);
+            // SortedNodes should now be in the correct order without needing to reverse.
         }
+
+        void Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
+        {
+            if (stack.Contains(node))
+            {
+                throw new InvalidOperationException("Cycle detected in the audio graph");
+            }
+            if (!visited.Contains(node))
+            {
+                stack.Add(node);
+                visited.Add(node);
+                // Recursively visit all dependencies first
+                foreach (var paramlist in node.AudioParameters.Values)
+                {
+                    foreach (AudioNode dependentNode in paramlist)
+                    {
+                        Visit(dependentNode, visited, stack);
+                    }
+                }
+                stack.Remove(node);
+                // Add the node to the sorted list after all its dependencies are already added
+                SortedNodes.Add(node);
+            }
+        }
+
+
 
     }
 }

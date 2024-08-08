@@ -5,7 +5,6 @@ namespace Synth
         Input,
         Gain,
         Frequency,
-        Amplitude,
         PulseWidth,
         DetuneCents,
         DetuneSemitones,

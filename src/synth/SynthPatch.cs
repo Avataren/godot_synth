@@ -21,13 +21,23 @@ public class SynthPatch
     {
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
-        var osc1 = graph.CreateNode<WaveTableOscillatorNode>("Osc1", BufferSize, SampleRate);
+        for (int i = 0; i < MaxOscillators; i++)
+        {
+            var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
+            Oscillators.Add(osc);
+            graph.Connect(osc, mix1, AudioParam.Input);
+            graph.Connect(freq, osc, AudioParam.Frequency);
+
+            var env = graph.CreateNode<EnvelopeNode>("OscEnv" + i, BufferSize, SampleRate);
+            AmpEnvelopes.Add(env);
+            graph.Connect(env, osc, AudioParam.Gain);
+        }
         ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
         
         envelopes.Add(ampEnvelope);
-        graph.Connect(osc1, mix1, AudioParam.Input);
+        
         graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
-        graph.Connect(freq, osc1, AudioParam.Frequency);
+        
         graph.DebugPrint();
 
         LFO_Manager = new LFOManager();

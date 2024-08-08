@@ -76,6 +76,10 @@ namespace Synth
 
             foreach (AudioNode node in SortedNodes)
             {
+                if (!node.Enabled)
+                {
+                    continue;
+                }
                 node.Process(increment);
             }
         }

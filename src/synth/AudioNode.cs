@@ -18,16 +18,19 @@ namespace Synth
 		public string Name { get; set; }
 		public Dictionary<AudioParam, List<AudioNode>> AudioParameters = new Dictionary<AudioParam, List<AudioNode>>();
 
-		public float GetParameter(AudioParam param, int sampleIndex)
+		public float GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
 		{
-			float value = 0.0f;
+			float value = defaultVal;
 			if (!AudioParameters.ContainsKey(param))
 			{
 				return value;
 			}
 			foreach (AudioNode node in AudioParameters[param])
 			{
-				value += node[sampleIndex];
+				if (node.Enabled)
+				{
+					value += node[sampleIndex];
+				}
 			}
 			return value;
 		}

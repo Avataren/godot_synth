@@ -192,9 +192,12 @@ namespace Synth
 			var freq = Frequency;
 			var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 			//var FrequencyLFO = LFO_Manager.GetRoutedLFO(LFOName.Frequency);
+			
 			for (int i = 0; i < NumSamples; i++)
 			{
-				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude;
+				var gain = GetParameter(AudioParam.Gain, i, 1.0f);
+				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
+				
 				Phase += increment * (freq + GetParameter(AudioParam.Frequency, i));
 				Phase = Mathf.PosMod(Phase, 1.0f);
 			}

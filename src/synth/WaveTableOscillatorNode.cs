@@ -11,6 +11,7 @@ namespace Synth
 		public float DetuneCents = 0.0f;
 		public float DetuneSemitones = 0.0f;
 		public float DetuneOctaves = 0.0f;
+		float DetuneFactor = 0.0f;
 		public bool Is_PWM { get; set; } = false;
 
 		public delegate float WaveTableFunction(WaveTable waveTable);
@@ -48,12 +49,12 @@ namespace Synth
 				lockSlim.EnterWriteLock();
 				try
 				{
-					float detuneFactor =
+					DetuneFactor =
 						(float)Math.Pow(2, DetuneCents / 1200.0f) *
 						(float)Math.Pow(2, DetuneSemitones / 12.0f) *
 						(float)Math.Pow(2, DetuneOctaves);
 
-					_Frequency = value * detuneFactor;
+					_Frequency = value * DetuneFactor;
 					UpdateWaveTableFrequency(_Frequency);
 				}
 				finally
@@ -101,7 +102,7 @@ namespace Synth
 					break;
 				}
 			}
-			GD.Print("Current Wave Table: ", _currentWaveTable, " out of ", _WaveMem.NumWaveTables, " with note topFreq ", topFreq, " and top frequency ", _WaveMem.GetWaveTable(_currentWaveTable).TopFreq);
+			//GD.Print("Current Wave Table: ", _currentWaveTable, " out of ", _WaveMem.NumWaveTables, " with note topFreq ", topFreq, " and top frequency ", _WaveMem.GetWaveTable(_currentWaveTable).TopFreq);
 		}
 
 
@@ -192,13 +193,19 @@ namespace Synth
 			var freq = Frequency;
 			var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 			//var FrequencyLFO = LFO_Manager.GetRoutedLFO(LFOName.Frequency);
-			
+			DetuneFactor =
+				(float)Math.Pow(2, DetuneCents / 1200.0f) *
+				(float)Math.Pow(2, DetuneSemitones / 12.0f) *
+				(float)Math.Pow(2, DetuneOctaves);
+				
 			for (int i = 0; i < NumSamples; i++)
 			{
 				var gain = GetParameter(AudioParam.Gain, i, 1.0f);
-				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
-				Phase += increment * (freq + GetParameter(AudioParam.Frequency, i));
+				var currentFreq = (freq + GetParameter(AudioParam.Frequency, i)) * DetuneFactor;
+				UpdateWaveTableFrequency(currentFreq);
+				Phase += increment * currentFreq;
 				Phase = Mathf.PosMod(Phase, 1.0f);
+				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
 			}
 		}
 

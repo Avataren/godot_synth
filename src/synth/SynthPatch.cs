@@ -8,12 +8,9 @@ public class SynthPatch
     const int BufferSize = 1024;
     float SampleRate = 44100;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
-    List<EnvelopeNode> ampEnvelopes = new List<EnvelopeNode>();
+    List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     EnvelopeNode ampEnvelope;
     WaveTableBank waveTableBank;
-    LFOManager LFO_Manager;
-    LFONode FrequencyLFO;
-    ModulationManager ModulationMgr = new ModulationManager();
     AudioGraph graph = new AudioGraph();
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     ConstantNode freq;
@@ -29,7 +26,8 @@ public class SynthPatch
             graph.Connect(freq, osc, AudioParam.Frequency);
 
             var env = graph.CreateNode<EnvelopeNode>("OscEnv" + i, BufferSize, SampleRate);
-            ampEnvelopes.Add(env);
+            env.Enabled = false;
+            AmpEnvelopes.Add(env);
             graph.Connect(env, osc, AudioParam.Gain);
         }
         ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
@@ -40,7 +38,6 @@ public class SynthPatch
         
         graph.DebugPrint();
 
-        LFO_Manager = new LFOManager();
         SampleRate = AudioServer.GetMixRate();
         GD.Print("Sample Rate: " + SampleRate);
         this.waveTableBank = waveTableBank;
@@ -48,12 +45,12 @@ public class SynthPatch
         for (int idx = 0; idx < MaxOscillators; idx++)
         {
             oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
-            ampEnvelopes.Add(new EnvelopeNode(BufferSize, false));
+            AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
         }
         //ampEnvelope = new EnvelopeNode(BufferSize, true);
         oscillators[0].Enabled = true;
 
-        FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
+        //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
     }
     public void SetAttack(float attack)
@@ -89,15 +86,15 @@ public class SynthPatch
 
     public void SetADSREnabled(bool enabled, int EnvelopeIndex = -1)
     {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < ampEnvelopes.Count)
+        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            ampEnvelopes[EnvelopeIndex].Enabled = enabled;
+            AmpEnvelopes[EnvelopeIndex].Enabled = enabled;
             return;
         }
 
-        for (int idx = 0; idx < ampEnvelopes.Count; idx++)
+        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            ampEnvelopes[idx].Enabled = enabled;
+            AmpEnvelopes[idx].Enabled = enabled;
         }
     }
     public void SetHardSync(bool enabled, int OscillatorIndex = -1)
@@ -144,61 +141,61 @@ public class SynthPatch
 
     public void SetAttack(float attack, int EnvelopeIndex = -1)
     {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < ampEnvelopes.Count)
+        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
             GD.Print("Setting attack for envelope " + EnvelopeIndex);
-            ampEnvelopes[EnvelopeIndex].AttackTime = attack;
+            AmpEnvelopes[EnvelopeIndex].AttackTime = attack;
             return;
         }
 
-        for (int idx = 0; idx < ampEnvelopes.Count; idx++)
+        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            ampEnvelopes[idx].AttackTime = attack;
+            AmpEnvelopes[idx].AttackTime = attack;
         }
     }
 
     public void SetDecay(float decay, int EnvelopeIndex = -1)
     {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < ampEnvelopes.Count)
+        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
             GD.Print("Setting decay for envelope " + EnvelopeIndex);
-            ampEnvelopes[EnvelopeIndex].DecayTime = decay;
+            AmpEnvelopes[EnvelopeIndex].DecayTime = decay;
             return;
         }
 
-        for (int idx = 0; idx < ampEnvelopes.Count; idx++)
+        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            ampEnvelopes[idx].DecayTime = decay;
+            AmpEnvelopes[idx].DecayTime = decay;
         }
     }
 
     public void SetSustain(float sustain, int EnvelopeIndex = -1)
     {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < ampEnvelopes.Count)
+        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
             GD.Print("Setting sustain for envelope " + EnvelopeIndex);
-            ampEnvelopes[EnvelopeIndex].SustainLevel = sustain;
+            AmpEnvelopes[EnvelopeIndex].SustainLevel = sustain;
             return;
         }
 
-        for (int idx = 0; idx < ampEnvelopes.Count; idx++)
+        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            ampEnvelopes[idx].SustainLevel = sustain;
+            AmpEnvelopes[idx].SustainLevel = sustain;
         }
     }
 
     public void SetRelease(float release, int EnvelopeIndex = -1)
     {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < ampEnvelopes.Count)
+        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
             GD.Print("Setting release for envelope " + EnvelopeIndex);
-            ampEnvelopes[EnvelopeIndex].ReleaseTime = release;
+            AmpEnvelopes[EnvelopeIndex].ReleaseTime = release;
             return;
         }
 
-        for (int idx = 0; idx < ampEnvelopes.Count; idx++)
+        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            ampEnvelopes[idx].ReleaseTime = release;
+            AmpEnvelopes[idx].ReleaseTime = release;
         }
     }
 
@@ -240,21 +237,21 @@ public class SynthPatch
 
     public void SetADSR(float attack, float decay, float sustain, float release, int EnvelopeIndex = -1)
     {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < ampEnvelopes.Count)
+        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            ampEnvelopes[EnvelopeIndex].AttackTime = attack;
-            ampEnvelopes[EnvelopeIndex].DecayTime = decay;
-            ampEnvelopes[EnvelopeIndex].SustainLevel = sustain;
-            ampEnvelopes[EnvelopeIndex].ReleaseTime = release;
+            AmpEnvelopes[EnvelopeIndex].AttackTime = attack;
+            AmpEnvelopes[EnvelopeIndex].DecayTime = decay;
+            AmpEnvelopes[EnvelopeIndex].SustainLevel = sustain;
+            AmpEnvelopes[EnvelopeIndex].ReleaseTime = release;
             return;
         }
 
-        for (int idx = 0; idx < ampEnvelopes.Count; idx++)
+        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            ampEnvelopes[idx].AttackTime = attack;
-            ampEnvelopes[idx].DecayTime = decay;
-            ampEnvelopes[idx].SustainLevel = sustain;
-            ampEnvelopes[idx].ReleaseTime = release;
+            AmpEnvelopes[idx].AttackTime = attack;
+            AmpEnvelopes[idx].DecayTime = decay;
+            AmpEnvelopes[idx].SustainLevel = sustain;
+            AmpEnvelopes[idx].ReleaseTime = release;
         }
     }
 
@@ -265,7 +262,7 @@ public class SynthPatch
 
     public EnvelopeNode GetEnvelope(int idx)
     {
-        return ampEnvelopes[idx];
+        return AmpEnvelopes[idx];
     }
 
     public void SetDetuneOctaves(float detuneOctaves, int OscillatorIndex = -1)
@@ -330,7 +327,7 @@ public class SynthPatch
         // // Set the frequency of the oscillators
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
-            ampEnvelopes[idx].OpenGate();
+            AmpEnvelopes[idx].OpenGate();
             var osc = oscillators[idx];
             if (!osc.Enabled)
             {
@@ -351,12 +348,12 @@ public class SynthPatch
         {
             env.CloseGate();
         }
-        LFO_Manager.CloseGate();
+        //LFO_Manager.CloseGate();
         ampEnvelope.CloseGate();
         // Stop the envelope
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
-            ampEnvelopes[idx].CloseGate();
+            AmpEnvelopes[idx].CloseGate();
         }
     }
 

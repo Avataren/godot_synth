@@ -88,6 +88,11 @@ namespace Synth
 
         public override void Process(float increment)
         {
+			if (!Enabled)
+			{
+				Godot.GD.Print("EnvelopeNode is not enabled");
+				return;
+			}
             float newPosition = envelopePosition;
             for (int i = 0; i < NumSamples; i++)
             {

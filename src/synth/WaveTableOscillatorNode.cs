@@ -49,24 +49,9 @@ namespace Synth
 			}
 		}
 
-		// private void UpdateWaveTableFrequency(float freq)
-		// {
-		//     float topFreq = freq / SampleFrequency * 3.0f;
-		//     _currentWaveTable = 0;
-		//     for (int i = 0; i < _WaveMem.NumWaveTables; i++)
-		//     {
-		//         var waveTableTopFreq = _WaveMem.GetWaveTable(i).TopFreq;
-		//         if (topFreq <= waveTableTopFreq)
-		//         {
-		//             _currentWaveTable = i;
-		//             break;
-		//         }
-		//     }
-		// }
-
 		private void UpdateWaveTableFrequency(float freq)
 		{
-			float topFreq = freq / SampleFrequency * 2.0f;
+			float topFreq = freq / SampleFrequency;// * 2.0f;
 			_currentWaveTable = 0;
 			for (int i = 0; i < _WaveMem.NumWaveTables; i++)
 			{
@@ -74,6 +59,7 @@ namespace Synth
 				if (topFreq <= waveTableTopFreq)
 				{
 					_currentWaveTable = i;
+					GD.Print("Current wave table: " + i);
 					break;
 				}
 			}

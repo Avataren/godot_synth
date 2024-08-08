@@ -12,7 +12,7 @@ namespace Synth
 		public float DetuneOctaves = 0.0f;
 		private float DetuneFactor = 0.0f;
 		public bool Is_PWM { get; set; } = false;
-
+		private float _lastFrequency = -1; // Initialize to an invalid frequency to ensure initial update
 		public delegate float WaveTableFunction(WaveTable waveTable);
 		public WaveTableFunction GetSampleFunc;
 
@@ -67,9 +67,6 @@ namespace Synth
 		private void UpdateWaveTableFrequency(float freq)
 		{
 			float topFreq = freq / SampleFrequency * 2.0f;
-			int previousWaveTable = _currentWaveTable;
-			float oldPhaseLength = _WaveMem.GetWaveTable(previousWaveTable).WaveTableData.Length;
-
 			_currentWaveTable = 0;
 			for (int i = 0; i < _WaveMem.NumWaveTables; i++)
 			{
@@ -80,13 +77,7 @@ namespace Synth
 					break;
 				}
 			}
-
-			// float newPhaseLength = _WaveMem.GetWaveTable(_currentWaveTable).WaveTableData.Length;
-			// // Adjust the phase to be proportional to the new wavetable's length
-			// Phase = (Phase / oldPhaseLength) * newPhaseLength;
 		}
-
-
 
 		int _currentWaveTable = 0;
 		public WaveTableOscillatorNode(int num_samples, float sample_frequency) : base(num_samples, sample_frequency)
@@ -174,6 +165,7 @@ namespace Synth
 				{
 					UpdateWaveTableFrequency(currentFreq);
 					_lastFrequency = currentFreq;
+					currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 				}
 				Phase += increment * currentFreq;
 				Phase = Mathf.PosMod(Phase, 1.0f);
@@ -186,6 +178,5 @@ namespace Synth
 			DetuneFactor = (float)Math.Pow(2, DetuneCents / 1200.0f) * (float)Math.Pow(2, DetuneSemitones / 12.0f) * (float)Math.Pow(2, DetuneOctaves);
 		}
 
-		private float _lastFrequency = -1; // Initialize to an invalid frequency to ensure initial update
 	}
 }

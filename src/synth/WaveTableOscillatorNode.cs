@@ -197,7 +197,6 @@ namespace Synth
 			{
 				var gain = GetParameter(AudioParam.Gain, i, 1.0f);
 				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
-				
 				Phase += increment * (freq + GetParameter(AudioParam.Frequency, i));
 				Phase = Mathf.PosMod(Phase, 1.0f);
 			}

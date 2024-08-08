@@ -20,19 +20,21 @@ namespace Synth
 
 		public float GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
 		{
-			float value = defaultVal;
+			float value = 0.0f;
+			bool hasData = false;
 			if (!AudioParameters.ContainsKey(param))
 			{
-				return value;
+				return defaultVal;
 			}
 			foreach (AudioNode node in AudioParameters[param])
 			{
 				if (node.Enabled)
 				{
 					value += node[sampleIndex];
+					hasData = true;
 				}
 			}
-			return value;
+			return hasData ? value : defaultVal;
 		}
 
 		public AudioNode(int NumSamples, float SampleFrequency = 44100.0f)

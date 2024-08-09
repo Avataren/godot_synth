@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://d2107ijw5cg87"]
+[gd_scene load_steps=3 format=3 uid="uid://d2107ijw5cg87"]
 
 [ext_resource type="Script" path="res://scenes/scripts/Tuning.cs" id="1_vmaqn"]
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_4cp7r"]
 
 [node name="Tuning" type="VBoxContainer"]
 anchors_preset = 15
@@ -13,44 +14,30 @@ script = ExtResource("1_vmaqn")
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="Oct" type="Label" parent="HBoxContainer"]
-custom_minimum_size = Vector2(50, 0)
+[node name="KnobOct" parent="HBoxContainer" instance=ExtResource("2_4cp7r")]
 layout_mode = 2
-text = "Oct
-"
+min_value = -8.0
+max_value = 8.0
+step = 1.0
+sensitivity = 0.25
+title = "Oct"
 
-[node name="OctSpinBox" type="SpinBox" parent="HBoxContainer"]
-layout_mode = 2
-min_value = -6.0
-max_value = 6.0
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="Semi" type="Label" parent="HBoxContainer2"]
-custom_minimum_size = Vector2(50, 0)
-layout_mode = 2
-text = "Semi
-"
-
-[node name="SemiSpinBox" type="SpinBox" parent="HBoxContainer2"]
+[node name="KnobSemi" parent="HBoxContainer" instance=ExtResource("2_4cp7r")]
 layout_mode = 2
 min_value = -12.0
 max_value = 12.0
+step = 1.0
+sensitivity = 0.25
+title = "Semi"
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="Cents" type="Label" parent="HBoxContainer3"]
-custom_minimum_size = Vector2(50, 0)
-layout_mode = 2
-text = "Cents
-"
-
-[node name="CentsSpinBox" type="SpinBox" parent="HBoxContainer3"]
+[node name="Knob" parent="HBoxContainer" instance=ExtResource("2_4cp7r")]
 layout_mode = 2
 min_value = -100.0
+max_value = 100.0
+step = 1.0
+sensitivity = 0.25
+title = "Cents"
 
-[connection signal="value_changed" from="HBoxContainer/OctSpinBox" to="." method="_on_oct_spin_box_value_changed"]
-[connection signal="value_changed" from="HBoxContainer2/SemiSpinBox" to="." method="_on_semi_spin_box_value_changed"]
-[connection signal="value_changed" from="HBoxContainer3/CentsSpinBox" to="." method="_on_cents_spin_box_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/KnobOct" to="." method="_on_oct_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/KnobSemi" to="." method="_on_semi_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/Knob" to="." method="_on_cents_value_changed"]

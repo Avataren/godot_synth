@@ -49,7 +49,7 @@ public class SynthPatch
         }
         //ampEnvelope = new EnvelopeNode(BufferSize, true);
         oscillators[0].Enabled = true;
-
+        graph.TopologicalSort();
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
     }
@@ -89,6 +89,7 @@ public class SynthPatch
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
             AmpEnvelopes[EnvelopeIndex].Enabled = enabled;
+            graph.TopologicalSort();
             return;
         }
 
@@ -96,18 +97,21 @@ public class SynthPatch
         {
             AmpEnvelopes[idx].Enabled = enabled;
         }
+        graph.TopologicalSort();
     }
     public void SetHardSync(bool enabled, int OscillatorIndex = -1)
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
             oscillators[OscillatorIndex].HardSync = enabled;
+            graph.TopologicalSort();
             return;
         }
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
             oscillators[idx].HardSync = enabled;
         }
+        graph.TopologicalSort();
     }
 
     public void SetAmplitude(float amplitude, int OscillatorIndex = -1)
@@ -130,6 +134,7 @@ public class SynthPatch
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
             oscillators[OscillatorIndex].Enabled = enabled;
+            graph.TopologicalSort();
             return;
         }
 
@@ -137,6 +142,7 @@ public class SynthPatch
         {
             oscillators[idx].Enabled = enabled;
         }
+        graph.TopologicalSort();
     }
 
     public void SetAttack(float attack, int EnvelopeIndex = -1)

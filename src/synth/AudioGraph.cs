@@ -103,8 +103,9 @@ namespace Synth
             SortedNodes = null;
         }
 
-        void TopologicalSort()
+        public void TopologicalSort()
         {
+            Godot.GD.Print("TopologicalSort");
             SortedNodes = new List<AudioNode>();
             HashSet<AudioNode> visited = new HashSet<AudioNode>();
             HashSet<AudioNode> stack = new HashSet<AudioNode>();
@@ -116,34 +117,34 @@ namespace Synth
                     Visit(node, visited, stack);
                 }
             }
-            // SortedNodes should now be in the correct order without needing to reverse.
         }
 
         void Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
         {
+
             if (stack.Contains(node))
             {
                 throw new InvalidOperationException("Cycle detected in the audio graph");
             }
             if (!visited.Contains(node))
             {
-                stack.Add(node);
-                visited.Add(node);
-                // Recursively visit all dependencies first
-                foreach (var paramlist in node.AudioParameters.Values)
+                if (node.Enabled)
                 {
-                    foreach (AudioNode dependentNode in paramlist)
+                    stack.Add(node);
+                    visited.Add(node);
+                    // Recursively visit all dependencies first
+                    foreach (var paramlist in node.AudioParameters.Values)
                     {
-                        Visit(dependentNode, visited, stack);
+                        foreach (AudioNode dependentNode in paramlist)
+                        {
+                            Visit(dependentNode, visited, stack);
+                        }
                     }
+                    stack.Remove(node);
+                    // Add the node to the sorted list after all its dependencies are already added
+                    SortedNodes.Add(node);
                 }
-                stack.Remove(node);
-                // Add the node to the sorted list after all its dependencies are already added
-                SortedNodes.Add(node);
             }
         }
-
-
-
     }
 }

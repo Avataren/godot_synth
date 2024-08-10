@@ -75,6 +75,21 @@ public class SynthPatch
         ampEnvelope.ReleaseTime = release;
     }
 
+    public void SetModulationStrength(float strength, int OscillatorIndex = -1)
+    {
+        GD.Print("Setting modulation strength for oscillator " + OscillatorIndex + " to " + strength);
+        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        {
+            oscillators[OscillatorIndex].ModulationStrength = strength;
+            return;
+        }
+
+        for (int idx = 0; idx < oscillators.Count; idx++)
+        {
+            oscillators[idx].ModulationStrength = strength;
+        }
+    }
+
     public void SetPWM(float pwm, int OscillatorIndex = -1)
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)

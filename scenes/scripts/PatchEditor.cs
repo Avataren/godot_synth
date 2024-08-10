@@ -158,6 +158,11 @@ public partial class PatchEditor : Node2D
 			AudioOutputNode.CurrentPatch.SetPWM(pwm, oscNum);
 		};
 
+		osc.ModChanged += (mod) =>
+		{
+			AudioOutputNode.CurrentPatch.SetModulationStrength(mod, oscNum);
+		};
+
 	}
 
 	protected void ConnectAmplitudeEnvelope()

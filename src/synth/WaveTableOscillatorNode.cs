@@ -10,6 +10,7 @@ namespace Synth
 		public float DetuneCents = 0.0f;
 		public float DetuneSemitones = 0.0f;
 		public float DetuneOctaves = 0.0f;
+		public float ModulationStrength = 0.1f;
 		private float DetuneFactor = 0.0f;
 		public bool Is_PWM { get; set; } = false;
 		private float _lastFrequency = -1; // Initialize to an invalid frequency to ensure initial update
@@ -154,7 +155,7 @@ namespace Synth
 					currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 				}
 				Phase += increment * currentFreq;
-				Phase += GetParameter(AudioParam.Phase,i);
+				Phase += GetParameter(AudioParam.Phase,i) * ModulationStrength;
 				Phase = Mathf.PosMod(Phase, 1.0f);
 				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
 			}

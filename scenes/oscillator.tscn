@@ -80,6 +80,10 @@ layout_mode = 2
 layout_mode = 2
 text = "ADSR Envelope"
 
+[node name="ADSR_Envelope" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("1_rr1vg")]
+visible = false
+layout_mode = 2
+
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 
@@ -91,6 +95,13 @@ sensitivity = 0.25
 title = "PWM"
 current_value = 0.5
 
+[node name="ModKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_htrip")]
+layout_mode = 2
+max_value = 0.25
+step = 0.001
+title = "Mod"
+current_value = 0.1
+
 [node name="GainKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_htrip")]
 layout_mode = 2
 max_value = 1.0
@@ -98,10 +109,6 @@ step = 0.001
 sensitivity = 0.25
 title = "Gain"
 current_value = 1.0
-
-[node name="ADSR_Envelope" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("1_rr1vg")]
-visible = false
-layout_mode = 2
 
 [node name="HSeparator2" type="HSeparator" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
@@ -118,12 +125,13 @@ layout_mode = 2
 [connection signal="toggled" from="VBoxContainer/HardSyncCheckBox" to="." method="_on_hard_sync_check_box_toggled"]
 [connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_item_selected"]
 [connection signal="toggled" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSRCheckBox" to="." method="_on_adsr_check_box_toggled"]
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/PWMKnob" to="." method="_on_pwm_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/GainKnob" to="." method="_On_Volume_Changed"]
 [connection signal="AttackTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_attack_time_changed"]
 [connection signal="DecayTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_decay_time_changed"]
 [connection signal="ReleaseTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_release_time_changed"]
 [connection signal="SustainLevelChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_sustain_level_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/PWMKnob" to="." method="_on_pwm_slider_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/ModKnob" to="." method="_on_mod_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/GainKnob" to="." method="_On_Volume_Changed"]
 [connection signal="CentsChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_cents_changed"]
 [connection signal="OctaveChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_octave_changed"]
 [connection signal="SemiChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_semi_changed"]

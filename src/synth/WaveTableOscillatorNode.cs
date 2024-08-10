@@ -154,10 +154,41 @@ namespace Synth
 					currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 				}
 				Phase += increment * currentFreq;
+				Phase += GetParameter(AudioParam.Phase,i);
 				Phase = Mathf.PosMod(Phase, 1.0f);
 				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
 			}
 		}
+
+		// public override void Process(float increment)
+		// {
+		// 	var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
+		// 	UpdateDetuneFactor();
+		// 	float baseIncrement = 1.0f / SampleFrequency;
+
+		// 	for (int i = 0; i < NumSamples; i++)
+		// 	{
+		// 		var gain = GetParameter(AudioParam.Gain, i, 1.0f);
+		// 		var currentFreq = GetParameter(AudioParam.Frequency, i) * DetuneFactor;
+		// 		if (currentFreq != _lastFrequency)
+		// 		{
+		// 			UpdateWaveTableFrequency(currentFreq);
+		// 			_lastFrequency = currentFreq;
+		// 			currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
+		// 		}
+
+		// 		// Example: Modulator frequency as a fraction of the carrier frequency
+		// 		float modulatorFreq = currentFreq * 0.5f;  // For example, half the carrier frequency
+		// 		float phaseMod = Mathf.Sin(2.0f * Mathf.Pi * modulatorFreq * i / SampleFrequency) * 0.1f;  // Small modulation index
+
+		// 		Phase += baseIncrement * currentFreq + phaseMod;
+		// 		Phase = Mathf.PosMod(Phase, 1.0f);
+
+		// 		buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
+		// 	}
+		// }
+
+
 
 		private void UpdateDetuneFactor()
 		{

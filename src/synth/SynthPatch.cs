@@ -22,7 +22,10 @@ public class SynthPatch
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
             oscillators.Add(osc);
-            graph.Connect(osc, mix1, AudioParam.Input);
+            if (i > 0)
+            {
+                graph.Connect(osc, mix1, AudioParam.Input);
+            }
             graph.Connect(freq, osc, AudioParam.Frequency);
 
             var env = graph.CreateNode<EnvelopeNode>("OscEnv" + i, BufferSize, SampleRate);
@@ -31,11 +34,11 @@ public class SynthPatch
             graph.Connect(env, osc, AudioParam.Gain);
         }
         ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
-        
+
         envelopes.Add(ampEnvelope);
-        
+
         graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
-        
+
         graph.DebugPrint();
 
         SampleRate = AudioServer.GetMixRate();
@@ -47,6 +50,8 @@ public class SynthPatch
             oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
             AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
         }
+
+        graph.Connect(oscillators[0], oscillators[1], AudioParam.Phase);
         //ampEnvelope = new EnvelopeNode(BufferSize, true);
         oscillators[0].Enabled = true;
         graph.TopologicalSort();
@@ -320,7 +325,7 @@ public class SynthPatch
         {
             env.OpenGate();
         }
-        
+
         // AmpEnvelope.OpenGate();
         // // Start the envelope
         // for (int idx = 0; idx < Oscillators.Count; idx++)

@@ -14,7 +14,7 @@ namespace Synth
         DecayTime,
         SustainLevel,
         ReleaseTime,
-        ModulationAmount
+        Phase
     }
 
 }

@@ -11,7 +11,7 @@ extends Control
 @export var title = "knob"
 
 # Internal state
-var current_value: float = min_value
+@export var current_value: float = min_value
 var previous_value: float = current_value
 var mouse_hovered: bool = false
 var mouse_drag: bool = false

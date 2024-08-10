@@ -126,7 +126,7 @@ public partial class PatchEditor : Node2D
 		};
 		osc.VolumeChanged += (volume) =>
 		{
-			AudioOutputNode.CurrentPatch.SetAmplitude(volume / 100.0f, oscNum);
+			AudioOutputNode.CurrentPatch.SetAmplitude(volume, oscNum);
 		};
 		osc.DetuneOctavesChanged += (detuneOctaves) =>
 		{

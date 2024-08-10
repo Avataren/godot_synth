@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://cbymyl68u2edq"]
+[gd_scene load_steps=5 format=3 uid="uid://cbymyl68u2edq"]
 
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="1_rr1vg"]
 [ext_resource type="Script" path="res://scenes/scripts/Oscillator.cs" id="1_tg6q3"]
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_htrip"]
 [ext_resource type="PackedScene" uid="uid://d2107ijw5cg87" path="res://scenes/tuning.tscn" id="3_baww2"]
 
 [node name="Oscillator" type="MarginContainer" node_paths=PackedStringArray("OscillatorEnabled", "ADSREnvelope")]
@@ -75,27 +76,28 @@ popup/item_10/id = 10
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="PWMLabel" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
-layout_mode = 2
-text = "PWM"
-
-[node name="PWMSlider" type="HSlider" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
-layout_mode = 2
-max_value = 1.0
-step = 0.01
-value = 0.5
-
-[node name="Label2" type="Label" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
-layout_mode = 2
-text = "Volume"
-
-[node name="HSlider" type="HSlider" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
-layout_mode = 2
-value = 100.0
-
 [node name="ADSRCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 text = "ADSR Envelope"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="PWMKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_htrip")]
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "PWM"
+current_value = 0.5
+
+[node name="GainKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_htrip")]
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Gain"
+current_value = 1.0
 
 [node name="ADSR_Envelope" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("1_rr1vg")]
 visible = false
@@ -115,9 +117,9 @@ layout_mode = 2
 [connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]
 [connection signal="toggled" from="VBoxContainer/HardSyncCheckBox" to="." method="_on_hard_sync_check_box_toggled"]
 [connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_item_selected"]
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/PWMSlider" to="." method="_on_pwm_slider_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HSlider" to="." method="_On_Volume_Changed"]
 [connection signal="toggled" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSRCheckBox" to="." method="_on_adsr_check_box_toggled"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/PWMKnob" to="." method="_on_pwm_slider_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/GainKnob" to="." method="_On_Volume_Changed"]
 [connection signal="AttackTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_attack_time_changed"]
 [connection signal="DecayTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_decay_time_changed"]
 [connection signal="ReleaseTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_release_time_changed"]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=15 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -9,6 +9,7 @@
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
 [ext_resource type="PackedScene" uid="uid://chrddluikt6ro" path="res://scenes/lfo.tscn" id="6_4sevq"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
+[ext_resource type="PackedScene" uid="uid://brjdceq6gabsc" path="res://scenes/MoogFilter.tscn" id="9_tmfms"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.03
@@ -28,7 +29,7 @@ Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/O
 Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator3")
 Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator4")
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator5")
-ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/ADSR_Envelope")
+ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
 metadata/_edit_vertical_guides_ = [-573.0]
 
@@ -174,14 +175,22 @@ layout_mode = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 4
-alignment = 1
+theme_override_constants/separation = 140
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer"]
+[node name="MoogFilter" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("9_tmfms")]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer"]
 layout_mode = 2
 text = "Amplitude Envelope
 "
 
-[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("4_lv3dd")]
+[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
 layout_mode = 2
 
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
+[connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_cutoff_changed"]
+[connection signal="resonance_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_resonance_changed"]

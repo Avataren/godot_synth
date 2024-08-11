@@ -93,6 +93,16 @@ public partial class PatchEditor : Node2D
 		}
 	}
 
+	private void _on_resonance_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetResonance(value);
+	}
+
+	private void _on_cutoff_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetCutoff(value);
+	}
+
 	private void _on_octave_select_item_selected(int index)
 	{
 		AudioOutputNode.BaseOctave = index;

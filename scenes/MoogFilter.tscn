@@ -1,0 +1,44 @@
+[gd_scene load_steps=3 format=3 uid="uid://brjdceq6gabsc"]
+
+[ext_resource type="Script" path="res://scenes/moog_filter.gd" id="1_rjgqa"]
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_xspoo"]
+
+[node name="MoogFilter" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_rjgqa")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "LP Filter"
+horizontal_alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="CutoffKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 20000.0
+step = 1.0
+sensitivity = 0.25
+title = "Cutoff"
+current_value = 20000.0
+
+[node name="FrequencyNob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Resonance"

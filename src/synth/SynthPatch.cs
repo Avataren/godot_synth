@@ -14,10 +14,13 @@ public class SynthPatch
     AudioGraph graph = new AudioGraph();
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     ConstantNode freq;
+
+    MoogFilterNode moogFilterNode;
     public SynthPatch(WaveTableBank waveTableBank)
     {
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
+        moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
         for (int i = 0; i < MaxOscillators; i++)
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
@@ -38,7 +41,7 @@ public class SynthPatch
         envelopes.Add(ampEnvelope);
 
         graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
-
+        graph.Connect(mix1, moogFilterNode, AudioParam.MixedInput);
         graph.DebugPrint();
 
         SampleRate = AudioServer.GetMixRate();
@@ -58,9 +61,14 @@ public class SynthPatch
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
     }
-
-
-
+    public void SetCutoff(float cutoff)
+    {
+        moogFilterNode.Cutoff = cutoff;
+    }
+    public void SetResonance(float resonance)
+    {
+        moogFilterNode.Resonance = resonance;
+    }
     public void SetAttack(float attack)
     {
         ampEnvelope.AttackTime = attack;
@@ -402,7 +410,7 @@ public class SynthPatch
         }
     }
 
-    public MixerNode Process(float increment)
+    public MoogFilterNode Process(float increment)
     {
         //Array.Clear(buffer, 0, BufferSize);
         /*
@@ -450,7 +458,7 @@ public class SynthPatch
         }
 */
         graph.Process(increment);
-        var mixNode = graph.GetNode("Mix1") as MixerNode;
+        var mixNode = graph.GetNode("MoogFilter") as MoogFilterNode;
         return mixNode;
         //Array.Copy(graph.GetNode("Mix1")., buffer, BufferSize);
     }

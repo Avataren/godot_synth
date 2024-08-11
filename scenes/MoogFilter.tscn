@@ -35,10 +35,18 @@ sensitivity = 0.25
 title = "Cutoff"
 current_value = 20000.0
 
-[node name="FrequencyNob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
+[node name="FrequencyKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 1.0
 step = 0.001
 sensitivity = 0.25
-title = "Resonance"
+title = "Res"
+
+[node name="DriveKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 2.0
+sensitivity = 0.1
+title = "Drive"
+current_value = 1.0

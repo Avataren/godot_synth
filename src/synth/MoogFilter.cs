@@ -5,11 +5,12 @@ namespace Synth
     public class MoogFilter
     {
         private float fs;
-        private float cutoff;
-        private float res;
+        private float cutoff = 20000.0f;
+        private float res = 0.0f;
         private float p, k, r;
         private float x, y1, y2, y3, y4;
         private float oldx, oldy1, oldy2, oldy3;
+        private float drive = 1.0f; // Default drive
 
         public MoogFilter(float sampleFrequency = 44100.0f)
         {
@@ -20,8 +21,6 @@ namespace Synth
         private void init()
         {
             y1 = y2 = y3 = y4 = oldx = oldy1 = oldy2 = oldy3 = 0;
-            cutoff = 20000.0f;
-            res = 0.0f;
             calc();
         }
 
@@ -47,6 +46,7 @@ namespace Synth
             y3 = y2 * p + oldy2 * p - k * y3;
             y4 = y3 * p + oldy3 * p - k * y4;
 
+            y4 = (float)Math.Tanh(y4 * drive);
             // Clipper band limited sigmoid
             y4 -= (y4 * y4 * y4) / 6f;
 
@@ -56,6 +56,12 @@ namespace Synth
             oldy3 = y3;
 
             return y4;
+        }
+
+        public float Drive
+        {
+            get { return drive; }
+            set { drive = value; }
         }
 
         public float Cutoff

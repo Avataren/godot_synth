@@ -59,5 +59,15 @@ namespace Synth
             }
         }
 
+        public float Drive
+        {
+            get { return leftFilter.Drive; }
+            set
+            {
+                leftFilter.Drive = value;
+                rightFilter.Drive = value; // Assuming both channels have the same drive
+            }
+        }
+
     }
 }

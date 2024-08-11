@@ -61,6 +61,12 @@ public class SynthPatch
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
     }
+
+    public void SetDrive(float drive)
+    {
+        moogFilterNode.Drive = drive;
+    }
+    
     public void SetCutoff(float cutoff)
     {
         moogFilterNode.Cutoff = cutoff;

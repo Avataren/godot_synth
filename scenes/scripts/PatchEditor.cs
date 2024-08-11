@@ -93,6 +93,11 @@ public partial class PatchEditor : Node2D
 		}
 	}
 
+	private void _on_drive_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetDrive(value);
+	}
+
 	private void _on_resonance_changed(float value)
 	{
 		AudioOutputNode.CurrentPatch.SetResonance(value);

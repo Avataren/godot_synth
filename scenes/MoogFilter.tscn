@@ -47,6 +47,7 @@ title = "Res"
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 2.0
+step = 0.01
 sensitivity = 0.1
 title = "Drive"
 current_value = 1.0

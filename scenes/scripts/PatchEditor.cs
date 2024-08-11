@@ -100,6 +100,11 @@ public partial class PatchEditor : Node2D
 
 	private void ConnectOscillatorSignals(Oscillator osc, int oscNum)
 	{
+		osc.BalanceChanged += (balance) =>
+		{
+			AudioOutputNode.CurrentPatch.SetBalance(balance, oscNum);
+		};
+
 		osc.WaveformChanged += (waveformIndex) =>
 		{
 			AudioOutputNode.CurrentPatch.SetWaveform(GetWaveformFromIndex(waveformIndex), oscNum);

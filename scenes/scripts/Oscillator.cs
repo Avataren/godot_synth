@@ -30,7 +30,8 @@ public partial class Oscillator : Control
 	public delegate void PWMChangedEventHandler(float pwm);
 	[Signal]
 	public delegate void ModChangedEventHandler(float mod);	
-
+	[Signal]
+	public delegate void BalanceChangedEventHandler(float balance);
 	[Signal]
 	public delegate void ADSRToggledEventHandler(bool enabled);
 
@@ -78,8 +79,12 @@ public partial class Oscillator : Control
 
 	private void _on_mod_value_changed(double value)
 	{
-		GD.Print("_on_mod_value_changed:"+value);
 		EmitSignal("ModChanged", (float)value);
+	}
+
+	private void _on_balance_value_changed(double value)
+	{
+		EmitSignal("BalanceChanged", (float)value);
 	}
 
 	private void _on_pwm_slider_value_changed(double value)

@@ -30,7 +30,7 @@ resource_name = "Phaser"
 
 [sub_resource type="AudioEffectLowPassFilter" id="AudioEffectLowPassFilter_08shd"]
 resource_name = "LowPassFilter"
-cutoff_hz = 4000.0
+cutoff_hz = 1500.0
 resonance = 0.65
 
 [sub_resource type="AudioEffectChorus" id="AudioEffectChorus_4qnf3"]

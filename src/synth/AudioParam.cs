@@ -4,6 +4,7 @@ namespace Synth
     {
         Input,
         Gain,
+        Balance, 
         Frequency,
         PulseWidth,
         DetuneCents,

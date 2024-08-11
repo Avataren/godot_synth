@@ -28,7 +28,7 @@ Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/O
 Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator3")
 Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator4")
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/OscillatorsContainer/Oscillator5")
-ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/VBoxContainer/ADSR_Envelope")
+ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
 metadata/_edit_vertical_guides_ = [-573.0]
 
@@ -149,34 +149,39 @@ OscillatorEnabled = NodePath("../Oscillator4/VBoxContainer/CheckBox")
 [node name="VSeparator6" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 60
+alignment = 1
+
+[node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 4
 theme_override_constants/separation = 25
 
-[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
-[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
-[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
-[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 4
+alignment = 1
 
-[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer"]
 layout_mode = 2
 text = "Amplitude Envelope
 "
 
-[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
+[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("4_lv3dd")]
 layout_mode = 2
 
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]

@@ -58,6 +58,9 @@ public class SynthPatch
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
     }
+
+
+
     public void SetAttack(float attack)
     {
         ampEnvelope.AttackTime = attack;
@@ -73,6 +76,22 @@ public class SynthPatch
     public void SetRelease(float release)
     {
         ampEnvelope.ReleaseTime = release;
+    }
+
+    public void SetBalance(float balance, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        {
+            //GD.Print("Setting balance for oscillator " + OscillatorIndex + " to " + balance);
+            oscillators[OscillatorIndex].Balance = balance;
+            return;
+        }
+
+        for (int idx = 0; idx < oscillators.Count; idx++)
+        {
+            
+            oscillators[idx].Balance = balance;
+        }
     }
 
     public void SetModulationStrength(float strength, int OscillatorIndex = -1)
@@ -383,9 +402,9 @@ public class SynthPatch
         }
     }
 
-    public void Process(float increment, float[] buffer)
+    public MixerNode Process(float increment)
     {
-        Array.Clear(buffer, 0, BufferSize);
+        //Array.Clear(buffer, 0, BufferSize);
         /*
         LFO_Manager.Process(increment);
         AmpEnvelope.Process(increment);
@@ -431,6 +450,8 @@ public class SynthPatch
         }
 */
         graph.Process(increment);
-        Array.Copy(graph.GetNode("Mix1").GetBuffer(), buffer, BufferSize);
+        var mixNode = graph.GetNode("Mix1") as MixerNode;
+        return mixNode;
+        //Array.Copy(graph.GetNode("Mix1")., buffer, BufferSize);
     }
 }

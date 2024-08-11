@@ -157,25 +157,27 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public void FillBuffer()
 	{
-		var mix_buffer = new float[num_samples];
 		float increment = 1.0f / _sampleHz;
 
 		while (run_sound_thread)
 		{
-			CurrentPatch.Process(increment, mix_buffer);
-
+			var mix = CurrentPatch.Process(increment);
 			for (int i = 0; i < num_samples; i++)
 			{
-				audioData[i][0] = mix_buffer[i];
-				audioData[i][1] = mix_buffer[i];
+				audioData[i][0] = mix.LeftBuffer[i];
+				audioData[i][1] = mix.RightBuffer[i];
 			}
 			while (!_playback.CanPushBuffer(num_samples))
 			{
 				Thread.Sleep(1);
 			}
 			_playback.PushBuffer(audioData);
-			System.Array.Copy(mix_buffer, buffer_copy, num_samples);
 
+			// make mix_buffer average of left and right
+			for (int i = 0; i < num_samples; i++)
+			{
+				buffer_copy[i] = (mix.LeftBuffer[i] + mix.RightBuffer[i]) / 2;
+			}
 		}
 	}
 

@@ -33,6 +33,8 @@ public partial class Oscillator : Control
 	[Signal]
 	public delegate void BalanceChangedEventHandler(float balance);
 	[Signal]
+	public delegate void FeedbackChangedEventHandler(float feedback);	
+	[Signal]
 	public delegate void ADSRToggledEventHandler(bool enabled);
 
 	[Signal]
@@ -75,6 +77,11 @@ public partial class Oscillator : Control
 		{
 			PrintErr("ADSR_Envelope node not found.");
 		}
+	}
+
+	private void _on_feedback_value_changed(double value)
+	{
+		EmitSignal("FeedbackChanged", (float)value);
 	}
 
 	private void _on_mod_value_changed(double value)
@@ -126,17 +133,14 @@ public partial class Oscillator : Control
 	}
 	private void _on_tuning_octave_changed(float value)
 	{
-		Print("_on_detune_octaves_changed");
 		EmitSignal("DetuneOctavesChanged", value);
 	}
 	private void _on_tuning_semi_changed(float value)
 	{
-		Print("_on_detune_semi_changed");
 		EmitSignal("DetuneSemiChanged", value);
 	}
 	private void _on_tuning_cents_changed(float value)
 	{
-		Print("_on_detune_cents_changed");
 		EmitSignal("DetuneCentsChanged", value);
 	}
 }

@@ -45,7 +45,6 @@ public class SynthPatch
         graph.DebugPrint();
 
         SampleRate = AudioServer.GetMixRate();
-        GD.Print("Sample Rate: " + SampleRate);
         this.waveTableBank = waveTableBank;
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)
@@ -55,6 +54,8 @@ public class SynthPatch
         }
 
         graph.Connect(oscillators[0], oscillators[1], AudioParam.Phase);
+        //graph.Connect(oscillators[1], oscillators[2], AudioParam.Phase);
+        //graph.Connect(oscillators[2], oscillators[3], AudioParam.Phase);
         //ampEnvelope = new EnvelopeNode(BufferSize, true);
         oscillators[0].Enabled = true;
         graph.TopologicalSort();
@@ -92,6 +93,20 @@ public class SynthPatch
         ampEnvelope.ReleaseTime = release;
     }
 
+    public void SetFeedback(float feedback, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        {
+            oscillators[OscillatorIndex].SelfModulationStrength = feedback;
+            return;
+        }
+
+        for (int idx = 0; idx < oscillators.Count; idx++)
+        {
+            oscillators[idx].SelfModulationStrength = feedback;
+        }
+    }
+
     public void SetBalance(float balance, int OscillatorIndex = -1)
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
@@ -110,7 +125,7 @@ public class SynthPatch
 
     public void SetModulationStrength(float strength, int OscillatorIndex = -1)
     {
-        GD.Print("Setting modulation strength for oscillator " + OscillatorIndex + " to " + strength);
+        //GD.Print("Setting modulation strength for oscillator " + OscillatorIndex + " to " + strength);
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
             oscillators[OscillatorIndex].ModulationStrength = strength;
@@ -202,7 +217,6 @@ public class SynthPatch
     {
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            GD.Print("Setting attack for envelope " + EnvelopeIndex);
             AmpEnvelopes[EnvelopeIndex].AttackTime = attack;
             return;
         }
@@ -217,7 +231,6 @@ public class SynthPatch
     {
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            GD.Print("Setting decay for envelope " + EnvelopeIndex);
             AmpEnvelopes[EnvelopeIndex].DecayTime = decay;
             return;
         }
@@ -232,7 +245,6 @@ public class SynthPatch
     {
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            GD.Print("Setting sustain for envelope " + EnvelopeIndex);
             AmpEnvelopes[EnvelopeIndex].SustainLevel = sustain;
             return;
         }
@@ -247,7 +259,6 @@ public class SynthPatch
     {
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            GD.Print("Setting release for envelope " + EnvelopeIndex);
             AmpEnvelopes[EnvelopeIndex].ReleaseTime = release;
             return;
         }

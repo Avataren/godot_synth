@@ -44,7 +44,6 @@ func _process_motion(relative: Vector2) -> void:
 		previous_value = current_value
 		value_changed.emit(current_value)
 	
-	print(current_value)
 	_update_pointer_rotation()
 
 func _on_start_drag() -> void:

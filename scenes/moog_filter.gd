@@ -17,7 +17,3 @@ func _on_resonance_changed(val) -> void:
 	
 func _on_drive_changed(val) -> void:
 	drive_changed.emit(val)
-	
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass

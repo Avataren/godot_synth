@@ -3,11 +3,11 @@
 [sub_resource type="AudioEffectReverb" id="AudioEffectReverb_1473h"]
 resource_name = "Reverb"
 predelay_msec = 50.0
-room_size = 0.29
-damping = 0.52
-spread = 0.23
-dry = 0.65
-wet = 0.43
+damping = 0.82
+spread = 0.27
+hipass = 0.07
+dry = 0.88
+wet = 0.13
 
 [sub_resource type="AudioEffectFilter" id="AudioEffectFilter_jcl6u"]
 resource_name = "Filter"

@@ -37,7 +37,10 @@ public class SynthPatch
             graph.Connect(env, osc, AudioParam.Gain);
         }
         ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
-
+        var lfo = graph.CreateNode<LFONode>("LFO1", BufferSize, SampleRate);
+        lfo.Frequency = 4.0f;
+        lfo.Amplitude = 5.0f;
+        //graph.Connect(lfo, freq, AudioParam.Constant);
         envelopes.Add(ampEnvelope);
 
         graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
@@ -66,7 +69,7 @@ public class SynthPatch
     {
         moogFilterNode.Drive = drive;
     }
-    
+
     public void SetCutoff(float cutoff)
     {
         moogFilterNode.Cutoff = cutoff;
@@ -103,7 +106,7 @@ public class SynthPatch
 
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
-            
+
             oscillators[idx].Balance = balance;
         }
     }

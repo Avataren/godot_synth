@@ -124,7 +124,8 @@ namespace Synth
 
             if (stack.Contains(node))
             {
-                throw new InvalidOperationException("Cycle detected in the audio graph");
+                // throw new InvalidOperationException("Cycle detected in the audio graph");
+                return;
             }
             if (!visited.Contains(node))
             {

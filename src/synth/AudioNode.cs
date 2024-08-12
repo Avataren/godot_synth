@@ -13,7 +13,7 @@ namespace Synth
 		public float Frequency { get; set; } = 440.0f;
 		public float Phase = 0.0f;
 		public float Balance = 0.0f;
-		protected float[] buffer;
+		public float[] buffer;
 		public int NumSamples;
 		public bool HardSync = false;
 		public string Name { get; set; }

@@ -14,7 +14,7 @@ namespace Synth
 		private float DetuneFactor = 0.0f;
 		public bool Is_PWM { get; set; } = false;
 		private float _lastFrequency = -1; // Initialize to an invalid frequency to ensure initial update
-		public delegate float WaveTableFunction(WaveTable waveTable);
+		public delegate float WaveTableFunction(WaveTable waveTable, float phase);
 		public WaveTableFunction GetSampleFunc;
 
 		private float[] _blendBuffer;
@@ -60,7 +60,7 @@ namespace Synth
 				if (topFreq <= waveTableTopFreq)
 				{
 					_currentWaveTable = i;
-					GD.Print("Current wave table: " + i);
+					//GD.Print("Current wave table: " + i);
 					break;
 				}
 			}
@@ -88,18 +88,18 @@ namespace Synth
 			return (sample0 + (sample1 - sample0) * fracPart);
 		}
 
-		protected float GetSample_PWM(WaveTable currWaveTable)
+		protected float GetSample_PWM(WaveTable currWaveTable, float phase)
 		{
-			float position = Phase * currWaveTable.WaveTableData.Length;
-			float offsetPhase = Mathf.PosMod(Phase + PWMDutyCycle, 1.0f);
+			float position = phase * currWaveTable.WaveTableData.Length;
+			float offsetPhase = Mathf.PosMod(phase + PWMDutyCycle, 1.0f);
 			float offsetPosition = offsetPhase * currWaveTable.WaveTableData.Length;
 
 			return GetInterpolatedSample(currWaveTable, position) - GetInterpolatedSample(currWaveTable, offsetPosition);
 		}
 
-		protected float GetSample(WaveTable currWaveTable)
+		protected float GetSample(WaveTable currWaveTable, float phase)
 		{
-			float position = Phase * currWaveTable.WaveTableData.Length;
+			float position = phase * currWaveTable.WaveTableData.Length;
 			return GetInterpolatedSample(currWaveTable, position);
 		}
 
@@ -144,22 +144,60 @@ namespace Synth
 		{
 			var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 			UpdateDetuneFactor();
+			float sampleRate = SampleFrequency;  // Assuming SampleFrequency is defined elsewhere in your class
+
+			float initialPhase = Phase;  // Store the initial phase
+			float currentFreq = 0.0f;  // Declare this outside the loop
+
 			for (int i = 0; i < NumSamples; i++)
 			{
 				var gain = GetParameter(AudioParam.Gain, i, 1.0f);
-				var currentFreq = GetParameter(AudioParam.Frequency, i) * DetuneFactor;
+				currentFreq = GetParameter(AudioParam.Frequency, i) * DetuneFactor;  // Update frequency each iteration
+
+				// Update the wave table if frequency has changed
 				if (currentFreq != _lastFrequency)
 				{
 					UpdateWaveTableFrequency(currentFreq);
 					_lastFrequency = currentFreq;
 					currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 				}
-				Phase += increment * currentFreq;
-				Phase += GetParameter(AudioParam.Phase,i) * ModulationStrength;
-				Phase = Mathf.PosMod(Phase, 1.0f);
-				buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
+
+				// Calculate the phase for this particular sample using an offset based on the initial phase
+				float phaseForThisSample = (initialPhase + ((float)i * currentFreq / sampleRate));
+
+				// Apply modulation and calculate buffer output
+				float modulatedPhase = (phaseForThisSample + GetParameter(AudioParam.Phase, i) * ModulationStrength);
+				modulatedPhase = Mathf.PosMod(modulatedPhase, 1.0f);
+				buffer[i] = GetSampleFunc(currWaveTable, modulatedPhase) * Amplitude * gain;
 			}
+
+			// Update the global phase after processing all samples to start correctly for the next call
+			Phase = (initialPhase + ((float)NumSamples * currentFreq / sampleRate)) % 1.0f;
 		}
+
+
+
+
+		// public override void Process(float increment)
+		// {
+		// 	var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
+		// 	UpdateDetuneFactor();
+		// 	for (int i = 0; i < NumSamples; i++)
+		// 	{
+		// 		var gain = GetParameter(AudioParam.Gain, i, 1.0f);
+		// 		var currentFreq = GetParameter(AudioParam.Frequency, i) * DetuneFactor;
+		// 		if (currentFreq != _lastFrequency)
+		// 		{
+		// 			UpdateWaveTableFrequency(currentFreq);
+		// 			_lastFrequency = currentFreq;
+		// 			currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
+		// 		}
+		// 		Phase += increment * currentFreq;
+		// 		Phase += GetParameter(AudioParam.Phase,i) * ModulationStrength;
+		// 		Phase = Mathf.PosMod(Phase, 1.0f);
+		// 		buffer[i] = GetSampleFunc(currWaveTable) * Amplitude * gain;
+		// 	}
+		// }
 
 		// public override void Process(float increment)
 		// {

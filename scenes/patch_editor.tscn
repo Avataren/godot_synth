@@ -5,11 +5,11 @@
 [ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="3_fpync"]
 [ext_resource type="PackedScene" uid="uid://cbymyl68u2edq" path="res://scenes/oscillator.tscn" id="3_p4jms"]
 [ext_resource type="Texture2D" uid="uid://df7mck8vnomus" path="res://assets/brushedsteel4.jpg" id="4_101k7"]
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="4_lv3dd"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="4_lv3dd"]
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
-[ext_resource type="PackedScene" uid="uid://chrddluikt6ro" path="res://scenes/lfo.tscn" id="6_4sevq"]
+[ext_resource type="PackedScene" path="res://scenes/lfo.tscn" id="6_4sevq"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
-[ext_resource type="PackedScene" uid="uid://brjdceq6gabsc" path="res://scenes/MoogFilter.tscn" id="9_tmfms"]
+[ext_resource type="PackedScene" path="res://scenes/MoogFilter.tscn" id="9_tmfms"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.03

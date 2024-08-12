@@ -16,15 +16,15 @@ namespace Synth
         public EnvelopeNode ADSR { get; set; }
         public bool UseAbsoluteValue { get; set; }
 
-        public LFONode(int numSamples, float frequency, float amplitude, LFOWaveform waveform = LFOWaveform.Sine, bool useAbsoluteValue = false)
+        public LFONode(int numSamples, float frequency)
             : base(numSamples)
         {
             ADSR = new EnvelopeNode(numSamples, true);
             ADSR.AttackTime = 0.5f;
             Frequency = frequency;
-            Amplitude = amplitude;
-            CurrentWaveform = waveform;
-            UseAbsoluteValue = useAbsoluteValue;
+            Amplitude = 1.0f;
+            CurrentWaveform = LFOWaveform.Sine;
+            UseAbsoluteValue = false;
             phase = 0.0f;
         }
 
@@ -61,22 +61,22 @@ namespace Synth
             return sample;
         }
 
-        public override void OpenGate()
-        {
-            ADSR.OpenGate();
-        }
+        // public override void OpenGate()
+        // {
+        //     ADSR.OpenGate();
+        // }
 
-        public override void CloseGate()
-        {
-            ADSR.CloseGate();
-        }
+        // public override void CloseGate()
+        // {
+        //     ADSR.CloseGate();
+        // }
 
         public override void Process(float increment)
         {
             ADSR.Process(increment);
             for (int i = 0; i < NumSamples; i++)
             {
-                buffer[i] = GetNextSample(increment) * ADSR[i] * Amplitude;
+                buffer[i] = GetNextSample(increment) * Amplitude;
             }
         }
     }

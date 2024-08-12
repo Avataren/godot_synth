@@ -11,13 +11,10 @@ namespace Synth
 
         public override void Process(float increment)
         {
-
-        }
-
-        public override float this[int index]
-        {
-            get => Value;
-            set => Value = value;
+            for (int i = 0; i < NumSamples; i++)
+            {
+                buffer[i] = Value + GetParameter(AudioParam.Constant, i, 1.0f);
+            }
         }
     }
 }

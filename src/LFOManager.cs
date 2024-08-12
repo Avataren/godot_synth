@@ -23,10 +23,10 @@ namespace Synth
         public LFOManager()
         {
             // Initialize LFOs with default settings
-            for (int i = 0; i < lfos.Length; i++)
-            {
-                lfos[i] = new LFONode(44100, 1.0f, 1.0f); // Initialize with some default values
-            }
+            // for (int i = 0; i < lfos.Length; i++)
+            // {
+            //     lfos[i] = new LFONode(44100, 1.0f, 1.0f); // Initialize with some default values
+            // }
 
             // Initialize the routing and reverse lookup tables
             routingTable = new Dictionary<LFOName, LFONode>();

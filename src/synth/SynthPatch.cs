@@ -4,6 +4,7 @@ using Godot;
 using Synth;
 public class SynthPatch
 {
+    private readonly object _lock = new object();
     public const int MaxOscillators = 5;
     public static int Oversampling = 4;
     static int BufferSize = 512 * Oversampling;
@@ -52,7 +53,7 @@ public class SynthPatch
         graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput);
-        
+
         //graph.DebugPrint();
 
         SampleRate = AudioServer.GetMixRate();
@@ -75,7 +76,7 @@ public class SynthPatch
 
     public void SetReverbEffect_Enabled(bool enabled)
     {
-        graph.SetNodeEnabled(reverbEffectNode,enabled);
+        graph.SetNodeEnabled(reverbEffectNode, enabled);
         reverbEffectNode.Mute();
     }
 
@@ -107,7 +108,7 @@ public class SynthPatch
 
     public void SetDelayEffect_Enabled(bool enabled)
     {
-        graph.SetNodeEnabled(delayEffectNode,enabled);
+        graph.SetNodeEnabled(delayEffectNode, enabled);
     }
 
     public void SetDelayEffect_Delay(int delay)
@@ -223,13 +224,13 @@ public class SynthPatch
     {
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            graph.SetNodeEnabled(AmpEnvelopes[EnvelopeIndex],enabled);
+            graph.SetNodeEnabled(AmpEnvelopes[EnvelopeIndex], enabled);
             return;
         }
 
         for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            graph.SetNodeEnabled(AmpEnvelopes[idx],enabled);
+            graph.SetNodeEnabled(AmpEnvelopes[idx], enabled);
         }
 
     }
@@ -265,15 +266,15 @@ public class SynthPatch
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
-            graph.SetNodeEnabled(oscillators[OscillatorIndex],enabled);
+            graph.SetNodeEnabled(oscillators[OscillatorIndex], enabled);
             return;
         }
 
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
-            graph.SetNodeEnabled(oscillators[idx],enabled);
+            graph.SetNodeEnabled(oscillators[idx], enabled);
         }
-        
+
     }
 
     public void SetAttack(float attack, int EnvelopeIndex = -1)
@@ -443,57 +444,67 @@ public class SynthPatch
     public void NoteOn(int note, float velocity = 1.0f)
     {
         freq.Value = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
-        foreach (var env in envelopes)
+        lock (_lock)
         {
-            env.OpenGate();
-        }
 
-        // AmpEnvelope.OpenGate();
-        // // Start the envelope
-        // for (int idx = 0; idx < Oscillators.Count; idx++)
-        // {
-        //     AmpEnvelopes[idx].OpenGate();
-        // }
-
-        // LFO_Manager.OpenGate();
-
-        // // Set the frequency of the oscillators
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            AmpEnvelopes[idx].OpenGate();
-            var osc = oscillators[idx];
-            if (!osc.Enabled)
+            foreach (var env in envelopes)
             {
-                continue;
+                env.OpenGate();
             }
-            //            osc.Amplitude = velocity;
-            //osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
-            if (osc.HardSync)
+
+            // AmpEnvelope.OpenGate();
+            // // Start the envelope
+            // for (int idx = 0; idx < Oscillators.Count; idx++)
+            // {
+            //     AmpEnvelopes[idx].OpenGate();
+            // }
+
+            // LFO_Manager.OpenGate();
+
+            // // Set the frequency of the oscillators
+            for (int idx = 0; idx < oscillators.Count; idx++)
             {
-                osc.Phase = 0.0f;
+                AmpEnvelopes[idx].OpenGate();
+                var osc = oscillators[idx];
+                if (!osc.Enabled)
+                {
+                    continue;
+                }
+                //            osc.Amplitude = velocity;
+                //osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
+                if (osc.HardSync)
+                {
+                    osc.Phase = 0.0f;
+                }
             }
         }
     }
 
     public void NoteOff()
     {
-        foreach (var env in envelopes)
+        lock (_lock)
         {
-            env.CloseGate();
-        }
-        //LFO_Manager.CloseGate();
-        ampEnvelope.CloseGate();
-        // Stop the envelope
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            AmpEnvelopes[idx].CloseGate();
+            foreach (var env in envelopes)
+            {
+                env.CloseGate();
+            }
+            //LFO_Manager.CloseGate();
+            ampEnvelope.CloseGate();
+            // Stop the envelope
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                AmpEnvelopes[idx].CloseGate();
+            }
         }
     }
 
     public PassThroughNode Process(float increment)
     {
-        graph.Process(increment);
-        var node = graph.GetNode("Speaker") as PassThroughNode;
-        return node;
+        lock (_lock)
+        {
+            graph.Process(increment);
+            var node = graph.GetNode("Speaker") as PassThroughNode;
+            return node;
+        }
     }
 }

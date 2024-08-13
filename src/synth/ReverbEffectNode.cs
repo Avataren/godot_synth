@@ -25,15 +25,13 @@ namespace Synth
             {
                 if (node == null || !node.Enabled)
                     continue;
-                    // for (int i = 0; i < NumSamples; i++)
-                    // {
-                    //     LeftBuffer[i] += node.LeftBuffer[i];
-                    //     RightBuffer[i] += node.RightBuffer[i];
-                    // }
-                    //only support one stereo input atm
-                    reverbModel.ProcessReplace(node.LeftBuffer, node.RightBuffer, LeftBuffer, RightBuffer, NumSamples, 1);
+                    for (int i = 0; i < NumSamples; i++)
+                    {
+                        LeftBuffer[i] += node.LeftBuffer[i];
+                        RightBuffer[i] += node.RightBuffer[i];
+                    }
             }
-            
+            reverbModel.ProcessMix(LeftBuffer, RightBuffer, LeftBuffer, RightBuffer, NumSamples, 1);
         }
 
         public void Mute()

@@ -206,7 +206,10 @@ namespace Synth
 				float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * _smoothModulationStrength;
 				modulatedPhase += prevSample * SelfModulationStrength;
 				modulatedPhase = Mathf.PosMod(modulatedPhase, 1.0f);
-				prevSample = GetSampleFunc(currWaveTable, modulatedPhase) * Amplitude * gain;
+
+				var shapedPhase = modulatedPhase;//PhaseTransformer.ExponentialTransform(modulatedPhase, 1.0f);
+				prevSample = GetSampleFunc(currWaveTable, shapedPhase) * Amplitude * gain;
+
 				buffer[i] = prevSample;
 
 				lastPhase = phaseForThisSample; // Update lastPhase for next iteration

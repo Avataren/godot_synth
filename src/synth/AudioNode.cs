@@ -14,6 +14,8 @@ namespace Synth
 		public float Phase = 0.0f;
 		public float Balance = 0.0f;
 		protected float[] buffer;
+		public float[] LeftBuffer;
+		public float[] RightBuffer;
 		public int NumSamples;
 		public bool HardSync = false;
 		public string Name { get; set; }

@@ -3,9 +3,9 @@ namespace Synth
     public enum AudioParam
     {
         Input,
-        MixedInput,
+        StereoInput,
         Gain,
-        Balance, 
+        Balance,
         Frequency,
         PulseWidth,
         DetuneCents,

@@ -5,7 +5,7 @@ using Synth;
 public class SynthPatch
 {
     public const int MaxOscillators = 5;
-    public static int Oversampling = 16;
+    public static int Oversampling = 2;
     static int BufferSize = 1024 * Oversampling;
     float SampleRate = 44100 * Oversampling;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
@@ -15,13 +15,14 @@ public class SynthPatch
     AudioGraph graph = new AudioGraph();
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     ConstantNode freq;
-
+    DelayEffectNode delayEffectNode;
     MoogFilterNode moogFilterNode;
     public SynthPatch(WaveTableBank waveTableBank)
     {
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
+        delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect", BufferSize, SampleRate);
         for (int i = 0; i < MaxOscillators; i++)
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
@@ -42,7 +43,8 @@ public class SynthPatch
         envelopes.Add(ampEnvelope);
 
         graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
-        graph.Connect(mix1, moogFilterNode, AudioParam.MixedInput);
+        graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput);
+        graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput);
         graph.DebugPrint();
 
         SampleRate = AudioServer.GetMixRate();
@@ -428,56 +430,10 @@ public class SynthPatch
         }
     }
 
-    public MoogFilterNode Process(float increment)
+    public DelayEffectNode Process(float increment)
     {
-        //Array.Clear(buffer, 0, BufferSize);
-        /*
-        LFO_Manager.Process(increment);
-        AmpEnvelope.Process(increment);
-        // Mix the oscillators
-        for (int oscIdx = 0; oscIdx < Oscillators.Count; oscIdx++)
-        {
-            var osc = Oscillators[oscIdx];
-            if (!osc.Enabled)
-            {
-                continue;
-            }
-            var env = AmpEnvelopes[oscIdx];
-
-            osc.Process(increment);
-            if (env.Enabled)
-            {
-                env.Process(increment);
-            }
-        }
-
-        for (int oscIdx = 0; oscIdx < Oscillators.Count; oscIdx++)
-        {
-            var osc = Oscillators[oscIdx];
-            if (!osc.Enabled)
-            {
-                continue;
-            }
-            var env = AmpEnvelopes[oscIdx];
-            if (env.Enabled)
-            {
-                for (int i = 0; i < BufferSize; i++)
-                {
-                    buffer[i] += osc[i] * env[i] * AmpEnvelope[i];
-                }
-            }
-            else
-            {
-                for (int i = 0; i < BufferSize; i++)
-                {
-                    buffer[i] += osc[i] * AmpEnvelope[i];
-                }
-            }
-        }
-*/
         graph.Process(increment);
-        var mixNode = graph.GetNode("MoogFilter") as MoogFilterNode;
-        return mixNode;
-        //Array.Copy(graph.GetNode("Mix1")., buffer, BufferSize);
+        var node = graph.GetNode("DelayEffect") as DelayEffectNode;
+        return node;
     }
 }

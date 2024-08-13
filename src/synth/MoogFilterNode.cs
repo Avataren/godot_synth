@@ -6,8 +6,6 @@ namespace Synth
     {
         private MoogFilter leftFilter;
         private MoogFilter rightFilter;
-        public float[] LeftBuffer;
-        public float[] RightBuffer;
 
         public MoogFilterNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
         {
@@ -19,7 +17,7 @@ namespace Synth
 
         public override void Process(float increment)
         {
-            var nodes = GetParameterNodes(AudioParam.MixedInput);
+            var nodes = GetParameterNodes(AudioParam.StereoInput);
             if (nodes == null || nodes.Count == 0)
                 return;
 

@@ -150,8 +150,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				}
 			}
 
-			if (eventKey.Pressed && eventKey.Keycode == Key.Escape)
-				GetTree().Quit();
+			// if (eventKey.Pressed && eventKey.Keycode == Key.Escape)
+			// 	GetTree().Quit();
 		}
 	}
 

@@ -14,7 +14,7 @@ namespace Synth
         public const float InitialRoom = 0.5f;
         public const float InitialDamp = 0.5f;
         public const float InitialWet = 1f / ScaleWet;
-        public const float InitialDry = 0f;
+        public const float InitialDry = 0.5f;
         public const float InitialWidth = 1f;
         public const float InitialMode = 0f;
         public const float FreezeMode = 0.5f;

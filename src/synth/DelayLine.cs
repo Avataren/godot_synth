@@ -6,16 +6,16 @@ public class DelayLine
     private int delaySamples;
 
     // Feedback and Wet/Dry Mix
-    private float feedback;
-    private float wetMix;
-    private float dryMix;
+    public float Feedback;
+    public float WetMix;
+    public float DryMix;
 
     public DelayLine(int delayInMilliseconds, int sampleRate, float feedback = 0.5f, float wetMix = 0.5f, float dryMix = 0.5f)
     {
         SetDelayTime(delayInMilliseconds, sampleRate);
-        this.feedback = feedback;
-        this.wetMix = wetMix;
-        this.dryMix = dryMix;
+        this.Feedback = feedback;
+        this.WetMix = wetMix;
+        this.DryMix = dryMix;
     }
 
     // Method to set or change the delay time dynamically
@@ -35,10 +35,10 @@ public class DelayLine
         float delayedSample = buffer[readIndex];
 
         // Apply feedback directly to the delayed sample, so even the first echo is attenuated
-        float processedSample = delayedSample * feedback;
+        float processedSample = delayedSample * Feedback;
 
         // Mix the original input with the processed (attenuated) delayed sample
-        float outputSample = (dryMix * inputSample) + (wetMix * processedSample);
+        float outputSample = (DryMix * inputSample) + (WetMix * processedSample);
 
         // Write the new sample into the buffer with the feedback applied
         buffer[writeIndex] = inputSample + processedSample;

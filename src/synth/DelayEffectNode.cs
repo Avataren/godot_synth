@@ -9,8 +9,8 @@ namespace Synth
 
         public DelayEffectNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
         {
-            leftDelayLine = new DelayLine(500, (int)sampleFrequency);
-            rightDelayLine = new DelayLine(500, (int)sampleFrequency);
+            leftDelayLine = new DelayLine(250, (int)sampleFrequency);
+            rightDelayLine = new DelayLine(250, (int)sampleFrequency);
             LeftBuffer = new float[numSamples];
             RightBuffer = new float[numSamples];
         }
@@ -37,35 +37,35 @@ namespace Synth
             }
         }
 
-        // public float Cutoff
-        // {
-        //     get { return leftFilter.Cutoff; }
-        //     set
-        //     {
-        //         leftFilter.Cutoff = value;
-        //         rightFilter.Cutoff = value; // Assuming both channels have the same cutoff
-        //     }
-        // }
+        public float Feedback
+        {
+            get { return leftDelayLine.Feedback; }
+            set
+            {
+                leftDelayLine.Feedback = value;
+                rightDelayLine.Feedback = value;
+            }
+        }
 
-        // public float Resonance
-        // {
-        //     get { return leftFilter.Resonance; }
-        //     set
-        //     {
-        //         leftFilter.Resonance = value;
-        //         rightFilter.Resonance = value; // Assuming both channels have the same resonance
-        //     }
-        // }
+        public float DryMix
+        {
+            get { return leftDelayLine.DryMix; }
+            set
+            {
+                leftDelayLine.DryMix = value;
+                rightDelayLine.DryMix = value;
+            }
+        }
 
-        // public float Drive
-        // {
-        //     get { return leftFilter.Drive; }
-        //     set
-        //     {
-        //         leftFilter.Drive = value;
-        //         rightFilter.Drive = value; // Assuming both channels have the same drive
-        //     }
-        // }
+        public float WetMix
+        {
+            get { return leftDelayLine.WetMix; }
+            set
+            {
+                leftDelayLine.WetMix = value;
+                rightDelayLine.WetMix = value;
+            }
+        }
 
     }
 }

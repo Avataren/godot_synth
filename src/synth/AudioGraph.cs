@@ -6,6 +6,7 @@ namespace Synth
 {
     public class AudioGraph
     {
+        private readonly object _lock = new object();
         protected List<AudioNode> Nodes = new List<AudioNode>();
         protected List<AudioNode> SortedNodes = null;
 
@@ -47,57 +48,75 @@ namespace Synth
 
         public AudioNode GetNode(string name)
         {
-            return Nodes.Find(node => node.Name == name);
-        }        
+            lock (_lock)
+            {
+                return Nodes.Find(node => node.Name == name);
+            }
+        }
 
         public void RegisterNode(AudioNode node)
         {
-            Nodes.Add(node);
-            SortedNodes = null;
+            lock (_lock)
+            {
+                Nodes.Add(node);
+                SortedNodes = null;
+            }
         }
 
         public void RemoveNode(string name)
         {
-            Nodes.RemoveAll(node => node.Name == name);
-            SortedNodes = null;
+            lock (_lock)
+            {
+                Nodes.RemoveAll(node => node.Name == name);
+                SortedNodes = null;
+            }
         }
 
         public void Connect(AudioNode source, AudioNode destination, AudioParam param)
         {
-            if (!destination.AudioParameters.ContainsKey(param))
+            lock (_lock)
             {
-                destination.AudioParameters[param] = new List<AudioNode>();
+                if (!destination.AudioParameters.ContainsKey(param))
+                {
+                    destination.AudioParameters[param] = new List<AudioNode>();
+                }
+                destination.AudioParameters[param].Add(source);
+                SortedNodes = null;
             }
-            destination.AudioParameters[param].Add(source);
-            SortedNodes = null;
         }
 
         public void Disconnect(AudioNode source, AudioNode destination, AudioParam param)
         {
-            if (destination.AudioParameters.ContainsKey(param))
+            lock (_lock)
             {
-                destination.AudioParameters[param].Remove(source);
+                if (destination.AudioParameters.ContainsKey(param))
+                {
+                    destination.AudioParameters[param].Remove(source);
+                }
+                SortedNodes = null;
             }
-            SortedNodes = null;
         }
 
         // Handle enabling/disabling nodes with rerouting logic
         public void SetNodeEnabled(AudioNode node, bool enabled)
         {
-            if (node.Enabled != enabled)
+            lock (_lock)
             {
-                node.Enabled = enabled;
-
-                if (enabled)
+                if (node.Enabled != enabled)
                 {
-                    RestoreConnections(node);
-                }
-                else
-                {
-                    RerouteConnections(node);
-                }
+                    node.Enabled = enabled;
 
-                TopologicalSort(); // Re-sort after changing connections
+                    if (enabled)
+                    {
+                        RestoreConnections(node);
+                    }
+                    else
+                    {
+                        RerouteConnections(node);
+                    }
+
+                    TopologicalSort(); // Re-sort after changing connections
+                }
             }
         }
 
@@ -152,16 +171,19 @@ namespace Synth
 
         public void Process(float increment)
         {
-            if (SortedNodes == null)
+            lock (_lock)
             {
-                TopologicalSort();
-            }
-
-            foreach (AudioNode node in SortedNodes)
-            {
-                if (node.Enabled)
+                if (SortedNodes == null)
                 {
-                    node.Process(increment);
+                    TopologicalSort();
+                }
+
+                foreach (AudioNode node in SortedNodes)
+                {
+                    if (node.Enabled)
+                    {
+                        node.Process(increment);
+                    }
                 }
             }
         }

@@ -16,14 +16,17 @@ public class SynthPatch
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     ConstantNode freq;
     DelayEffectNode delayEffectNode;
+    ReverbEffectNode reverbEffectNode;
     MoogFilterNode moogFilterNode;
     PassThroughNode speakerNode;
+
     public SynthPatch(WaveTableBank waveTableBank)
     {
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect", BufferSize, SampleRate);
+        reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect", BufferSize, SampleRate);
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker", BufferSize, SampleRate);
         for (int i = 0; i < MaxOscillators; i++)
         {
@@ -47,7 +50,9 @@ public class SynthPatch
         graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
         graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput);
         graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput);
-        graph.Connect(delayEffectNode, speakerNode, AudioParam.StereoInput);
+        graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput);
+        graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput);
+        
         //graph.DebugPrint();
 
         SampleRate = AudioServer.GetMixRate();

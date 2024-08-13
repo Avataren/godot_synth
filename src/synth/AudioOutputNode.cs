@@ -158,28 +158,48 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	public void FillBuffer()
 	{
 		float increment = 1.0f / _sampleHz;
+		float repr = 1.0f / SynthPatch.Oversampling;
 
 		while (run_sound_thread)
 		{
 			var mix = CurrentPatch.Process(increment);
+
+			// Pre-calculate length to avoid repetitive property access
+			int leftRightBufferLength = mix.LeftBuffer.Length;
+
+			// Optimize loop by using a single loop instead of nested loops
 			for (int i = 0; i < num_samples; i++)
 			{
-				audioData[i][0] = mix.LeftBuffer[i];
-				audioData[i][1] = mix.RightBuffer[i];
+				int baseIndex = i * SynthPatch.Oversampling;
+				float left = 0.0f;
+				float right = 0.0f;
+
+				// Sum the oversampled data in one loop
+				for (int j = 0; j < SynthPatch.Oversampling; j++)
+				{
+					int sampleIndex = baseIndex + j;
+					//if (sampleIndex < leftRightBufferLength) // Boundary check
+					{
+						left += mix.LeftBuffer[sampleIndex];
+						right += mix.RightBuffer[sampleIndex];
+					}
+				}
+				audioData[i][0] = left * repr;
+				audioData[i][1] = right * repr;
+
+				// Mix buffer average directly in the same loop
+				buffer_copy[i] = (mix.LeftBuffer[i] + mix.RightBuffer[i]) / 2;
 			}
+
+			// Avoid tight loop and sleep
 			while (!_playback.CanPushBuffer(num_samples))
 			{
 				Thread.Sleep(1);
 			}
 			_playback.PushBuffer(audioData);
-
-			// make mix_buffer average of left and right
-			for (int i = 0; i < num_samples; i++)
-			{
-				buffer_copy[i] = (mix.LeftBuffer[i] + mix.RightBuffer[i]) / 2;
-			}
 		}
 	}
+
 
 	public override void _ExitTree()
 	{

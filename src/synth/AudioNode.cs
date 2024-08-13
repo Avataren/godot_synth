@@ -20,6 +20,8 @@ namespace Synth
 		public bool HardSync = false;
 		public string Name { get; set; }
 		public Dictionary<AudioParam, List<AudioNode>> AudioParameters = new Dictionary<AudioParam, List<AudioNode>>();
+	    private Dictionary<AudioParam, List<AudioNode>> originalConnections = new Dictionary<AudioParam, List<AudioNode>>();
+
 
 		public float GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
 		{

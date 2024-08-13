@@ -17,12 +17,14 @@ public class SynthPatch
     ConstantNode freq;
     DelayEffectNode delayEffectNode;
     MoogFilterNode moogFilterNode;
+    PassThroughNode speakerNode;
     public SynthPatch(WaveTableBank waveTableBank)
     {
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect", BufferSize, SampleRate);
+        speakerNode = graph.CreateNode<PassThroughNode>("Speaker", BufferSize, SampleRate);
         for (int i = 0; i < MaxOscillators; i++)
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
@@ -45,7 +47,8 @@ public class SynthPatch
         graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
         graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput);
         graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput);
-        graph.DebugPrint();
+        graph.Connect(delayEffectNode, speakerNode, AudioParam.StereoInput);
+        //graph.DebugPrint();
 
         SampleRate = AudioServer.GetMixRate();
         this.waveTableBank = waveTableBank;
@@ -63,7 +66,31 @@ public class SynthPatch
         oscillators[0].Enabled = true;
         graph.TopologicalSort();
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
+    }
 
+    public void SetDelayEffect_Enabled(bool enabled)
+    {
+        graph.SetNodeEnabled(delayEffectNode,enabled);
+    }
+
+    public void SetDelayEffect_Delay(int delay)
+    {
+        delayEffectNode.DelayTimeInMs = delay;
+    }
+
+    public void SetDelayEffect_Feedback(float feedback)
+    {
+        delayEffectNode.Feedback = feedback;
+    }
+
+    public void SetDelayEffect_DryMix(float dryMix)
+    {
+        delayEffectNode.DryMix = dryMix;
+    }
+
+    public void SetDelayEffect_WetMix(float wetMix)
+    {
+        delayEffectNode.WetMix = wetMix;
     }
 
     public void SetDrive(float drive)
@@ -159,30 +186,27 @@ public class SynthPatch
     {
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
-            AmpEnvelopes[EnvelopeIndex].Enabled = enabled;
-            graph.TopologicalSort();
+            graph.SetNodeEnabled(AmpEnvelopes[EnvelopeIndex],enabled);
             return;
         }
 
         for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
         {
-            AmpEnvelopes[idx].Enabled = enabled;
+            graph.SetNodeEnabled(AmpEnvelopes[idx],enabled);
         }
-        graph.TopologicalSort();
+
     }
     public void SetHardSync(bool enabled, int OscillatorIndex = -1)
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
             oscillators[OscillatorIndex].HardSync = enabled;
-            graph.TopologicalSort();
             return;
         }
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
             oscillators[idx].HardSync = enabled;
         }
-        graph.TopologicalSort();
     }
 
     public void SetAmplitude(float amplitude, int OscillatorIndex = -1)
@@ -204,16 +228,15 @@ public class SynthPatch
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
-            oscillators[OscillatorIndex].Enabled = enabled;
-            graph.TopologicalSort();
+            graph.SetNodeEnabled(oscillators[OscillatorIndex],enabled);
             return;
         }
 
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
-            oscillators[idx].Enabled = enabled;
+            graph.SetNodeEnabled(oscillators[idx],enabled);
         }
-        graph.TopologicalSort();
+        
     }
 
     public void SetAttack(float attack, int EnvelopeIndex = -1)
@@ -430,10 +453,10 @@ public class SynthPatch
         }
     }
 
-    public DelayEffectNode Process(float increment)
+    public PassThroughNode Process(float increment)
     {
         graph.Process(increment);
-        var node = graph.GetNode("DelayEffect") as DelayEffectNode;
+        var node = graph.GetNode("Speaker") as PassThroughNode;
         return node;
     }
 }

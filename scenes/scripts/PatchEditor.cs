@@ -113,6 +113,32 @@ public partial class PatchEditor : Node2D
 		AudioOutputNode.BaseOctave = index;
 	}
 
+	private void _on_delay_delay_enabled(bool enabled)
+	{
+		AudioOutputNode.CurrentPatch.SetDelayEffect_Enabled(enabled);
+	}
+
+	private void _on_delay_delay_changed(int value)
+	{
+		AudioOutputNode.CurrentPatch.SetDelayEffect_Delay(value);
+	}
+
+	private void _on_delay_feedback_changed(float value)
+	{
+		GD.Print("Feedback Changed: ", value);
+		AudioOutputNode.CurrentPatch.SetDelayEffect_Feedback(value);
+	}
+	
+	private void _on_delay_wetmix_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetDelayEffect_WetMix(value);
+	}
+
+	private void _on_delay_drymix_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetDelayEffect_DryMix(value);
+	}
+
 	private void ConnectOscillatorSignals(Oscillator osc, int oscNum)
 	{
 		osc.FeedbackChanged += (feedback) =>

@@ -6,33 +6,22 @@ namespace Synth
 {
     public class AudioGraph
     {
-        // static AudioGraph _instance = null;
-        // public static AudioGraph GetInstance()
-        // {
-        //     if (_instance == null)
-        //     {
-        //         _instance = new AudioGraph();
-        //     }
-        //     return _instance;
-        // }
+        protected List<AudioNode> Nodes = new List<AudioNode>();
+        protected List<AudioNode> SortedNodes = null;
 
+        // Store original connections for each node
+        private Dictionary<AudioNode, List<(AudioNode Source, AudioNode Destination, AudioParam Param)>> originalConnections = new Dictionary<AudioNode, List<(AudioNode, AudioNode, AudioParam)>>();
+
+        // Factory method to create and register nodes
         public T CreateNode<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(string name, int bufferSize, float sampleRate = 44100) where T : AudioNode
         {
-            var constructorInfo = typeof(T).GetConstructor([typeof(int), typeof(float)]) ?? throw new InvalidOperationException($"Type {typeof(T)} does not have a constructor with parameters (int, float).");
+            var constructorInfo = typeof(T).GetConstructor(new Type[] { typeof(int), typeof(float) }) ?? throw new InvalidOperationException($"Type {typeof(T)} does not have a constructor with parameters (int, float).");
 
-            T node = (T)constructorInfo.Invoke([bufferSize, sampleRate]);
+            T node = (T)constructorInfo.Invoke(new object[] { bufferSize, sampleRate });
             node.Name = name;
 
             RegisterNode(node);
             return node;
-        }
-
-        protected List<AudioNode> Nodes = new List<AudioNode>();
-        protected List<AudioNode> SortedNodes = null;
-
-        public AudioNode GetNode(string name)
-        {
-            return Nodes.Find(node => node.Name == name);
         }
 
         public void DebugPrint()
@@ -55,6 +44,12 @@ namespace Synth
                 }
             }
         }
+
+        public AudioNode GetNode(string name)
+        {
+            return Nodes.Find(node => node.Name == name);
+        }        
+
         public void RegisterNode(AudioNode node)
         {
             Nodes.Add(node);
@@ -65,23 +60,6 @@ namespace Synth
         {
             Nodes.RemoveAll(node => node.Name == name);
             SortedNodes = null;
-        }
-
-        public void Process(float increment)
-        {
-            if (SortedNodes == null)
-            {
-                TopologicalSort();
-            }
-
-            foreach (AudioNode node in SortedNodes)
-            {
-                if (!node.Enabled)
-                {
-                    continue;
-                }
-                node.Process(increment);
-            }
         }
 
         public void Connect(AudioNode source, AudioNode destination, AudioParam param)
@@ -103,9 +81,93 @@ namespace Synth
             SortedNodes = null;
         }
 
+        // Handle enabling/disabling nodes with rerouting logic
+        public void SetNodeEnabled(AudioNode node, bool enabled)
+        {
+            if (node.Enabled != enabled)
+            {
+                node.Enabled = enabled;
+
+                if (enabled)
+                {
+                    RestoreConnections(node);
+                }
+                else
+                {
+                    RerouteConnections(node);
+                }
+
+                TopologicalSort(); // Re-sort after changing connections
+            }
+        }
+
+        private void RerouteConnections(AudioNode node)
+        {
+            if (!originalConnections.ContainsKey(node))
+            {
+                originalConnections[node] = new List<(AudioNode, AudioNode, AudioParam)>();
+            }
+
+            // Disconnect the node and reroute its inputs
+            foreach (var param in node.AudioParameters.Keys)
+            {
+                foreach (var inputNode in node.AudioParameters[param])
+                {
+                    foreach (var dependentNode in Nodes)
+                    {
+                        if (dependentNode.AudioParameters.ContainsKey(param) && dependentNode.AudioParameters[param].Contains(node))
+                        {
+                            // Save the original connection
+                            originalConnections[node].Add((inputNode, dependentNode, param));
+
+                            // Disconnect the current node from the dependent node
+                            Disconnect(node, dependentNode, param);
+
+                            // Connect inputNode directly to the dependentNode
+                            Connect(inputNode, dependentNode, param);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void RestoreConnections(AudioNode node)
+        {
+            // Restore the original connections
+            if (originalConnections.ContainsKey(node))
+            {
+                foreach (var (source, destination, param) in originalConnections[node])
+                {
+                    // Disconnect the rerouted connection
+                    Disconnect(source, destination, param);
+
+                    // Reconnect the original node
+                    Connect(node, destination, param);
+                }
+
+                // Clear stored original connections
+                originalConnections[node].Clear();
+            }
+        }
+
+        public void Process(float increment)
+        {
+            if (SortedNodes == null)
+            {
+                TopologicalSort();
+            }
+
+            foreach (AudioNode node in SortedNodes)
+            {
+                if (node.Enabled)
+                {
+                    node.Process(increment);
+                }
+            }
+        }
+
         public void TopologicalSort()
         {
-            Godot.GD.Print("TopologicalSort");
             SortedNodes = new List<AudioNode>();
             HashSet<AudioNode> visited = new HashSet<AudioNode>();
             HashSet<AudioNode> stack = new HashSet<AudioNode>();
@@ -119,20 +181,19 @@ namespace Synth
             }
         }
 
-        void Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
+        private void Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
         {
-
             if (stack.Contains(node))
             {
                 throw new InvalidOperationException("Cycle detected in the audio graph");
             }
             if (!visited.Contains(node))
             {
-                if (node.Enabled)
+                if (node.Enabled) // Skip disabled nodes
                 {
                     stack.Add(node);
                     visited.Add(node);
-                    // Recursively visit all dependencies first
+
                     foreach (var paramlist in node.AudioParameters.Values)
                     {
                         foreach (AudioNode dependentNode in paramlist)
@@ -140,8 +201,8 @@ namespace Synth
                             Visit(dependentNode, visited, stack);
                         }
                     }
+
                     stack.Remove(node);
-                    // Add the node to the sorted list after all its dependencies are already added
                     SortedNodes.Add(node);
                 }
             }

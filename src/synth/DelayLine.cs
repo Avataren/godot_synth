@@ -10,7 +10,7 @@ public class DelayLine
     public float WetMix;
     public float DryMix;
 
-    public DelayLine(int delayInMilliseconds, int sampleRate, float feedback = 0.5f, float wetMix = 0.5f, float dryMix = 0.5f)
+    public DelayLine(int delayInMilliseconds, int sampleRate, float feedback = 0.25f, float wetMix = 0.5f, float dryMix = 1.0f)
     {
         SetDelayTime(delayInMilliseconds, sampleRate);
         this.Feedback = feedback;

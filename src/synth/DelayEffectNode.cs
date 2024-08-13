@@ -9,19 +9,19 @@ namespace Synth
 
         public DelayEffectNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
         {
-            leftDelayLine = new DelayLine(250, (int)sampleFrequency);
-            rightDelayLine = new DelayLine(250, (int)sampleFrequency);
+            leftDelayLine = new DelayLine(300, (int)sampleFrequency);
+            rightDelayLine = new DelayLine(300, (int)sampleFrequency);
             LeftBuffer = new float[numSamples];
             RightBuffer = new float[numSamples];
         }
 
         public override void Process(float increment)
         {
-            var nodes = GetParameterNodes(AudioParam.StereoInput);
-            if (nodes == null || nodes.Count == 0)
+            var inputs = GetParameterNodes(AudioParam.StereoInput);
+            if (inputs == null || inputs.Count == 0)
                 return;
-
-            foreach (var node in nodes)
+                
+            foreach (var node in inputs)
             {
                 if (node == null || !node.Enabled)
                     continue;
@@ -37,11 +37,21 @@ namespace Synth
             }
         }
 
+        public int DelayTimeInMs
+        {
+            set
+            {
+                leftDelayLine.SetDelayTime(value, (int)SampleFrequency);
+                rightDelayLine.SetDelayTime(value, (int)SampleFrequency);
+            }
+        }
+
         public float Feedback
         {
             get { return leftDelayLine.Feedback; }
             set
             {
+                Godot.GD.Print("Setting Feedback to: ", value);
                 leftDelayLine.Feedback = value;
                 rightDelayLine.Feedback = value;
             }

@@ -6,9 +6,6 @@ namespace Synth
 
     public class MixerNode : AudioNode
     {
-        public float[] RightBuffer;
-        public float[] LeftBuffer;
-
         public MixerNode(int numSamples) : base(numSamples)
         {
             RightBuffer = new float[numSamples];

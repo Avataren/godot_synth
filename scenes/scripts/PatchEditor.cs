@@ -93,6 +93,38 @@ public partial class PatchEditor : Node2D
 		}
 	}
 
+	private void _on_reverb_wet_changed(float value)
+	{
+		GD.Print("Wet Changed: ", value);
+		AudioOutputNode.CurrentPatch.SetReverbEffect_Wet(value);
+	}
+
+	private void _on_reverb_dry_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetReverbEffect_Dry(value);
+	}
+
+	private void _on_reverb_damp_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetReverbEffect_Damp(value);
+	}
+
+	private void _on_reverb_room_size_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetReverbEffect_RoomSize(value);
+	}
+
+	private void _on_reverb_width_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetReverbEffect_Width(value);
+	}
+
+	private void _on_reverb_enabled_toggled(bool enabled)
+	{
+		AudioOutputNode.CurrentPatch.SetReverbEffect_Enabled(enabled);
+	}
+	
+
 	private void _on_drive_changed(float value)
 	{
 		AudioOutputNode.CurrentPatch.SetDrive(value);

@@ -144,7 +144,7 @@ namespace Synth
 
         public float Mode
         {
-            get => mode >= ReverbTunings.FreezeMode ? 1 : 0;
+            get => mode >= ReverbTunings.FreezeMode ? 1.0f : 0.0f;
             set
             {
                 mode = value;
@@ -174,7 +174,7 @@ namespace Synth
 
             for (long i = 0; i < numSamples; i++)
             {
-                outL = outR = 0;
+                outL = outR = 0.0f;
                 input = (inputL[i * skip] + inputR[i * skip]) * gain;
 
                 // Accumulate comb filters in parallel
@@ -203,7 +203,7 @@ namespace Synth
 
             for (long i = 0; i < numSamples; i++)
             {
-                outL = outR = 0;
+                outL = outR = 0.0f;
                 input = (inputL[i * skip] + inputR[i * skip]) * gain;
 
                 // Accumulate comb filters in parallel
@@ -228,8 +228,8 @@ namespace Synth
 
         private void Update()
         {
-            wet1 = wet * (width / 2 + 0.5f);
-            wet2 = wet * ((1 - width) / 2);
+            wet1 = wet * (width / 2.0f + 0.5f);
+            wet2 = wet * ((1.0f - width) / 2.0f);
 
             if (mode >= ReverbTunings.FreezeMode)
             {

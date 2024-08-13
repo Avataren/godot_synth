@@ -1,0 +1,80 @@
+[gd_scene load_steps=3 format=3 uid="uid://dptpgfskdirph"]
+
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_jn1bq"]
+[ext_resource type="Script" path="res://scenes/scripts/reverb.gd" id="1_kjkex"]
+
+[node name="PanelContainer" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 1
+script = ExtResource("1_kjkex")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Reverb"
+horizontal_alignment = 1
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+button_pressed = true
+text = "Enabled"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="DampKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("1_jn1bq")]
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Damp"
+current_value = 0.5
+
+[node name="DryKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("1_jn1bq")]
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Dry"
+current_value = 0.0
+
+[node name="WetKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("1_jn1bq")]
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Wet"
+current_value = 0.333
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="RoomKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("1_jn1bq")]
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Room"
+current_value = 0.5
+
+[node name="WidthKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("1_jn1bq")]
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Width"
+current_value = 1.0
+
+[connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]
+[connection signal="value_changed" from="VBoxContainer/VBoxContainer/HBoxContainer/DampKnob" to="." method="_on_damp_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/VBoxContainer/HBoxContainer/DryKnob" to="." method="_on_dry_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/VBoxContainer/HBoxContainer/WetKnob" to="." method="_on_wet_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/VBoxContainer/HBoxContainer2/RoomKnob" to="." method="_on_room_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/VBoxContainer/HBoxContainer2/WidthKnob" to="." method="_on_width_knob_value_changed"]

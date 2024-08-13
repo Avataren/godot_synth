@@ -73,6 +73,38 @@ public class SynthPatch
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
     }
 
+    public void SetReverbEffect_Enabled(bool enabled)
+    {
+        graph.SetNodeEnabled(reverbEffectNode,enabled);
+        reverbEffectNode.Mute();
+    }
+
+    public void SetReverbEffect_RoomSize(float roomSize)
+    {
+        reverbEffectNode.RoomSize = roomSize;
+    }
+
+    public void SetReverbEffect_Damp(float damp)
+    {
+        GD.Print("Setting damp to " + damp);
+        reverbEffectNode.Damp = damp;
+    }
+
+    public void SetReverbEffect_Wet(float wet)
+    {
+        reverbEffectNode.Wet = wet;
+    }
+
+    public void SetReverbEffect_Dry(float dry)
+    {
+        reverbEffectNode.Dry = dry;
+    }
+
+    public void SetReverbEffect_Width(float width)
+    {
+        reverbEffectNode.Width = width;
+    }
+
     public void SetDelayEffect_Enabled(bool enabled)
     {
         graph.SetNodeEnabled(delayEffectNode,enabled);

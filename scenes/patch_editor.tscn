@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=17 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://chrddluikt6ro" path="res://scenes/lfo.tscn" id="6_4sevq"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
 [ext_resource type="PackedScene" uid="uid://d2tnrme5j7xrt" path="res://scenes/Delay.tscn" id="8_pjurh"]
+[ext_resource type="PackedScene" uid="uid://dptpgfskdirph" path="res://scenes/Reverb.tscn" id="9_q5dht"]
 [ext_resource type="PackedScene" uid="uid://brjdceq6gabsc" path="res://scenes/MoogFilter.tscn" id="9_tmfms"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
@@ -157,8 +158,12 @@ layout_mode = 2
 
 [node name="EffectsContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3"]
 layout_mode = 2
+theme_override_constants/separation = 5
 
 [node name="Delay" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer" instance=ExtResource("8_pjurh")]
+layout_mode = 2
+
+[node name="PanelContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer" instance=ExtResource("9_q5dht")]
 layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
@@ -208,6 +213,12 @@ layout_mode = 2
 [connection signal="drymix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/Delay" to="." method="_on_delay_drymix_changed"]
 [connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/Delay" to="." method="_on_delay_feedback_changed"]
 [connection signal="wetmix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/Delay" to="." method="_on_delay_wetmix_changed"]
+[connection signal="damp_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/PanelContainer" to="." method="_on_reverb_damp_changed"]
+[connection signal="dry_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/PanelContainer" to="." method="_on_reverb_dry_changed"]
+[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/PanelContainer" to="." method="_on_reverb_enabled_toggled"]
+[connection signal="room_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/PanelContainer" to="." method="_on_reverb_room_size_changed"]
+[connection signal="wet_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/PanelContainer" to="." method="_on_reverb_wet_changed"]
+[connection signal="width_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/PanelContainer" to="." method="_on_reverb_width_changed"]
 [connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_cutoff_changed"]
 [connection signal="drive_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_drive_changed"]
 [connection signal="resonance_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_resonance_changed"]

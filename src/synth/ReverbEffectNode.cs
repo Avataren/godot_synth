@@ -33,10 +33,59 @@ namespace Synth
                     //only support one stereo input atm
                     reverbModel.ProcessReplace(node.LeftBuffer, node.RightBuffer, LeftBuffer, RightBuffer, NumSamples, 1);
             }
-
-            
             
         }
+
+        public void Mute()
+        {
+            reverbModel.Mute();
+        }
+
+        public float RoomSize
+        {
+            get => reverbModel.RoomSize;
+            set
+            {
+                reverbModel.RoomSize = value;
+            }
+        }
+
+        public float Damp
+        {
+            get => reverbModel.Damp;
+            set
+            {
+                reverbModel.Damp = value;
+            }
+        }
+
+        public float Wet
+        {
+            get => reverbModel.Wet;
+            set
+            {
+                reverbModel.Wet = value;
+            }
+        }
+
+        public float Dry
+        {
+            get => reverbModel.Dry;
+            set
+            {
+                reverbModel.Dry = value;
+            }
+        }
+
+        public float Width
+        {
+            get => reverbModel.Width;
+            set
+            {
+                reverbModel.Width = value;
+            }
+        }
+
 
         // public int DelayTimeInMs
         // {

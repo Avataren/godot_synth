@@ -1,7 +1,7 @@
 shader_type canvas_item;
 
 // Define the buffer size according to the data you are passing
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 512
 uniform float[BUFFER_SIZE] wave_data;
 
 void fragment() {

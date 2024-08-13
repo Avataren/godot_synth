@@ -10,7 +10,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	public delegate void BufferFilledEventHandler(float[] buffer);
 	public event BufferFilledEventHandler BufferFilled;
 
-	[Export] int num_samples = 1024;
+	[Export] int num_samples = 512;
 	private Vector2[] audioData;
 	private float[] buffer_copy;
 	private AudioStreamGeneratorPlayback _playback;

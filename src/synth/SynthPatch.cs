@@ -5,8 +5,8 @@ using Synth;
 public class SynthPatch
 {
     public const int MaxOscillators = 5;
-    public static int Oversampling = 2;
-    static int BufferSize = 1024 * Oversampling;
+    public static int Oversampling = 4;
+    static int BufferSize = 512 * Oversampling;
     float SampleRate = 44100 * Oversampling;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();

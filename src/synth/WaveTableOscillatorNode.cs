@@ -171,6 +171,14 @@ namespace Synth
 
 		float prevSample = 0.0f;
 
+		private float _smoothModulationStrength = 0.0f;
+		private float _modulationSmoothingFactor = 0.01f; // Adjust this to control the smoothness (smaller value means smoother transitions)
+
+		private float SmoothValue(float currentValue, float targetValue, float smoothingFactor)
+		{
+			return currentValue + smoothingFactor * (targetValue - currentValue);
+		}
+
 		public override void Process(float increment)
 		{
 			var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
@@ -193,9 +201,9 @@ namespace Synth
 				}
 
 				float phaseForThisSample = lastPhase + (detunedFreq / sampleRate);
-
+				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, ModulationStrength, _modulationSmoothingFactor);
 				// Apply modulation and calculate buffer output
-				float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * ModulationStrength;
+				float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * _smoothModulationStrength;
 				modulatedPhase += prevSample * SelfModulationStrength;
 				modulatedPhase = Mathf.PosMod(modulatedPhase, 1.0f);
 				prevSample = GetSampleFunc(currWaveTable, modulatedPhase) * Amplitude * gain;

@@ -7,9 +7,11 @@ uniform float thickness : hint_range(0.0, 0.5) = 0.1;  // Thickness as fraction 
 uniform vec4 color_bg : source_color = vec4(0.2, 0.2, 0.2, 1.0);  // Background arc color
 uniform vec4 color_fg : source_color = vec4(0.67, 0.74, 0.86, 1.0);  // Progress arc color
 uniform vec4 color_pointer : source_color = vec4(1.0, 0.5, 0.0, 1.0);  // Pointer color
+uniform vec4 color_cap : source_color = vec4(0.1, 0.1, 0.1, 1.0);  // Cap color
 uniform float antialiasing : hint_range(0.0, 1.0) = 0.01;  // Anti-aliasing strength
-uniform float pointer_thickness : hint_range(0.0, 0.05) = 0.01;  // Thickness of the pointer line
+uniform float pointer_thickness : hint_range(0.0, 0.1) = 0.01;  // Thickness of the pointer line
 uniform float taper_amount : hint_range(0.0, 1.0) = 0.5;  // Amount of taper towards the center
+uniform float cap_radius : hint_range(0.0, 0.2) = 0.05;  // Radius of the center cap
 
 void fragment() {
     vec2 uv = UV;
@@ -57,6 +59,7 @@ void fragment() {
 
     float pointer_dist = dot(dir, pointer_dir);
     float taper_factor = 1.0 - (dist / radius) * taper_amount;
+	taper_factor = pow(taper_factor, 1.5);
     float tapered_thickness = pointer_thickness * taper_factor;
 
     float perpendicular_dist = length(dir - pointer_dir * pointer_dist);
@@ -65,6 +68,11 @@ void fragment() {
         float pointer_edge = smoothstep(tapered_thickness + antialiasing, tapered_thickness - antialiasing, perpendicular_dist);
         vec4 pointer_color = mix(arc_color, color_pointer, pointer_edge);
         arc_color = pointer_color;
+    }
+
+    // Draw the center cap
+    if (dist < cap_radius) {
+        arc_color = color_cap;
     }
 
     COLOR = arc_color;

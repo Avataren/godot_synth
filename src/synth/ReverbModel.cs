@@ -21,63 +21,35 @@ namespace Synth
         private Allpass[] allpassL = new Allpass[ReverbTunings.NumAllpasses];
         private Allpass[] allpassR = new Allpass[ReverbTunings.NumAllpasses];
 
-        // Buffers for the combs
-        private float[] bufCombL1 = new float[ReverbTunings.CombTuningL1];
-        private float[] bufCombR1 = new float[ReverbTunings.CombTuningR1];
-        private float[] bufCombL2 = new float[ReverbTunings.CombTuningL2];
-        private float[] bufCombR2 = new float[ReverbTunings.CombTuningR2];
-        private float[] bufCombL3 = new float[ReverbTunings.CombTuningL3];
-        private float[] bufCombR3 = new float[ReverbTunings.CombTuningR3];
-        private float[] bufCombL4 = new float[ReverbTunings.CombTuningL4];
-        private float[] bufCombR4 = new float[ReverbTunings.CombTuningR4];
-        private float[] bufCombL5 = new float[ReverbTunings.CombTuningL5];
-        private float[] bufCombR5 = new float[ReverbTunings.CombTuningR5];
-        private float[] bufCombL6 = new float[ReverbTunings.CombTuningL6];
-        private float[] bufCombR6 = new float[ReverbTunings.CombTuningR6];
-        private float[] bufCombL7 = new float[ReverbTunings.CombTuningL7];
-        private float[] bufCombR7 = new float[ReverbTunings.CombTuningR7];
-        private float[] bufCombL8 = new float[ReverbTunings.CombTuningL8];
-        private float[] bufCombR8 = new float[ReverbTunings.CombTuningR8];
-
-        // Buffers for the allpasses
-        private float[] bufAllpassL1 = new float[ReverbTunings.AllpassTuningL1];
-        private float[] bufAllpassR1 = new float[ReverbTunings.AllpassTuningR1];
-        private float[] bufAllpassL2 = new float[ReverbTunings.AllpassTuningL2];
-        private float[] bufAllpassR2 = new float[ReverbTunings.AllpassTuningR2];
-        private float[] bufAllpassL3 = new float[ReverbTunings.AllpassTuningL3];
-        private float[] bufAllpassR3 = new float[ReverbTunings.AllpassTuningR3];
-        private float[] bufAllpassL4 = new float[ReverbTunings.AllpassTuningL4];
-        private float[] bufAllpassR4 = new float[ReverbTunings.AllpassTuningR4];
-
         public ReverbModel()
         {
             // Initialize Comb filters with their respective buffers
-            combL[0] = new Comb(bufCombL1);
-            combR[0] = new Comb(bufCombR1);
-            combL[1] = new Comb(bufCombL2);
-            combR[1] = new Comb(bufCombR2);
-            combL[2] = new Comb(bufCombL3);
-            combR[2] = new Comb(bufCombR3);
-            combL[3] = new Comb(bufCombL4);
-            combR[3] = new Comb(bufCombR4);
-            combL[4] = new Comb(bufCombL5);
-            combR[4] = new Comb(bufCombR5);
-            combL[5] = new Comb(bufCombL6);
-            combR[5] = new Comb(bufCombR6);
-            combL[6] = new Comb(bufCombL7);
-            combR[6] = new Comb(bufCombR7);
-            combL[7] = new Comb(bufCombL8);
-            combR[7] = new Comb(bufCombR8);
+            combL[0] = new Comb(ReverbTunings.CombTuningL1);
+            combR[0] = new Comb(ReverbTunings.CombTuningR1);
+            combL[1] = new Comb(ReverbTunings.CombTuningL2);
+            combR[1] = new Comb(ReverbTunings.CombTuningR1);
+            combL[2] = new Comb(ReverbTunings.CombTuningL3);
+            combR[2] = new Comb(ReverbTunings.CombTuningR3);
+            combL[3] = new Comb(ReverbTunings.CombTuningL4);
+            combR[3] = new Comb(ReverbTunings.CombTuningR4);
+            combL[4] = new Comb(ReverbTunings.CombTuningL5);
+            combR[4] = new Comb(ReverbTunings.CombTuningR1);
+            combL[5] = new Comb(ReverbTunings.CombTuningL6);
+            combR[5] = new Comb(ReverbTunings.CombTuningR6);
+            combL[6] = new Comb(ReverbTunings.CombTuningL7);
+            combR[6] = new Comb(ReverbTunings.CombTuningR7);
+            combL[7] = new Comb(ReverbTunings.CombTuningL8);
+            combR[7] = new Comb(ReverbTunings.CombTuningR8);
 
             // Initialize Allpass filters with their respective buffers
-            allpassL[0] = new Allpass(bufAllpassL1);
-            allpassR[0] = new Allpass(bufAllpassR1);
-            allpassL[1] = new Allpass(bufAllpassL2);
-            allpassR[1] = new Allpass(bufAllpassR2);
-            allpassL[2] = new Allpass(bufAllpassL3);
-            allpassR[2] = new Allpass(bufAllpassR3);
-            allpassL[3] = new Allpass(bufAllpassL4);
-            allpassR[3] = new Allpass(bufAllpassR4);
+            allpassL[0] = new Allpass(ReverbTunings.AllpassTuningL1);
+            allpassR[0] = new Allpass(ReverbTunings.AllpassTuningR1);
+            allpassL[1] = new Allpass(ReverbTunings.AllpassTuningL2);
+            allpassR[1] = new Allpass(ReverbTunings.AllpassTuningR2);
+            allpassL[2] = new Allpass(ReverbTunings.AllpassTuningL3);
+            allpassR[2] = new Allpass(ReverbTunings.AllpassTuningR3);
+            allpassL[3] = new Allpass(ReverbTunings.AllpassTuningL4);
+            allpassR[3] = new Allpass(ReverbTunings.AllpassTuningR4);
 
             // Set default values
             foreach (var allpass in allpassL)

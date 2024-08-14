@@ -7,9 +7,9 @@ namespace Synth
         private int bufSize;
         private int bufIdx;
 
-        public Allpass(float[] allBuffer)
+        public Allpass(int bufSize)
         {
-            Buffer = allBuffer;
+            Buffer = new float[bufSize];
             bufIdx = 0;
         }
 
@@ -40,7 +40,7 @@ namespace Synth
         public float Process(float input)
         {
             float bufOut = buffer[bufIdx];
-            Undenormaliser.Undenormalise(ref bufOut);
+            //Undenormaliser.Undenormalise(ref bufOut);
 
             float output = -input + bufOut;
             buffer[bufIdx] = input + (bufOut * feedback);

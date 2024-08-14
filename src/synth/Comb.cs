@@ -1,3 +1,6 @@
+using System;
+using Godot;
+
 namespace Synth
 {
 
@@ -11,11 +14,10 @@ namespace Synth
         private int bufSize;
         private int bufIdx;
 
-        public Comb(float[] combBuffer)
+        public Comb(int combSize)
         {
-            Buffer = combBuffer;
-
-            filterStore = 0;
+            Buffer = new float[combSize];
+            filterStore = 0.0f;
             bufIdx = 0;
         }
 
@@ -35,7 +37,7 @@ namespace Synth
             set
             {
                 damp1 = value;
-                damp2 = 1 - value;
+                damp2 = 1.0f - value;
             }
         }
 
@@ -49,17 +51,17 @@ namespace Synth
         {
             for (int i = 0; i < bufSize; i++)
             {
-                buffer[i] = 0;
+                buffer[i] = 0.0f;
             }
         }
 
         public float Process(float input)
         {
             float output = buffer[bufIdx];
-            Undenormaliser.Undenormalise(ref output);
+            //Undenormaliser.Undenormalise(ref output);
 
             filterStore = (output * damp2) + (filterStore * damp1);
-            Undenormaliser.Undenormalise(ref filterStore);
+            //Undenormaliser.Undenormalise(ref filterStore);
 
             buffer[bufIdx] = input + (filterStore * feedback);
 

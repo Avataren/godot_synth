@@ -1,4 +1,5 @@
 using System;
+using Godot;
 
 namespace Synth
 {
@@ -44,7 +45,7 @@ namespace Synth
             get => reverbModel.RoomSize;
             set
             {
-                reverbModel.RoomSize = value;
+                reverbModel.RoomSize = Mathf.Pow(value,0.5f);
             }
         }
 

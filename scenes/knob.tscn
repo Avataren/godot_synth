@@ -9,7 +9,7 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2p8ds"]
 resource_local_to_scene = true
 shader = ExtResource("2_e4b35")
-shader_parameter/progress = 0.432
+shader_parameter/progress = 0.5
 shader_parameter/start_angle = 270.0
 shader_parameter/arc_span = 270.0
 shader_parameter/thickness = 0.06

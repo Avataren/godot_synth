@@ -5,12 +5,6 @@ extends HBoxContainer
 func _ready() -> void:
 	_on_destination_option_item_selected(0)
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-
-
 func _on_destination_option_item_selected(index: int) -> void:
 	var itemName = %DestinationOption.get_item_text(index);
 	%DestinationParameterOption.clear()

@@ -142,8 +142,12 @@ namespace Synth
                             // Disconnect the current node from the dependent node
                             Disconnect(node, dependentNode, param);
 
-                            // Connect inputNode directly to the dependentNode
-                            Connect(inputNode, dependentNode, param);
+                            // Avoid duplicate connections
+                            if (!dependentNode.AudioParameters[param].Contains(inputNode))
+                            {
+                                // Connect inputNode directly to the dependentNode
+                                Connect(inputNode, dependentNode, param);
+                            }
                         }
                     }
                 }
@@ -157,11 +161,19 @@ namespace Synth
             {
                 foreach (var (source, destination, param) in originalConnections[node])
                 {
-                    // Disconnect the rerouted connection
-                    Disconnect(source, destination, param);
+                    // Avoid duplicate disconnections
+                    if (destination.AudioParameters[param].Contains(source))
+                    {
+                        // Disconnect the rerouted connection
+                        Disconnect(source, destination, param);
+                    }
 
-                    // Reconnect the original node
-                    Connect(node, destination, param);
+                    // Avoid duplicate connections
+                    if (!destination.AudioParameters[param].Contains(node))
+                    {
+                        // Reconnect the original node
+                        Connect(node, destination, param);
+                    }
                 }
 
                 // Clear stored original connections

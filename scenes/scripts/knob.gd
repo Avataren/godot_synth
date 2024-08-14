@@ -64,7 +64,23 @@ func _update_pointer_rotation() -> void:
 	# Map the current value to the corresponding angle
 	var angle_deg = _value_to_angle(current_value)
 	%Pointer.rotation_degrees = angle_deg
+	
+	# Calculate normalized progress correctly, considering min_value could be negative
+	var normalized_value = (current_value - min_value) / (max_value - min_value)
+	%ColorRect.material.set("shader_parameter/progress", normalized_value)
 
 func _value_to_angle(value: float) -> float:
 	# Convert a value to an angle between `start_angle` and `end_angle`
 	return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))
+
+
+#func _update_pointer_rotation() -> void:
+	## Map the current value to the corresponding angle
+	#var angle_deg = _value_to_angle(current_value)
+	#%Pointer.rotation_degrees = angle_deg
+	#var normalized_value = current_value / max_value
+	#%ColorRect.material.set("shader_parameter/progress",normalized_value)
+
+#func _value_to_angle(value: float) -> float:
+	## Convert a value to an angle between `start_angle` and `end_angle`
+	#return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))

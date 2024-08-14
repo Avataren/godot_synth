@@ -1,0 +1,62 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqic6ky7yxt0h"]
+
+[ext_resource type="PackedScene" uid="uid://dwg3af0d812c2" path="res://scenes/ModulationEntry.tscn" id="1_7o1cn"]
+
+[node name="ModulationMatrix" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/VBoxContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Source"
+
+[node name="Label2" type="Label" parent="PanelContainer/VBoxContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Destination"
+
+[node name="Label3" type="Label" parent="PanelContainer/VBoxContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Parameter"
+
+[node name="Label4" type="Label" parent="PanelContainer/VBoxContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Amount
+"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="ModulationEntry" parent="PanelContainer/VBoxContainer2/VBoxContainer" instance=ExtResource("1_7o1cn")]
+layout_mode = 2
+
+[node name="ModulationEntry2" parent="PanelContainer/VBoxContainer2/VBoxContainer" instance=ExtResource("1_7o1cn")]
+layout_mode = 2
+
+[node name="ModulationEntry3" parent="PanelContainer/VBoxContainer2/VBoxContainer" instance=ExtResource("1_7o1cn")]
+layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="PanelContainer/VBoxContainer2"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="PanelContainer/VBoxContainer2/HBoxContainer2"]
+layout_mode = 2
+text = "Add connection"

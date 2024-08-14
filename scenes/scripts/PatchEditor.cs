@@ -95,7 +95,6 @@ public partial class PatchEditor : Node2D
 
 	private void _on_reverb_wet_changed(float value)
 	{
-		GD.Print("Wet Changed: ", value);
 		AudioOutputNode.CurrentPatch.SetReverbEffect_Wet(value);
 	}
 

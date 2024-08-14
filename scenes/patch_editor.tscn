@@ -37,6 +37,7 @@ AudioOutputNode = NodePath("AudioOutputNode")
 metadata/_edit_vertical_guides_ = [-573.0]
 
 [node name="AudioOutputNode" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
 stream = SubResource("AudioStreamGenerator_whm0j")
 bus = &"New Bus"
 script = ExtResource("2_5you6")

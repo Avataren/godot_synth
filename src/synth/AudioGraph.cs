@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Godot;
 
 namespace Synth
 {
@@ -80,6 +81,7 @@ namespace Synth
                 {
                     destination.AudioParameters[param] = new List<AudioNode>();
                 }
+                GD.Print("Adding connection from " + source.Name + " to " + destination.Name + " with param " + param);
                 destination.AudioParameters[param].Add(source);
                 SortedNodes = null;
             }
@@ -91,6 +93,7 @@ namespace Synth
             {
                 if (destination.AudioParameters.ContainsKey(param))
                 {
+                    GD.Print("Removing connection from " + source.Name + " to " + destination.Name + " with param " + param);
                     destination.AudioParameters[param].Remove(source);
                 }
                 SortedNodes = null;

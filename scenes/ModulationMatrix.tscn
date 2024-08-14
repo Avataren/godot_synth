@@ -1,10 +1,11 @@
 [gd_scene load_steps=2 format=3 uid="uid://bqic6ky7yxt0h"]
 
-[ext_resource type="PackedScene" uid="uid://dwg3af0d812c2" path="res://scenes/ModulationEntry.tscn" id="1_7o1cn"]
+[ext_resource type="Script" path="res://scenes/scripts/modulation_matrix.gd" id="1_tbenb"]
 
-[node name="PanelContainer" type="PanelContainer"]
+[node name="ModulationMatrix" type="PanelContainer"]
 offset_right = 40.0
 offset_bottom = 40.0
+script = ExtResource("1_tbenb")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -34,21 +35,20 @@ layout_mode = 2
 text = "Amount
 "
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer2"]
-layout_mode = 2
-
-[node name="ModulationEntry" parent="VBoxContainer2/VBoxContainer" instance=ExtResource("1_7o1cn")]
-layout_mode = 2
-
-[node name="ModulationEntry2" parent="VBoxContainer2/VBoxContainer" instance=ExtResource("1_7o1cn")]
-layout_mode = 2
-
-[node name="ModulationEntry3" parent="VBoxContainer2/VBoxContainer" instance=ExtResource("1_7o1cn")]
+[node name="ModEntryVBoxContainer" type="VBoxContainer" parent="VBoxContainer2"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer2"]
 layout_mode = 2
 
-[node name="Button" type="Button" parent="VBoxContainer2/HBoxContainer2"]
+[node name="AddConnectionButton" type="Button" parent="VBoxContainer2/HBoxContainer2"]
 layout_mode = 2
 text = "Add connection"
+
+[node name="ApplyConnectionsButton" type="Button" parent="VBoxContainer2/HBoxContainer2"]
+layout_mode = 2
+text = "Apply"
+
+[connection signal="pressed" from="VBoxContainer2/HBoxContainer2/AddConnectionButton" to="." method="_on_add_connection_button_pressed"]
+[connection signal="pressed" from="VBoxContainer2/HBoxContainer2/ApplyConnectionsButton" to="." method="_on_apply_connections_button_pressed"]

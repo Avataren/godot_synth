@@ -155,6 +155,24 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		}
 	}
 
+	public void Connect(string srcName, string dstName, string param)
+	{
+		Print("Connecting " + srcName + " to " + dstName + " with param " + param);
+		var srcNode = CurrentPatch.graph.GetNode(srcName);
+		var dstNode = CurrentPatch.graph.GetNode(dstName);
+		var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
+		CurrentPatch.graph.Connect(srcNode, dstNode, paramEnum);
+	}
+
+	public void Disconnect(string srcName, string dstName, string param)
+	{
+		Print("Disconnecting " + srcName + " from " + dstName + " with param " + param);
+		var srcNode = CurrentPatch.graph.GetNode(srcName);
+		var dstNode = CurrentPatch.graph.GetNode(dstName);
+		var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
+		CurrentPatch.graph.Disconnect(srcNode, dstNode, paramEnum);
+	}
+
 	public void FillBuffer()
 	{
 		float increment = 1.0f / _sampleHz;

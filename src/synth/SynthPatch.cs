@@ -13,7 +13,7 @@ public class SynthPatch
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     EnvelopeNode ampEnvelope;
     WaveTableBank waveTableBank;
-    AudioGraph graph = new AudioGraph();
+    public AudioGraph graph {get; set;}= new AudioGraph();
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     ConstantNode freq;
     DelayEffectNode delayEffectNode;
@@ -33,7 +33,7 @@ public class SynthPatch
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
             oscillators.Add(osc);
-            if (i > 2)
+            //if (i > 2)
             {
                 graph.Connect(osc, mix1, AudioParam.Input);
             }
@@ -65,9 +65,9 @@ public class SynthPatch
             AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
         }
 
-        graph.Connect(oscillators[0], oscillators[1], AudioParam.Phase);
-        graph.Connect(oscillators[1], oscillators[2], AudioParam.Phase);
-        graph.Connect(oscillators[2], oscillators[3], AudioParam.Phase);
+        // graph.Connect(oscillators[0], oscillators[1], AudioParam.Phase);
+        // graph.Connect(oscillators[1], oscillators[2], AudioParam.Phase);
+        // graph.Connect(oscillators[2], oscillators[3], AudioParam.Phase);
         //ampEnvelope = new EnvelopeNode(BufferSize, true);
         oscillators[0].Enabled = true;
         graph.TopologicalSort();

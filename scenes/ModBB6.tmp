@@ -84,5 +84,4 @@ layout_mode = 2
 size_flags_vertical = 4
 value = 100.0
 
-[connection signal="item_selected" from="DestinationOption" to="." method="_on_destination_option_item_selected"]
 [connection signal="item_selected" from="DestinationParameterOption" to="." method="_on_destination_parameter_option_item_selected"]

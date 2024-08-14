@@ -27,6 +27,14 @@ public class DelayLine
         writeIndex = 0;
     }
 
+    public void Mute()
+    {
+        for (int i = 0; i < bufferSize; i++)
+        {
+            buffer[i] = 0.0f;
+        }
+    }
+
     // Method to process a single sample with enhancements
     public float Process(float inputSample)
     {

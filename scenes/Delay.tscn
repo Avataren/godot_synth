@@ -21,7 +21,6 @@ horizontal_alignment = 1
 
 [node name="CheckBox" type="CheckBox" parent="VBoxContainer"]
 layout_mode = 2
-button_pressed = true
 text = "Enable"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]

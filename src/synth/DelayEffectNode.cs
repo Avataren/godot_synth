@@ -37,6 +37,12 @@ namespace Synth
             }
         }
 
+        public void Mute()
+        {
+            leftDelayLine.Mute();
+            rightDelayLine.Mute();
+        }
+
         public int DelayTimeInMs
         {
             set

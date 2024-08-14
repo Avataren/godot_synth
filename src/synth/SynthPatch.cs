@@ -72,6 +72,10 @@ public class SynthPatch
         oscillators[0].Enabled = true;
         graph.TopologicalSort();
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
+
+        //disable effects by default
+        graph.SetNodeEnabled(reverbEffectNode, false);
+        graph.SetNodeEnabled(delayEffectNode, false);
     }
 
     public void SetReverbEffect_Enabled(bool enabled)
@@ -109,6 +113,7 @@ public class SynthPatch
     public void SetDelayEffect_Enabled(bool enabled)
     {
         graph.SetNodeEnabled(delayEffectNode, enabled);
+        delayEffectNode.Mute();
     }
 
     public void SetDelayEffect_Delay(int delay)

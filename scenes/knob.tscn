@@ -12,12 +12,12 @@ shader = ExtResource("2_e4b35")
 shader_parameter/progress = 0.432
 shader_parameter/start_angle = 270.0
 shader_parameter/arc_span = 270.0
-shader_parameter/thickness = 0.05
+shader_parameter/thickness = 0.06
 shader_parameter/color_bg = Color(0.1725, 0.208667, 0.25, 1)
 shader_parameter/color_fg = Color(0.82, 0.904, 1, 1)
 shader_parameter/color_pointer = Color(0.172549, 0.207843, 0.25098, 1)
 shader_parameter/antialiasing = 0.01
-shader_parameter/pointer_thickness = 0.035
+shader_parameter/pointer_thickness = 0.045
 
 [node name="Knob" type="VBoxContainer"]
 offset_right = 64.0

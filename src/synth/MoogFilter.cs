@@ -37,6 +37,8 @@ namespace Synth
 
         public float Process(float input)
         {
+            // Apply drive with soft clipping using tanh for a more analog-like distortion
+            input = (float)Math.Tanh(input * drive);
             // Process input through the Moog filter
             x = input - r * y4;
 
@@ -46,7 +48,6 @@ namespace Synth
             y3 = y2 * p + oldy2 * p - k * y3;
             y4 = y3 * p + oldy3 * p - k * y4;
 
-            y4 = (float)Math.Tanh(y4 * drive);
             // Clipper band limited sigmoid
             y4 -= (y4 * y4 * y4) / 6f;
 

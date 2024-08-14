@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=18 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://d2tnrme5j7xrt" path="res://scenes/Delay.tscn" id="8_pjurh"]
 [ext_resource type="PackedScene" uid="uid://dptpgfskdirph" path="res://scenes/Reverb.tscn" id="9_q5dht"]
 [ext_resource type="PackedScene" uid="uid://brjdceq6gabsc" path="res://scenes/MoogFilter.tscn" id="9_tmfms"]
+[ext_resource type="PackedScene" uid="uid://bqic6ky7yxt0h" path="res://scenes/ModulationMatrix.tscn" id="10_o17te"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.03
@@ -175,6 +176,9 @@ alignment = 1
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 25
+
+[node name="ModulationMatrix" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("10_o17te")]
+layout_mode = 2
 
 [node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2

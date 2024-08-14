@@ -29,7 +29,6 @@ layout_mode = 2
 [node name="DelayKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_eq62o")]
 layout_mode = 2
 max_value = 500.0
-step = 1.0
 sensitivity = 0.25
 title = "Delay"
 current_value = 300.0

@@ -9,83 +9,61 @@ uniform vec4 color_fg : source_color = vec4(0.67, 0.74, 0.86, 1.0);  // Progress
 uniform vec4 color_pointer : source_color = vec4(1.0, 0.5, 0.0, 1.0);  // Pointer color
 uniform float antialiasing : hint_range(0.0, 1.0) = 0.01;  // Anti-aliasing strength
 uniform float pointer_thickness : hint_range(0.0, 0.05) = 0.01;  // Thickness of the pointer line
+uniform float taper_amount : hint_range(0.0, 1.0) = 0.5;  // Amount of taper towards the center
 
 void fragment() {
-    // Normalized UV coordinates [0, 1]
     vec2 uv = UV;
-
-    // Define the center of the UV space
     vec2 center = vec2(0.5, 0.5);
-
-    // Vector from center to current fragment
     vec2 dir = uv - center;
-
-    // Correct for Y-axis direction (flip Y)
     dir.y = -dir.y;
 
-    // Calculate distance from center
     float dist = length(dir);
-
-    // Define radius
     float radius = 0.4;
-
-    // Calculate angle in degrees, ensuring range [0, 360)
     float angle = degrees(atan(dir.y, dir.x));
     if (angle < 0.0) {
         angle += 360.0;
     }
 
-    // Calculate the end angle and progress angle, wrapping correctly
     float progress_angle = mod(start_angle - (progress * arc_span), 360.0);
     float end_angle = mod(start_angle - arc_span, 360.0);
 
-    // Determine if the fragment should be part of the arc
     vec4 arc_color = vec4(0.0);
-
-    // Handle cases where the start_angle is greater or less than the end_angle
     bool within_arc = false;
 
     if (start_angle >= end_angle) {
-        // Standard case: arc does not wrap around 0 degrees
         within_arc = (angle <= start_angle && angle >= end_angle);
     } else {
-        // Wrapping case: arc spans across 0 degrees
         within_arc = (angle >= end_angle || angle <= start_angle);
     }
 
     if (within_arc) {
         if ((start_angle >= progress_angle && angle <= start_angle && angle >= progress_angle) ||
             (start_angle < progress_angle && (angle >= progress_angle || angle <= start_angle))) {
-            arc_color = color_fg;  // Inside the progress arc
+            arc_color = color_fg;
         } else {
-            arc_color = color_bg;  // Inside the arc but beyond progress
+            arc_color = color_bg;
         }
 
-        // Calculate the edge factor for anti-aliasing, using the arc color to blend
         float edge = smoothstep(radius - thickness - antialiasing, radius - thickness + antialiasing, dist) -
                      smoothstep(radius - antialiasing, radius + antialiasing, dist);
 
         arc_color = mix(color_bg, arc_color, edge);
-
-        // Apply the edge factor to alpha
         arc_color.a *= edge;
     } else {
-        // Ensure no outline is drawn beyond the arc span
         arc_color = vec4(0.0);
     }
 
-    // Calculate the pointer direction and position
     vec2 pointer_dir = vec2(cos(radians(progress_angle)), sin(radians(progress_angle)));
 
-    // Determine if this fragment is along the pointer direction
     float pointer_dist = dot(dir, pointer_dir);
+    float taper_factor = 1.0 - (dist / radius) * taper_amount;
+    float tapered_thickness = pointer_thickness * taper_factor;
+
     float perpendicular_dist = length(dir - pointer_dir * pointer_dist);
 
-    if (pointer_dist > 0.0 && perpendicular_dist < pointer_thickness && dist <= radius) {
-        float pointer_edge = smoothstep(pointer_thickness + antialiasing, pointer_thickness - antialiasing, perpendicular_dist);
+    if (pointer_dist > 0.0 && perpendicular_dist < tapered_thickness && dist <= radius) {
+        float pointer_edge = smoothstep(tapered_thickness + antialiasing, tapered_thickness - antialiasing, perpendicular_dist);
         vec4 pointer_color = mix(arc_color, color_pointer, pointer_edge);
-
-        // Ensure the pointer is drawn above everything else
         arc_color = pointer_color;
     }
 

@@ -19,8 +19,8 @@ shader_parameter/color_pointer = Color(0.172549, 0.207843, 0.25098, 1)
 shader_parameter/color_cap = Color(0.172549, 0.207843, 0.25098, 1)
 shader_parameter/antialiasing = 0.01
 shader_parameter/pointer_thickness = 0.069
-shader_parameter/taper_amount = 0.507
-shader_parameter/cap_radius = 0.05
+shader_parameter/taper_amount = 0.25
+shader_parameter/cap_radius = 0.06
 
 [node name="Knob" type="VBoxContainer"]
 offset_right = 64.0

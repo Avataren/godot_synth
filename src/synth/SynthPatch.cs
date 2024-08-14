@@ -23,6 +23,7 @@ public class SynthPatch
 
     public SynthPatch(WaveTableBank waveTableBank)
     {
+        SampleRate = AudioServer.GetMixRate();
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
@@ -55,8 +56,7 @@ public class SynthPatch
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput);
 
         //graph.DebugPrint();
-
-        SampleRate = AudioServer.GetMixRate();
+        
         this.waveTableBank = waveTableBank;
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)

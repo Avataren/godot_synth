@@ -83,7 +83,13 @@ namespace Synth
                 }
                 GD.Print("Adding connection from " + source.Name + " to " + destination.Name + " with param " + param);
                 destination.AudioParameters[param].Add(source);
+                GD.Print("Destination " + destination.Name +" now has " + destination.AudioParameters[param].Count + " connections, they are:");
+                foreach (AudioNode node in destination.AudioParameters[param])
+                {
+                    GD.Print(node.Name);
+                }
                 SortedNodes = null;
+                DebugPrint();
             }
         }
 

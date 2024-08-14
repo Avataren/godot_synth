@@ -46,17 +46,21 @@ func get_node_param_from_textbox_entry(node_name) -> String:
 func get_node_name_from_textbox_entry(node_name) -> String:
 		match node_name:
 			"Oscillator 1":
-				return "Osc1"
+				return "Osc0"
 			"Oscillator 2":
-				return "Osc2"
+				return "Osc1"
 			"Oscillator 3":
-				return "Osc3"
+				return "Osc2"
 			"Oscillator 4":
-				return "Osc4"
+				return "Osc3"
 			"Oscillator 5":
-				return "Osc5"
+				return "Osc4"
 		return "unknown"
 
 func _on_add_connection_button_pressed() -> void:
 	var entry = mod_entry.instantiate()
 	%ModEntryVBoxContainer.add_child(entry)
+
+
+func _on_debug_button_pressed() -> void:
+	%AudioOutputNode.Debug()

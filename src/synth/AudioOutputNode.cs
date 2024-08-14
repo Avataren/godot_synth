@@ -155,12 +155,23 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		}
 	}
 
+	public void Debug()
+	{
+		CurrentPatch.graph.DebugPrint();
+	}
+
 	public void Connect(string srcName, string dstName, string param)
 	{
 		Print("Connecting " + srcName + " to " + dstName + " with param " + param);
 		var srcNode = CurrentPatch.graph.GetNode(srcName);
 		var dstNode = CurrentPatch.graph.GetNode(dstName);
 		var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
+		//disconnect default connections
+		if (srcName.StartsWith("Osc"))
+		{
+			GD.Print("Disconnecting " + srcName + " from Mixer");
+			CurrentPatch.graph.Disconnect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input);
+		}
 		CurrentPatch.graph.Connect(srcNode, dstNode, paramEnum);
 	}
 
@@ -171,6 +182,11 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		var dstNode = CurrentPatch.graph.GetNode(dstName);
 		var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
 		CurrentPatch.graph.Disconnect(srcNode, dstNode, paramEnum);
+		if (srcName.StartsWith("Osc"))
+		{
+			GD.Print("Connecting " + srcName + " to Mixer");
+			CurrentPatch.graph.Connect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input);
+		}				
 	}
 
 	public void FillBuffer()

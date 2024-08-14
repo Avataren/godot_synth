@@ -45,7 +45,7 @@ namespace Synth
             get => reverbModel.RoomSize;
             set
             {
-                reverbModel.RoomSize = Mathf.Pow(value,0.5f);
+                reverbModel.RoomSize = Mathf.Sqrt(value);
             }
         }
 

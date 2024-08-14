@@ -74,6 +74,7 @@ public class SynthPatch
         //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
         //disable effects by default
+        reverbEffectNode.RoomSize = 0.5f;
         graph.SetNodeEnabled(reverbEffectNode, false);
         graph.SetNodeEnabled(delayEffectNode, false);
     }

@@ -1,3 +1,4 @@
+@tool
 extends Control
 
 # Exported properties
@@ -8,10 +9,21 @@ extends Control
 @export var step: float = 1.0
 @export var angle_offset: float = -90.0
 @export var sensitivity: float = 0.5
-@export var title = "knob"
+@export var title: String = "knob":
+	set(value):
+		title = value
+		_update_title()
 
 # Internal state
-@export var current_value: float = min_value
+@export var current_value: float = min_value:
+	set(value):
+		current_value = roundf(value * 1000.0) / 1000.0
+		if (current_value > max_value):
+			current_value = max_value
+		if (current_value < min_value):
+			current_value = min_value
+		_update_current_value()
+		
 var previous_value: float = current_value
 var mouse_hovered: bool = false
 var mouse_drag: bool = false
@@ -24,7 +36,16 @@ func _ready():
 	_update_pointer_rotation()
 	%TitleLabel.text = title
 	%ValueLabel.text = str(current_value)
-	
+
+func _update_title():
+	if Engine.is_editor_hint():
+		%TitleLabel.text = title
+		
+func _update_current_value():
+	if Engine.is_editor_hint():
+		%ValueLabel.text = str(current_value)
+		_update_pointer_rotation()
+		
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed and mouse_hovered:

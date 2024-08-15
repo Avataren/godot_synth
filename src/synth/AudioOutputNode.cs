@@ -186,13 +186,13 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		{
 			GD.Print("Connecting " + srcName + " to Mixer");
 			CurrentPatch.graph.Connect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input);
-		}				
+		}
 	}
 
 	public void FillBuffer()
 	{
 		float increment = 1.0f / _sampleHz;
-		float repr = 1.0f / SynthPatch.Oversampling;
+
 
 		while (run_sound_thread)
 		{
@@ -200,7 +200,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 			// Pre-calculate length to avoid repetitive property access
 			int leftRightBufferLength = mix.LeftBuffer.Length;
-
+			float repr = 1.0f / SynthPatch.Oversampling;
 			// Optimize loop by using a single loop instead of nested loops
 			for (int i = 0; i < num_samples; i++)
 			{

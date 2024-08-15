@@ -13,7 +13,7 @@ public class SynthPatch
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     EnvelopeNode ampEnvelope;
     WaveTableBank waveTableBank;
-    public AudioGraph graph {get; set;}= new AudioGraph();
+    public AudioGraph graph { get; set; } = new AudioGraph();
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     ConstantNode freq;
     DelayEffectNode delayEffectNode;
@@ -23,7 +23,7 @@ public class SynthPatch
 
     public SynthPatch(WaveTableBank waveTableBank)
     {
-        SampleRate = AudioServer.GetMixRate();
+        SampleRate = AudioServer.GetMixRate() * Oversampling;
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
@@ -56,7 +56,7 @@ public class SynthPatch
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput);
 
         //graph.DebugPrint();
-        
+
         this.waveTableBank = waveTableBank;
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)

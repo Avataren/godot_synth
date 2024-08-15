@@ -75,8 +75,7 @@ namespace Synth
 
 		public void ResetPhase()
 		{
-			Phase = PhaseOffset;
-			Phase = Mathf.PosMod(Phase, 1.0f);
+			Phase = 0.0f;
 		}
 
 		protected float GetSample_GenericPWM(WaveTable currWaveTable)
@@ -212,6 +211,7 @@ namespace Synth
 				// Apply modulation and calculate buffer output
 				float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * _smoothModulationStrength;
 				modulatedPhase += prevSample * SelfModulationStrength;
+				modulatedPhase += PhaseOffset;
 				modulatedPhase = Mathf.PosMod(modulatedPhase, 1.0f);
 
 				var shapedPhase = modulatedPhase;//PhaseTransformer.ExponentialTransform(modulatedPhase, 1.0f);

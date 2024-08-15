@@ -130,7 +130,7 @@ layout_mode = 2
 [node name="PhaseKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("2_htrip")]
 layout_mode = 2
 max_value = 1.0
-step = 0.0
+step = 0.001
 sensitivity = 0.2
 title = "Phase"
 current_value = 0.0
@@ -165,5 +165,6 @@ current_value = 0.0
 [connection signal="CentsChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_cents_changed"]
 [connection signal="OctaveChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_octave_changed"]
 [connection signal="SemiChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/Tuning" to="." method="_on_tuning_semi_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2/PhaseKnob" to="." method="_on_phase_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2/FeedbackKNob" to="." method="_on_feedback_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2/ModKnob" to="." method="_on_mod_value_changed"]

@@ -240,6 +240,21 @@ public class SynthPatch
         }
 
     }
+
+    public void SetOscillatorPhaseOffset(float phase, int OscillatorIndex = -1)
+    {
+        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        {
+            oscillators[OscillatorIndex].PhaseOffset = phase;
+            return;
+        }
+
+        for (int idx = 0; idx < oscillators.Count; idx++)
+        {
+            oscillators[idx].PhaseOffset = phase;
+        }
+    }
+
     public void SetHardSync(bool enabled, int OscillatorIndex = -1)
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)

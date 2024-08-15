@@ -29,14 +29,15 @@ public partial class Oscillator : Control
 	[Signal]
 	public delegate void PWMChangedEventHandler(float pwm);
 	[Signal]
-	public delegate void ModChangedEventHandler(float mod);	
+	public delegate void ModChangedEventHandler(float mod);
 	[Signal]
 	public delegate void BalanceChangedEventHandler(float balance);
 	[Signal]
-	public delegate void FeedbackChangedEventHandler(float feedback);	
+	public delegate void FeedbackChangedEventHandler(float feedback);
 	[Signal]
 	public delegate void ADSRToggledEventHandler(bool enabled);
-
+	[Signal]
+	public delegate void PhaseOffsetChangedEventHandler(float phaseOffset);
 	[Signal]
 	public delegate void DetuneCentsChangedEventHandler(float detuneCents);
 	[Export]
@@ -93,6 +94,12 @@ public partial class Oscillator : Control
 	{
 		EmitSignal("BalanceChanged", (float)value);
 	}
+
+	private void _on_phase_knob_value_changed(float value)
+	{
+		EmitSignal("PhaseOffsetChanged", value);
+	}
+
 
 	private void _on_pwm_slider_value_changed(double value)
 	{

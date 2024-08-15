@@ -122,7 +122,7 @@ public partial class PatchEditor : Node2D
 	{
 		AudioOutputNode.CurrentPatch.SetReverbEffect_Enabled(enabled);
 	}
-	
+
 
 	private void _on_drive_changed(float value)
 	{
@@ -159,7 +159,7 @@ public partial class PatchEditor : Node2D
 		GD.Print("Feedback Changed: ", value);
 		AudioOutputNode.CurrentPatch.SetDelayEffect_Feedback(value);
 	}
-	
+
 	private void _on_delay_wetmix_changed(float value)
 	{
 		AudioOutputNode.CurrentPatch.SetDelayEffect_WetMix(value);
@@ -172,6 +172,12 @@ public partial class PatchEditor : Node2D
 
 	private void ConnectOscillatorSignals(Oscillator osc, int oscNum)
 	{
+		osc.PhaseOffsetChanged += (phaseOffset) =>
+		{
+			GD.Print("Phase Offset Changed:" + phaseOffset);
+			AudioOutputNode.CurrentPatch.SetOscillatorPhaseOffset(phaseOffset, oscNum);
+		};
+
 		osc.FeedbackChanged += (feedback) =>
 		{
 			AudioOutputNode.CurrentPatch.SetFeedback(feedback, oscNum);

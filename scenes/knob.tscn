@@ -9,7 +9,7 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2p8ds"]
 resource_local_to_scene = true
 shader = ExtResource("2_e4b35")
-shader_parameter/progress = 0.5
+shader_parameter/progress = 0.0
 shader_parameter/start_angle = 270.0
 shader_parameter/arc_span = 270.0
 shader_parameter/thickness = 0.06
@@ -18,19 +18,20 @@ shader_parameter/color_fg = Color(0.82, 0.904, 1, 1)
 shader_parameter/color_pointer = Color(0.172549, 0.207843, 0.25098, 1)
 shader_parameter/color_cap = Color(0.172549, 0.207843, 0.25098, 1)
 shader_parameter/antialiasing = 0.01
-shader_parameter/pointer_thickness = 0.069
-shader_parameter/taper_amount = 0.25
-shader_parameter/cap_radius = 0.06
+shader_parameter/pointer_thickness = 0.04
+shader_parameter/taper_amount = 0.1
+shader_parameter/cap_radius = 0.035
 
 [node name="Knob" type="VBoxContainer"]
 offset_right = 64.0
 offset_bottom = 87.0
 script = ExtResource("1_4trod")
+current_value = 0.0
 
 [node name="TitleLabel" type="Label" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Knob"
+text = "knob"
 horizontal_alignment = 1
 
 [node name="Control" type="Control" parent="."]
@@ -56,8 +57,7 @@ offset_left = 39.0
 offset_top = 35.0
 offset_right = 81.0
 offset_bottom = 58.0
-text = "0.00
-"
+text = "0"
 
 [node name="Base" type="TextureRect" parent="Control"]
 visible = false
@@ -76,6 +76,7 @@ texture_filter = 2
 layout_mode = 0
 offset_right = 64.0
 offset_bottom = 60.0
+rotation = 3.83972
 pivot_offset = Vector2(32, 32)
 texture = ExtResource("2_bmgox")
 stretch_mode = 2

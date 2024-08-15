@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/scripts/LFO.cs" id="1_3hl2b"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_7ovjp"]
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="2_w58r0"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="2_w58r0"]
 
 [node name="LFO" type="Control" node_paths=PackedStringArray("WaveformOptions")]
 custom_minimum_size = Vector2(240, 360)
@@ -69,7 +69,8 @@ theme_override_constants/separation = 15
 [node name="FreqKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 layout_mode = 2
-step = 0.1
+max_value = 10.0
+step = 0.001
 sensitivity = 0.1
 title = "Frequency"
 current_value = 4.0
@@ -77,7 +78,8 @@ current_value = 4.0
 [node name="GainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 layout_mode = 2
-step = 0.1
+max_value = 20.0
+step = 0.001
 sensitivity = 0.1
 title = "Gain"
 current_value = 1.0
@@ -89,7 +91,6 @@ layout_mode = 2
 min_value = -2.0
 max_value = 2.0
 title = "Bias"
-current_value = 0.0
 
 [connection signal="toggled" from="VBoxContainer/Enable Envelope" to="." method="_on_enable_envelope_toggled"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/FreqKnob" to="." method="OnFreqKnobValueChanged"]

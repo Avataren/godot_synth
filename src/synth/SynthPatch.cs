@@ -23,9 +23,9 @@ public class SynthPatch
     MoogFilterNode moogFilterNode;
     PassThroughNode speakerNode;
 
-    public SynthPatch(WaveTableBank waveTableBank)
+    public SynthPatch(WaveTableBank waveTableBank, float sampleRate = 44100)
     {
-        SampleRate = AudioServer.GetMixRate() * Oversampling;
+        SampleRate = sampleRate;
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);

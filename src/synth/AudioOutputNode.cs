@@ -14,7 +14,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	private Vector2[] audioData;
 	private float[] buffer_copy;
 	private AudioStreamGeneratorPlayback _playback;
-	private float _sampleHz;
+	private float SampleRate;
 	private Thread sound_thread;
 	private bool run_sound_thread = true;
 	private WaveTableBank waveTableBank;
@@ -31,8 +31,9 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		{
 			try
 			{
+				SampleRate = generator.MixRate * SynthPatch.Oversampling;
 				waveTableBank = new WaveTableBank();
-				CurrentPatch = new SynthPatch(waveTableBank);
+				CurrentPatch = new SynthPatch(waveTableBank, SampleRate);
 			}
 			catch (Exception e)
 			{
@@ -40,7 +41,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				PrintErr(e.StackTrace);
 			}
 
-			_sampleHz = 44100.0f;// generator.MixRate;
+			
 			Play();
 			_playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();
 
@@ -192,7 +193,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public void FillBuffer()
 	{
-		float increment = 1.0f / _sampleHz;
+		float increment = 1.0f / SampleRate;
 
 
 		while (run_sound_thread)

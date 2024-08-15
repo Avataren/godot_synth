@@ -208,11 +208,11 @@ namespace Synth
 				}
 
 				float phaseForThisSample = lastPhase + (detunedFreq / sampleRate);
-				float phaseModMod = GetParameter(AudioParam.PMod, i, 1.0f);
-				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, ModulationStrength, _modulationSmoothingFactor);
+				float phaseModMod = GetParameter(AudioParam.PMod, i);
+				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, ModulationStrength + phaseModMod, _modulationSmoothingFactor);
 				// Apply modulation and calculate buffer output
 
-				float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * (phaseModMod + _smoothModulationStrength);
+				float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * ( _smoothModulationStrength);
 				modulatedPhase += prevSample * SelfModulationStrength;
 				modulatedPhase += PhaseOffset;
 				modulatedPhase = Mathf.PosMod(modulatedPhase, 1.0f);

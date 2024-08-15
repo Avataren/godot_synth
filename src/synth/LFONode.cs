@@ -22,9 +22,10 @@ namespace Synth
         {
             ADSR = new EnvelopeNode(numSamples, true)
             {
-                AttackTime = 0.5f
+                AttackTime = 0.5f,
+                Enabled = false
             };
-            Frequency = 5.0f;
+            Frequency = 4.0f;
             Amplitude = 1.0f;
             CurrentWaveform = LFOWaveform.Sine;
             UseAbsoluteValue = false;
@@ -34,7 +35,8 @@ namespace Synth
         private float GetNextSample(float increment)
         {
             float sample = 0.0f;
-            float phaseIncrement = Frequency * 2.0f * (float)Math.PI * increment;
+            //float phaseIncrement = Frequency * 2.0f * (float)Math.PI * increment;
+            float phaseIncrement = Frequency * 2.0f * Mathf.Pi / SampleFrequency;
 
             switch (CurrentWaveform)
             {

@@ -42,22 +42,26 @@ public partial class LFO : Control
 
 	private void OnFreqKnobValueChanged(double value)
 	{
-		EmitSignal(nameof(FreqValueChangedEventHandler), (float)value);
+		Print("(ui) Freq Knob Value Changed: " + value);
+		EmitSignal("FreqValueChanged", (float)value);
 	}
 
 	private void OnGainKnobValueChanged(double value)
 	{
-		EmitSignal(nameof(GainValueChangedEventHandler), (float)value);
+		Print("(ui) Gain Knob Value Changed: " + value);
+		EmitSignal("GainValueChanged", (float)value);
 	}
 
 	private void OnBiasKnobValueChanged(double value)
 	{
-		EmitSignal(nameof(BiasValueChangedEventHandler), (float)value);
+		Print("(ui) Bias Knob Value Changed: " + value);
+		EmitSignal("BiasValueChanged", (float)value);
 	}
 
 	private void OnWaveformOptionsItemSelected(int index)
 	{
-		EmitSignal(nameof(WaveformChangedEventHandler), WaveformOptions.GetItemText(index));
+		Print("(ui) Waveform Option Selected: " + WaveformOptions.GetItemText(index));
+		EmitSignal("WaveformChanged", WaveformOptions.GetItemText(index));
 	}
 
 	private void OnAbsCheckButtonToggled(bool value)
@@ -68,6 +72,6 @@ public partial class LFO : Control
 	private void OnEnableEnvelopeToggled(bool toggledOn)
 	{
 		ADSREnvelope.Visible = toggledOn;
-		EmitSignal(nameof(ADSRToggledEventHandler), toggledOn);
+		EmitSignal("ADSRToggled", toggledOn);
 	}
 }

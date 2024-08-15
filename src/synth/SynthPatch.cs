@@ -259,6 +259,7 @@ public class SynthPatch
     {
         if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
         {
+            GD.Print("Setting LFO " + LFOIndex + " frequency to " + freq);
             LFOs[LFOIndex].Frequency = freq;
             return;
         }
@@ -273,6 +274,7 @@ public class SynthPatch
     {
         if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
         {
+            GD.Print("Setting LFO " + LFOIndex + " gain to " + gain);
             LFOs[LFOIndex].Amplitude = gain;
             return;
         }

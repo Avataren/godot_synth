@@ -69,13 +69,16 @@ theme_override_constants/separation = 15
 [node name="FreqKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 layout_mode = 2
-step = 0.5
+step = 0.1
+sensitivity = 0.1
 title = "Frequency"
-current_value = 5.0
+current_value = 4.0
 
 [node name="GainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 layout_mode = 2
+step = 0.1
+sensitivity = 0.1
 title = "Gain"
 current_value = 1.0
 

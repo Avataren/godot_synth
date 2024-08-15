@@ -273,6 +273,7 @@ public class SynthPatch
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
             graph.SetNodeEnabled(oscillators[OscillatorIndex], enabled);
+            ResetAllOscillatorPhases();
             return;
         }
 
@@ -280,7 +281,15 @@ public class SynthPatch
         {
             graph.SetNodeEnabled(oscillators[idx], enabled);
         }
+        ResetAllOscillatorPhases();
+    }
 
+    public void ResetAllOscillatorPhases()
+    {
+        for (int idx = 0; idx < oscillators.Count; idx++)
+        {
+            oscillators[idx].ResetPhase();
+        }
     }
 
     public void SetAttack(float attack, int EnvelopeIndex = -1)
@@ -480,7 +489,7 @@ public class SynthPatch
                 //osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
                 if (osc.HardSync)
                 {
-                    osc.Phase = 0.0f;
+                    osc.ResetPhase();
                 }
             }
         }

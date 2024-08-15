@@ -13,6 +13,7 @@ namespace Synth
 		public float ModulationStrength = 0.0f;
 		public float SelfModulationStrength = 0.0f;
 		private float DetuneFactor = 0.0f;
+		public float PhaseOffset = 0.0f;
 		public bool Is_PWM { get; set; } = false;
 		private float _lastFrequency = -1; // Initialize to an invalid frequency to ensure initial update
 		public delegate float WaveTableFunction(WaveTable waveTable, float phase);
@@ -70,6 +71,12 @@ namespace Synth
 			this.WaveTableMem = WaveTableRepository.SinOsc();
 			this.Enabled = false;
 			UpdateSampleFunction();
+		}
+
+		public void ResetPhase()
+		{
+			Phase = PhaseOffset;
+			Phase = Mathf.PosMod(Phase, 1.0f);
 		}
 
 		protected float GetSample_GenericPWM(WaveTable currWaveTable)

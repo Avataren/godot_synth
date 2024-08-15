@@ -3,8 +3,11 @@
 [ext_resource type="Script" path="res://scenes/scripts/modulation_matrix.gd" id="1_tbenb"]
 
 [node name="ModulationMatrix" type="PanelContainer"]
+custom_minimum_size = Vector2(510, 0)
 offset_right = 40.0
 offset_bottom = 40.0
+size_flags_horizontal = 4
+size_flags_vertical = 0
 script = ExtResource("1_tbenb")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
@@ -35,12 +38,18 @@ layout_mode = 2
 text = "Amount
 "
 
-[node name="ModEntryVBoxContainer" type="VBoxContainer" parent="VBoxContainer2"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2"]
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+
+[node name="ModEntryVBoxContainer" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer2"]
 layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
 
 [node name="AddConnectionButton" type="Button" parent="VBoxContainer2/HBoxContainer2"]
 layout_mode = 2

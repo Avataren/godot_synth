@@ -59,8 +59,16 @@ func get_node_name_from_textbox_entry(node_name) -> String:
 
 func _on_add_connection_button_pressed() -> void:
 	var entry = mod_entry.instantiate()
+	entry.delete_pressed.connect(_on_entry_deleted)
 	%ModEntryVBoxContainer.add_child(entry)
 
-
+func _on_entry_deleted(entry:Node) -> void:
+	var src_name = get_node_name_from_textbox_entry(entry.get_source_name())
+	var dst_name = get_node_name_from_textbox_entry(entry.get_destination_name())
+	var param_name = get_node_param_from_textbox_entry(entry.get_parameter_name())
+	%AudioOutputNode.Disconnect(src_name, dst_name, param_name)	
+	entry.queue_free()
+	pass
+	
 func _on_debug_button_pressed() -> void:
 	%AudioOutputNode.Debug()

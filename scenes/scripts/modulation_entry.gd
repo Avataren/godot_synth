@@ -1,6 +1,8 @@
 class_name ModulationEntry
 extends HBoxContainer
 
+signal delete_pressed
+
 func _ready() -> void:
 	_on_destination_option_item_selected(0)
 	pass
@@ -44,3 +46,7 @@ func get_parameter_name():
 
 func _on_destination_parameter_option_item_selected(index: int) -> void:
 	pass # Replace with function body.
+
+
+func _on_delete_button_pressed() -> void:
+	delete_pressed.emit(self)

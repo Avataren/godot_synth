@@ -17,6 +17,7 @@ namespace Synth
         SustainLevel,
         ReleaseTime,
         Phase,
+        PMod, // phase modulation strength
         PhaseModStrength
     }
 

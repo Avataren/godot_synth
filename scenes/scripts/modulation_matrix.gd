@@ -41,6 +41,8 @@ func get_node_param_from_textbox_entry(node_name) -> String:
 				return "Pitch"
 			"Phase":
 				return "Phase"
+			"PhaseMod":
+				return "PMod"
 		return "unknown"
 
 func get_node_name_from_textbox_entry(node_name) -> String:

@@ -166,6 +166,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		var srcNode = CurrentPatch.graph.GetNode(srcName);
 		var dstNode = CurrentPatch.graph.GetNode(dstName);
 		var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
+		Print("paramEnum is " + paramEnum);
 		//disconnect default connections
 		if (srcName.StartsWith("Osc"))
 		{

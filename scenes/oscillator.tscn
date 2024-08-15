@@ -148,7 +148,7 @@ layout_mode = 2
 max_value = 5.0
 step = 0.001
 sensitivity = 0.2
-title = "Mod"
+title = "PMod"
 current_value = 0.0
 
 [connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]

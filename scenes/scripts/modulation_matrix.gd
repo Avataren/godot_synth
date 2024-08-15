@@ -38,7 +38,7 @@ func _remove_existing_connections() -> void:
 func get_node_param_from_textbox_entry(node_name) -> String:
 		match node_name:
 			"Pitch":
-				return "Frequency"
+				return "Pitch"
 			"Phase":
 				return "Phase"
 		return "unknown"
@@ -55,6 +55,14 @@ func get_node_name_from_textbox_entry(node_name) -> String:
 				return "Osc3"
 			"Oscillator 5":
 				return "Osc4"
+			"LFO 1":
+				return "LFO0"
+			"LFO 2":
+				return "LFO1"
+			"LFO 3":
+				return "LFO2"
+			"LFO 4":
+				return "LFO3"
 		return "unknown"
 
 func _on_add_connection_button_pressed() -> void:

@@ -1,4 +1,5 @@
 using System;
+using Godot;
 namespace Synth
 {
     public class LFONode : AudioNode
@@ -16,14 +17,14 @@ namespace Synth
         public EnvelopeNode ADSR { get; set; }
         public bool UseAbsoluteValue { get; set; }
 
-        public LFONode(int numSamples, float frequency)
-            : base(numSamples)
+        public LFONode(int numSamples, float sampleFrequency)
+            : base(numSamples, sampleFrequency)
         {
             ADSR = new EnvelopeNode(numSamples, true)
             {
                 AttackTime = 0.5f
             };
-            Frequency = frequency;
+            Frequency = 5.0f;
             Amplitude = 1.0f;
             CurrentWaveform = LFOWaveform.Sine;
             UseAbsoluteValue = false;
@@ -75,10 +76,21 @@ namespace Synth
 
         public override void Process(float increment)
         {
-            ADSR.Process(increment);
-            for (int i = 0; i < NumSamples; i++)
+            if (ADSR.Enabled)
             {
-                buffer[i] = GetNextSample(increment) * ADSR[i] * Amplitude;
+                ADSR.Process(increment);
+
+                for (int i = 0; i < NumSamples; i++)
+                {
+                    buffer[i] = GetNextSample(increment) * ADSR[i] * Amplitude;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < NumSamples; i++)
+                {
+                    buffer[i] = GetNextSample(increment) * Amplitude;
+                }
             }
         }
     }

@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://df7mck8vnomus" path="res://assets/brushedsteel4.jpg" id="4_101k7"]
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="4_lv3dd"]
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
-[ext_resource type="PackedScene" path="res://scenes/lfo.tscn" id="6_4sevq"]
+[ext_resource type="PackedScene" uid="uid://cewu6w24764u8" path="res://scenes/lfo.tscn" id="6_4sevq"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
 [ext_resource type="PackedScene" uid="uid://d2tnrme5j7xrt" path="res://scenes/Delay.tscn" id="8_pjurh"]
 [ext_resource type="PackedScene" uid="uid://dptpgfskdirph" path="res://scenes/Reverb.tscn" id="9_q5dht"]
@@ -25,13 +25,17 @@ shader_parameter/wave_data = null
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
 
-[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "ADSREnvelope", "AudioOutputNode")]
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "ADSREnvelope", "AudioOutputNode")]
 script = ExtResource("1_ox65v")
 Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator1")
 Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator2")
 Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator3")
 Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator4")
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator5")
+LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO1")
+LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO2")
+LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO3")
+LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO4")
 ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
 metadata/_edit_vertical_guides_ = [-573.0]

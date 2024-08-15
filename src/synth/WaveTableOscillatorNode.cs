@@ -195,7 +195,7 @@ namespace Synth
 			float lastFreq = _lastFrequency; // Store the last frequency
 			for (int i = 0; i < NumSamples; i++)
 			{
-				float detunedFreq = GetParameter(AudioParam.Frequency, i) * DetuneFactor;
+				float detunedFreq = GetParameter(AudioParam.Pitch, i) * DetuneFactor;
 				float gain = GetParameter(AudioParam.Gain, i, 1.0f);
 
 				// Only update the wave table and frequency if it has changed

@@ -1,3 +1,4 @@
+class_name LFO
 extends Control
 
 signal freq_value_changed(value)

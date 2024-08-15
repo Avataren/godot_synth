@@ -1,6 +1,5 @@
 using static Godot.GD;
 using Godot;
-using System.Collections.Generic;
 using System;
 using Synth;
 
@@ -16,19 +15,30 @@ public partial class PatchEditor : Node2D
 	private Oscillator Oscillator4;
 	[Export]
 	private Oscillator Oscillator5;
+
+	[Export]
+	private LFO LFO1;
+	[Export]
+	private LFO LFO2;
+	[Export]
+	private LFO LFO3;
+	[Export]
+	private LFO LFO4;
+
 	[Export]
 	private ADSR_Envelope ADSREnvelope;
 
 	[Export]
 	private AudioOutputNode AudioOutputNode;
 
-	private Control lfoContainer;
+	//private Control lfoContainer;
+	private Control gdLFONode;
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		lfoContainer = GetNode<Control>("%LFOContainer");
-		ConnectToLFOSignals();
+		//lfoContainer = GetNode<Control>("%LFOContainer");
 		var oscs = new Oscillator[] { Oscillator1, Oscillator2, Oscillator3, Oscillator4, Oscillator5 };
+		var lfos = new LFO[] { LFO1, LFO2, LFO3, LFO4 };
 		try
 		{
 			Print("Patch Editor Ready");
@@ -37,28 +47,17 @@ public partial class PatchEditor : Node2D
 			{
 				ConnectOscillatorSignals(oscs[i], i);
 			}
+			for (int i = 0; i < lfos.Length; i++)
+			{
+				Print("Connecting LFO Signals" + i);
+				ConnectLFOSignals(lfos[i], i);
+			}
 			ConnectAmplitudeEnvelope();
 		}
 		catch (Exception e)
 		{
 			PrintErr(e.Message);
 			PrintErr(e.StackTrace);
-		}
-	}
-
-	private void ConnectToLFOSignals()
-	{
-		Print("Connecting to LFO Signals:", lfoContainer);
-		foreach (Node lfoNode in lfoContainer.GetChildren())
-		{
-			if (lfoNode.HasMeta("isLFO") && (bool)lfoNode.GetMeta("isLFO"))
-			{
-				Print("LFO Node Found:", lfoNode.Name);
-			}
-			else
-			{
-				Print("Node is not an LFO_UI:", lfoNode.GetClass());
-			}
 		}
 	}
 
@@ -170,6 +169,29 @@ public partial class PatchEditor : Node2D
 		AudioOutputNode.CurrentPatch.SetDelayEffect_DryMix(value);
 	}
 
+	int activeLFO = 0;
+	private void ConnectLFOSignals(LFO lfo, int lfoNum)
+	{
+		// Using a lambda to pass both the signal's argument and the extra parameter
+		lfo.FreqValueChanged += (val) =>
+		{
+			AudioOutputNode.CurrentPatch.SetLFOFrequency(val, lfoNum);
+		};
+		lfo.GainValueChanged += (val) =>
+		{
+			AudioOutputNode.CurrentPatch.SetLFOGain(val, lfoNum);
+		};
+		lfo.WaveformChanged += (val) =>
+		{
+			AudioOutputNode.CurrentPatch.SetLFOWaveform(val, lfoNum);
+		};
+
+	}
+
+	private void LFO_Freq_Updated(float val)
+	{
+		GD.Print("LFO" + activeLFO + " Freq Updated: " + val);
+	}
 	private void ConnectOscillatorSignals(Oscillator osc, int oscNum)
 	{
 		osc.PhaseOffsetChanged += (phaseOffset) =>

@@ -37,7 +37,7 @@ public class SynthPatch
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
             oscillators.Add(osc);
             graph.Connect(osc, mix1, AudioParam.Input);
-            graph.Connect(freq, osc, AudioParam.Frequency);
+            graph.Connect(freq, osc, AudioParam.Pitch);
 
             var env = graph.CreateNode<EnvelopeNode>("OscEnv" + i, BufferSize, SampleRate);
             env.Enabled = false;
@@ -236,6 +236,51 @@ public class SynthPatch
             graph.SetNodeEnabled(AmpEnvelopes[idx], enabled);
         }
 
+    }
+
+
+    public void SetLFOWaveform(string waveTypeName, int LFOIndex = -1)
+    {
+        //convert from waveTypeName to enum
+        LFONode.LFOWaveform waveform = (LFONode.LFOWaveform)System.Enum.Parse(typeof(LFONode.LFOWaveform), waveTypeName);
+        if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+        {
+            LFOs[LFOIndex].CurrentWaveform = waveform;
+            return;
+        }
+
+        for (int idx = 0; idx < LFOs.Count; idx++)
+        {
+            LFOs[idx].CurrentWaveform = waveform;
+        }
+    }
+
+    public void SetLFOFrequency(float freq, int LFOIndex = -1)
+    {
+        if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+        {
+            LFOs[LFOIndex].Frequency = freq;
+            return;
+        }
+
+        for (int idx = 0; idx < LFOs.Count; idx++)
+        {
+            LFOs[idx].Frequency = freq;
+        }
+    }
+
+    public void SetLFOGain(float gain, int LFOIndex = -1)
+    {
+        if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+        {
+            LFOs[LFOIndex].Amplitude = gain;
+            return;
+        }
+
+        for (int idx = 0; idx < LFOs.Count; idx++)
+        {
+            LFOs[idx].Amplitude = gain;
+        }
     }
 
     public void SetOscillatorPhaseOffset(float phase, int OscillatorIndex = -1)

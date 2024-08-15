@@ -6,7 +6,7 @@ namespace Synth
         StereoInput,
         Gain,
         Balance,
-        Frequency,
+        Pitch,
         PulseWidth,
         DetuneCents,
         DetuneSemitones,

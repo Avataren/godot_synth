@@ -41,6 +41,16 @@ namespace Synth
             combL[7] = new Comb(ReverbTunings.CombTuningL8);
             combR[7] = new Comb(ReverbTunings.CombTuningR8);
 
+            combL[8] = new Comb(ReverbTunings.CombTuningL9);
+            combR[8] = new Comb(ReverbTunings.CombTuningR9);
+            combL[9] = new Comb(ReverbTunings.CombTuningL10);
+            combR[9] = new Comb(ReverbTunings.CombTuningR10);
+            combL[10] = new Comb(ReverbTunings.CombTuningL11);
+            combR[10] = new Comb(ReverbTunings.CombTuningR11);
+            combL[11] = new Comb(ReverbTunings.CombTuningL12);
+            combR[11] = new Comb(ReverbTunings.CombTuningR12);
+
+
             // Initialize Allpass filters with their respective buffers
             allpassL[0] = new Allpass(ReverbTunings.AllpassTuningL1);
             allpassR[0] = new Allpass(ReverbTunings.AllpassTuningR1);
@@ -50,6 +60,12 @@ namespace Synth
             allpassR[2] = new Allpass(ReverbTunings.AllpassTuningR3);
             allpassL[3] = new Allpass(ReverbTunings.AllpassTuningL4);
             allpassR[3] = new Allpass(ReverbTunings.AllpassTuningR4);
+
+            allpassL[4] = new Allpass(ReverbTunings.AllpassTuningL5);
+            allpassR[4] = new Allpass(ReverbTunings.AllpassTuningR5);
+
+            allpassL[5] = new Allpass(ReverbTunings.AllpassTuningL6);
+            allpassR[5] = new Allpass(ReverbTunings.AllpassTuningR6);
 
             // Set default values
             foreach (var allpass in allpassL)

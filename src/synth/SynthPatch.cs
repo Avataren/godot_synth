@@ -36,13 +36,13 @@ public class SynthPatch
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
             oscillators.Add(osc);
-            graph.Connect(osc, mix1, AudioParam.Input);
-            graph.Connect(freq, osc, AudioParam.Pitch);
+            graph.Connect(osc, mix1, AudioParam.Input, ModulationType.Add);
+            graph.Connect(freq, osc, AudioParam.Pitch, ModulationType.Add);
 
             var env = graph.CreateNode<EnvelopeNode>("OscEnv" + i, BufferSize, SampleRate);
             env.Enabled = false;
             AmpEnvelopes.Add(env);
-            graph.Connect(env, osc, AudioParam.Gain);
+            graph.Connect(env, osc, AudioParam.Gain, ModulationType.Multiply);
         }
 
         for (int i = 0; i < MaxLFOs; i++)
@@ -53,11 +53,11 @@ public class SynthPatch
 
         envelopes.Add(ampEnvelope);
 
-        graph.Connect(ampEnvelope, mix1, AudioParam.Gain);
-        graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput);
-        graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput);
-        graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput);
-        graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput);
+        graph.Connect(ampEnvelope, mix1, AudioParam.Gain, ModulationType.Multiply);
+        graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
 
         this.waveTableBank = waveTableBank;
         // Initialize the patch

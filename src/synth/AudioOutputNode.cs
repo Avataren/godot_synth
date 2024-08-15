@@ -31,6 +31,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		{
 			try
 			{
+				GD.Print("Initializing AudioOutputNode at " + generator.MixRate + " Hz");
 				SampleRate = generator.MixRate * SynthPatch.Oversampling;
 				waveTableBank = new WaveTableBank();
 				CurrentPatch = new SynthPatch(waveTableBank, SampleRate);
@@ -161,7 +162,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		CurrentPatch.graph.DebugPrint();
 	}
 
-	public void Connect(string srcName, string dstName, string param)
+	public void Connect(string srcName, string dstName, string param, ModulationType modType, float strength = 1.0f)
 	{
 		Print("Connecting " + srcName + " to " + dstName + " with param " + param);
 		var srcNode = CurrentPatch.graph.GetNode(srcName);
@@ -174,7 +175,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			GD.Print("Disconnecting " + srcName + " from Mixer");
 			CurrentPatch.graph.Disconnect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input);
 		}
-		CurrentPatch.graph.Connect(srcNode, dstNode, paramEnum);
+		CurrentPatch.graph.Connect(srcNode, dstNode, paramEnum, modType, strength);
 	}
 
 	public void Disconnect(string srcName, string dstName, string param)
@@ -187,7 +188,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		if (srcName.StartsWith("Osc"))
 		{
 			GD.Print("Connecting " + srcName + " to Mixer");
-			CurrentPatch.graph.Connect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input);
+			CurrentPatch.graph.Connect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input, ModulationType.Add, 1.0f);
 		}
 	}
 

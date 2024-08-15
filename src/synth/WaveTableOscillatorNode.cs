@@ -194,10 +194,21 @@ namespace Synth
 			float lastPhase = initialPhase;
 			float lastFreq = _lastFrequency; // Store the last frequency
 											 //GD.Print("PMod sample:" + GetParameter(AudioParam.PMod, 0));
+			//var gp = GetParameter(AudioParam.PMod, 0);
+			//GD.Print("PMod: " + gp.Item1 + " " + gp.Item2);
+
 			for (int i = 0; i < NumSamples; i++)
 			{
-				float detunedFreq = GetParameter(AudioParam.Pitch, i) * DetuneFactor;
-				float gain = GetParameter(AudioParam.Gain, i, 1.0f);
+				var pitchParam = GetParameter(AudioParam.Pitch, i);
+				var gainParam = GetParameter(AudioParam.Gain, i);
+				var pmodParam = GetParameter(AudioParam.PMod, i);
+				var phaseParam = GetParameter(AudioParam.Phase, i);
+
+
+				float detunedFreq = pitchParam.Item1 * DetuneFactor * pitchParam.Item2;
+				//GetParameter(AudioParam.Pitch, i) * DetuneFactor;
+				float gain = gainParam.Item2;
+				//GetParameter(AudioParam.Gain, i, 1.0f);
 
 				// Only update the wave table and frequency if it has changed
 				if (detunedFreq != lastFreq)
@@ -208,11 +219,12 @@ namespace Synth
 				}
 
 				float phaseForThisSample = lastPhase + (detunedFreq / sampleRate);
-				float phaseModMod = GetParameter(AudioParam.PMod, i);
-				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, ModulationStrength + phaseModMod, _modulationSmoothingFactor);
+				//float phaseModMod = GetParameter(AudioParam.PMod, i);
+				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, (ModulationStrength + pmodParam.Item1) * pmodParam.Item2, _modulationSmoothingFactor);
+
 				// Apply modulation and calculate buffer output
 
-				float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * ( _smoothModulationStrength);
+				float modulatedPhase = phaseForThisSample + phaseParam.Item1 * _smoothModulationStrength * phaseParam.Item2;
 				modulatedPhase += prevSample * SelfModulationStrength;
 				modulatedPhase += PhaseOffset;
 				modulatedPhase = Mathf.PosMod(modulatedPhase, 1.0f);

@@ -41,7 +41,6 @@ max_value = 1.0
 step = 0.001
 sensitivity = 0.25
 title = "Res"
-current_value = 0.0
 
 [node name="DriveKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
 unique_name_in_owner = true

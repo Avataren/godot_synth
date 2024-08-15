@@ -19,27 +19,34 @@ namespace Synth
 		public int NumSamples;
 		public bool HardSync = false;
 		public string Name { get; set; }
-		public Dictionary<AudioParam, List<AudioNode>> AudioParameters = new Dictionary<AudioParam, List<AudioNode>>();
-	    private Dictionary<AudioParam, List<AudioNode>> originalConnections = new Dictionary<AudioParam, List<AudioNode>>();
+		public Dictionary<AudioParam, List<ParameterConnection>> AudioParameters = new Dictionary<AudioParam, List<ParameterConnection>>();
+	    private Dictionary<AudioParam, List<ParameterConnection>> originalConnections = new Dictionary<AudioParam, List<ParameterConnection>>();
 
 
-		public float GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
+		public Tuple<float, float> GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
 		{
-			float value = 0.0f;
-			bool hasData = false;
+
 			if (!AudioParameters.ContainsKey(param))
 			{
-				return defaultVal;
+				return Tuple.Create(defaultVal, 1.0f);
 			}
-			foreach (AudioNode node in AudioParameters[param])
+			float adds = 0.0f;
+			float muls = 1.0f;
+			foreach (var ap in AudioParameters[param])
 			{
-				if (node.Enabled)
+				if (ap.SourceNode.Enabled)
 				{
-					value += node[sampleIndex];
-					hasData = true;
+					if (ap.ModType == ModulationType.Add)
+					{
+						adds += ap.SourceNode[sampleIndex] * ap.Strength;
+					}
+					else
+					{
+						muls *= ap.SourceNode[sampleIndex] * ap.Strength;
+					}
 				}
 			}
-			return hasData ? value : defaultVal;
+			return Tuple.Create(adds, muls);
 		}
 
 		public List<AudioNode> GetParameterNodes(AudioParam param)
@@ -48,7 +55,7 @@ namespace Synth
 			{
 				return null;
 			}
-			return AudioParameters[param];
+			return AudioParameters[param].ConvertAll(x => x.SourceNode);
 		}
 
 		public AudioNode(int NumSamples, float SampleFrequency = 44100.0f)

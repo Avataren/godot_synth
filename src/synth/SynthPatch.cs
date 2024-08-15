@@ -6,10 +6,12 @@ public class SynthPatch
 {
     private readonly object _lock = new object();
     public const int MaxOscillators = 5;
+    public const int MaxLFOs = 4;
     public static int Oversampling = 4;
     static int BufferSize = 512 * Oversampling;
     float SampleRate = 44100 * Oversampling;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
+    List<LFONode> LFOs = new List<LFONode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     EnvelopeNode ampEnvelope;
     WaveTableBank waveTableBank;
@@ -34,16 +36,18 @@ public class SynthPatch
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
             oscillators.Add(osc);
-            //if (i > 2)
-            {
-                graph.Connect(osc, mix1, AudioParam.Input);
-            }
+            graph.Connect(osc, mix1, AudioParam.Input);
             graph.Connect(freq, osc, AudioParam.Frequency);
 
             var env = graph.CreateNode<EnvelopeNode>("OscEnv" + i, BufferSize, SampleRate);
             env.Enabled = false;
             AmpEnvelopes.Add(env);
             graph.Connect(env, osc, AudioParam.Gain);
+        }
+
+        for (int i = 0; i < MaxLFOs; i++)
+        {
+            LFOs.Add(graph.CreateNode<LFONode>("LFO" + i, BufferSize, SampleRate));
         }
         ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
 
@@ -55,8 +59,6 @@ public class SynthPatch
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput);
 
-        //graph.DebugPrint();
-
         this.waveTableBank = waveTableBank;
         // Initialize the patch
         for (int idx = 0; idx < MaxOscillators; idx++)
@@ -65,13 +67,8 @@ public class SynthPatch
             AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
         }
 
-        // graph.Connect(oscillators[0], oscillators[1], AudioParam.Phase);
-        // graph.Connect(oscillators[1], oscillators[2], AudioParam.Phase);
-        // graph.Connect(oscillators[2], oscillators[3], AudioParam.Phase);
-        //ampEnvelope = new EnvelopeNode(BufferSize, true);
         oscillators[0].Enabled = true;
         graph.TopologicalSort();
-        //FrequencyLFO = new LFONode(BufferSize, 4.0f, 5.0f);
 
         //disable effects by default
         reverbEffectNode.RoomSize = 0.5f;

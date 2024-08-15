@@ -5,7 +5,7 @@ signal delete_pressed
 
 func _ready() -> void:
 	_on_destination_option_item_selected(0)
-	pass
+	_on_source_option_item_selected(0)
 
 func _on_destination_option_item_selected(index: int) -> void:
 	var itemName = %SourceOption.get_item_text(index);
@@ -50,3 +50,13 @@ func _on_destination_parameter_option_item_selected(index: int) -> void:
 
 func _on_delete_button_pressed() -> void:
 	delete_pressed.emit(self)
+
+
+func _on_source_option_item_selected(index: int) -> void:
+	%DestinationOption.clear()
+	var selectedItmText = get_source_name()
+	for itm in range (0, %SourceOption.item_count):
+		var txt = %SourceOption.get_item_text(itm)
+		if (txt != selectedItmText):
+			%DestinationOption.add_item(txt)
+	

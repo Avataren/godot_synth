@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://cbymyl68u2edq"]
 
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="1_rr1vg"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="1_rr1vg"]
 [ext_resource type="Script" path="res://scenes/scripts/Oscillator.cs" id="1_tg6q3"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_htrip"]
 [ext_resource type="PackedScene" uid="uid://d2107ijw5cg87" path="res://scenes/tuning.tscn" id="3_baww2"]
@@ -92,6 +92,8 @@ layout_mode = 2
 max_value = 1.0
 step = 0.001
 sensitivity = 0.25
+label_unit_scale = 1.0
+label_unit = ""
 title = "PWM"
 nonlinear_factor = 1.0
 current_value = 0.5
@@ -101,6 +103,8 @@ layout_mode = 2
 max_value = 1.0
 step = 0.001
 sensitivity = 0.25
+label_unit_scale = 1.0
+label_unit = ""
 title = "Gain"
 nonlinear_factor = 1.0
 current_value = 1.0
@@ -110,6 +114,8 @@ layout_mode = 2
 min_value = -1.0
 max_value = 1.0
 step = 0.001
+label_unit_scale = 1.0
+label_unit = ""
 title = "Panning"
 nonlinear_factor = 1.0
 
@@ -134,6 +140,8 @@ layout_mode = 2
 max_value = 1.0
 step = 0.001
 sensitivity = 0.2
+label_unit_scale = 1.0
+label_unit = ""
 title = "Phase"
 nonlinear_factor = 1.0
 
@@ -142,6 +150,8 @@ layout_mode = 2
 max_value = 0.25
 step = 0.001
 sensitivity = 0.2
+label_unit_scale = 1.0
+label_unit = ""
 title = "Feedback"
 nonlinear_factor = 1.0
 
@@ -150,6 +160,8 @@ layout_mode = 2
 max_value = 10.0
 step = 0.001
 sensitivity = 0.1
+label_unit_scale = 1.0
+label_unit = ""
 title = "PMod"
 nonlinear_factor = 0.5
 

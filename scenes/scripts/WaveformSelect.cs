@@ -75,7 +75,7 @@ public partial class WaveformSelect : Control
 			waveformLabel.Text = waveforms[index];
 			GD.Print("Waveform knob value changed, setting data");
         	colorRect.Material.Set("shader_parameter/curve_data", data);
-			EmitSignal(nameof(WaveformChangedEventHandler), index);
+			EmitSignal(SignalName.WaveformChanged, index);
 		}
 		catch (IndexOutOfRangeException)
 		{

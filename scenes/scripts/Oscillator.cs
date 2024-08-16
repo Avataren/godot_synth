@@ -113,6 +113,7 @@ public partial class Oscillator : Control
 
 	private void _on_waveform_select_waveform_changed( int index)
 	{
+		GD.Print("OSC:Waveform changed: ", index);
 		EmitSignal("WaveformChanged", index);
 	}
 	private void _on_waveform_select_item_selected(int index)

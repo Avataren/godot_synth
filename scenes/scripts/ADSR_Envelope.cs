@@ -12,6 +12,14 @@ public partial class ADSR_Envelope : VBoxContainer
 	[Signal]
 	public delegate void ReleaseTimeChangedEventHandler(float releaseTime);
 
+	[Export]
+	private float MaxAttackTimeMS = 20000.0f;
+	[Export]
+	private float MaxDecayTimeMS = 20000.0f;
+
+	[Export]
+	private float MaxReleaseTimeMS = 10000.0f;
+
 	public void Enable()
 	{
 		Visible = true;
@@ -25,18 +33,16 @@ public partial class ADSR_Envelope : VBoxContainer
 
 	private void _on_attack_slider_value_changed(double value)
 	{
-		var maxVal = (float)GetNode<Slider>("%AttackSlider").MaxValue;
-		var val = (float)value / maxVal;
-		val*=val;
-		EmitSignal("AttackTimeChanged", (float)val*maxVal);
+		if (value < 0.0015)
+			value = 0.0;
+		EmitSignal("AttackTimeChanged", (float)value * MaxAttackTimeMS);
 	}
 
 	private void _on_decay_slider_value_changed(double value)
 	{
-		var maxVal = (float)GetNode<Slider>("%DecaySlider").MaxValue;
-		var val = (float)value / maxVal;
-		val*=val;
-		EmitSignal("DecayTimeChanged", (float)val*maxVal);
+		if (value < 0.0015)
+			value = 0.0;
+		EmitSignal("DecayTimeChanged", (float)value * MaxDecayTimeMS);
 	}
 
 	private void _on_sustain_slider_value_changed(double value)
@@ -46,6 +52,8 @@ public partial class ADSR_Envelope : VBoxContainer
 
 	private void _on_release_slider_value_changed(double value)
 	{
-		EmitSignal("ReleaseTimeChanged", (float)value);
+		if (value < 0.0015)
+			value = 0.0;
+		EmitSignal("ReleaseTimeChanged", (float)value * MaxReleaseTimeMS);
 	}
 }

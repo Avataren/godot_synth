@@ -93,8 +93,7 @@ max_value = 1.0
 step = 0.001
 sensitivity = 0.25
 title = "PWM"
-nonlinear_mode = false
-nonlinear_factor = 2.0
+nonlinear_factor = 1.0
 current_value = 0.5
 
 [node name="GainKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_htrip")]
@@ -103,8 +102,7 @@ max_value = 1.0
 step = 0.001
 sensitivity = 0.25
 title = "Gain"
-nonlinear_mode = false
-nonlinear_factor = 2.0
+nonlinear_factor = 1.0
 current_value = 1.0
 
 [node name="BalanceKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("2_htrip")]
@@ -113,8 +111,7 @@ min_value = -1.0
 max_value = 1.0
 step = 0.001
 title = "Panning"
-nonlinear_mode = false
-nonlinear_factor = 2.0
+nonlinear_factor = 1.0
 
 [node name="HSeparator2" type="HSeparator" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 visible = false
@@ -138,8 +135,7 @@ max_value = 1.0
 step = 0.001
 sensitivity = 0.2
 title = "Phase"
-nonlinear_mode = false
-nonlinear_factor = 2.0
+nonlinear_factor = 1.0
 
 [node name="FeedbackKNob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("2_htrip")]
 layout_mode = 2
@@ -147,8 +143,7 @@ max_value = 0.25
 step = 0.001
 sensitivity = 0.2
 title = "Feedback"
-nonlinear_mode = false
-nonlinear_factor = 2.0
+nonlinear_factor = 1.0
 
 [node name="ModKnob" parent="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("2_htrip")]
 layout_mode = 2
@@ -156,7 +151,6 @@ max_value = 10.0
 step = 0.001
 sensitivity = 0.1
 title = "PMod"
-nonlinear_mode = true
 nonlinear_factor = 0.5
 
 [connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]

@@ -12,8 +12,7 @@ extends Control
 	set(value):
 		title = value
 		_update_title()
-@export var nonlinear_mode: bool = false # Toggle for nonlinear mode
-@export var nonlinear_factor: float = 2.0 # Factor for non-linear adjustment
+@export var nonlinear_factor: float = 1.0 # Factor for non-linear adjustment; 1.0 means linear
 
 # Internal state
 @export var current_value: float = min_value:
@@ -59,8 +58,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process_motion(relative: Vector2) -> void:
 	# Adjust the knob value based on vertical mouse movement
 	accumulated_value += -relative.y * sensitivity * (max_value - min_value) / 100.0
-	current_value = clamp(mouse_drag_start_value + accumulated_value, min_value, max_value)
-	current_value = round(current_value / step) * step
+	
+	# Apply non-linear mapping
+	var new_value = clamp(mouse_drag_start_value + accumulated_value, min_value, max_value)
+	var normalized_value = (new_value - min_value) / (max_value - min_value)
+	normalized_value = pow(normalized_value, 1.0 / nonlinear_factor)
+	new_value = min_value + normalized_value * (max_value - min_value)
+		
+	current_value = round(new_value / step) * step
 	if previous_value != current_value:
 		%ValueLabel.text = str(current_value)
 		previous_value = current_value
@@ -70,7 +75,11 @@ func _process_motion(relative: Vector2) -> void:
 
 func _on_start_drag() -> void:
 	mouse_drag = true
-	mouse_drag_start_value = current_value
+	# Calculate the normalized value according to the current value and nonlinear factor
+	var normalized_value = (current_value - min_value) / (max_value - min_value)
+	if nonlinear_factor != 1.0:
+		normalized_value = pow(normalized_value, nonlinear_factor)
+	mouse_drag_start_value = min_value + normalized_value * (max_value - min_value)
 	accumulated_value = 0.0
 
 func _on_stop_drag() -> void:
@@ -84,18 +93,16 @@ func _on_mouse_exited() -> void:
 
 func _update_pointer_rotation() -> void:
 	# Map the current value to the corresponding angle
-	var angle_deg = _value_to_angle(current_value)
+	# var angle_deg = _value_to_angle(current_value)
 	#%Pointer.rotation_degrees = angle_deg
 	
 	# Calculate normalized progress correctly, considering min_value could be negative
 	var normalized_value = (current_value - min_value) / (max_value - min_value)
 	%ColorRect.material.set("shader_parameter/progress", normalized_value)
 
-func _value_to_angle(value: float) -> float:
+#func _value_to_angle(value: float) -> float:
 	# Convert a value to an angle between `start_angle` and `end_angle`
-	if nonlinear_mode:
-		# Apply non-linear scaling
-		var normalized_value = (value - min_value) / (max_value - min_value)
-		normalized_value = pow(normalized_value, nonlinear_factor) # Apply non-linear scaling
-		value = min_value + normalized_value * (max_value - min_value)
-	return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))
+#	var normalized_value = (value - min_value) / (max_value - min_value)
+	#normalized_value = pow(normalized_value, nonlinear_factor)
+	#value = min_value + normalized_value * (max_value - min_value)
+	#return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))

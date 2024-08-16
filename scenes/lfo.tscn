@@ -73,8 +73,7 @@ max_value = 10.0
 step = 0.001
 sensitivity = 0.1
 title = "Frequency"
-nonlinear_mode = true
-nonlinear_factor = 1.0
+nonlinear_factor = 0.25
 current_value = 4.0
 
 [node name="GainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
@@ -82,10 +81,9 @@ unique_name_in_owner = true
 layout_mode = 2
 max_value = 10.0
 step = 0.001
-sensitivity = 0.01
+sensitivity = 0.1
 title = "Gain"
-nonlinear_mode = true
-nonlinear_factor = 0.5
+nonlinear_factor = 0.25
 current_value = 1.0
 
 [node name="BiasKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
@@ -95,6 +93,7 @@ layout_mode = 2
 min_value = -2.0
 max_value = 2.0
 title = "Bias"
+nonlinear_factor = 1.0
 
 [connection signal="toggled" from="VBoxContainer/Enable Envelope" to="." method="_on_enable_envelope_toggled"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/FreqKnob" to="." method="OnFreqKnobValueChanged"]

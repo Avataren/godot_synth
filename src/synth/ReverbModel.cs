@@ -1,4 +1,5 @@
 using System;
+using Godot;
 
 namespace Synth
 {
@@ -27,13 +28,13 @@ namespace Synth
             combL[0] = new Comb(ReverbTunings.CombTuningL1);
             combR[0] = new Comb(ReverbTunings.CombTuningR1);
             combL[1] = new Comb(ReverbTunings.CombTuningL2);
-            combR[1] = new Comb(ReverbTunings.CombTuningR1);
+            combR[1] = new Comb(ReverbTunings.CombTuningR2);
             combL[2] = new Comb(ReverbTunings.CombTuningL3);
             combR[2] = new Comb(ReverbTunings.CombTuningR3);
             combL[3] = new Comb(ReverbTunings.CombTuningL4);
             combR[3] = new Comb(ReverbTunings.CombTuningR4);
             combL[4] = new Comb(ReverbTunings.CombTuningL5);
-            combR[4] = new Comb(ReverbTunings.CombTuningR1);
+            combR[4] = new Comb(ReverbTunings.CombTuningR5);
             combL[5] = new Comb(ReverbTunings.CombTuningL6);
             combR[5] = new Comb(ReverbTunings.CombTuningR6);
             combL[6] = new Comb(ReverbTunings.CombTuningL7);
@@ -68,10 +69,14 @@ namespace Synth
             allpassR[5] = new Allpass(ReverbTunings.AllpassTuningR6);
 
             // Set default values
+            // foreach (var allpass in allpassL)
+            //     allpass.Feedback = 0.5f;
+            // foreach (var allpass in allpassR)
+            //     allpass.Feedback = 0.5f;
             foreach (var allpass in allpassL)
-                allpass.Feedback = 0.5f;
+                allpass.Feedback = 0.5f * (1.0f - damp); // Dynamic adjustment
             foreach (var allpass in allpassR)
-                allpass.Feedback = 0.5f;
+                allpass.Feedback = 0.5f * (1.0f - damp);
 
             Wet = ReverbTunings.InitialWet;
             RoomSize = ReverbTunings.InitialRoom;
@@ -82,6 +87,17 @@ namespace Synth
 
             // Mute buffers
             Mute();
+        }
+
+        private float SoftClip(float input)
+        {
+            const float threshold = 0.6f;
+            if (input > threshold)
+                return threshold + (input - threshold) / (1.0f + Mathf.Pow(input - threshold, 2));
+            else if (input < -threshold)
+                return -threshold + (input + threshold) / (1.0f + Mathf.Pow(-input - threshold, 2));
+            else
+                return input;
         }
 
         public float RoomSize
@@ -182,6 +198,14 @@ namespace Synth
                 // Calculate output REPLACING anything already there
                 outputL[i * skip] = outL * wet1 + outR * wet2 + inputL[i * skip] * dry;
                 outputR[i * skip] = outR * wet1 + outL * wet2 + inputR[i * skip] * dry;
+
+                float phaseShift = 0.02f; // Adjust as needed
+                outputR[i * skip] += outputL[i * skip] * phaseShift;
+                outputL[i * skip] -= outputR[i * skip] * phaseShift;
+
+                outputL[i * skip] = SoftClip(outputL[i * skip]);
+                outputR[i * skip] = SoftClip(outputR[i * skip]);
+
             }
         }
 

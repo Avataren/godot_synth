@@ -143,7 +143,10 @@ namespace Synth
             // Disconnect the node and reroute its inputs
             foreach (var param in node.AudioParameters.Keys)
             {
-                foreach (var connection in node.AudioParameters[param])
+                // Create a copy of the list to avoid modifying the collection while iterating
+                var connectionsCopy = node.AudioParameters[param].ToList();
+
+                foreach (var connection in connectionsCopy)
                 {
                     var inputNode = connection.SourceNode;
 
@@ -175,6 +178,50 @@ namespace Synth
                 }
             }
         }
+
+
+        // private void RerouteConnections(AudioNode node)
+        // {
+        //     if (!originalConnections.ContainsKey(node))
+        //     {
+        //         originalConnections[node] = new List<(AudioNode, AudioNode, AudioParam, ModulationType, float)>();
+        //     }
+
+        //     // Disconnect the node and reroute its inputs
+        //     foreach (var param in node.AudioParameters.Keys)
+        //     {
+        //         foreach (var connection in node.AudioParameters[param])
+        //         {
+        //             var inputNode = connection.SourceNode;
+
+        //             foreach (var dependentNode in Nodes)
+        //             {
+        //                 if (dependentNode.AudioParameters.ContainsKey(param))
+        //                 {
+        //                     var dependentConnections = dependentNode.AudioParameters[param];
+
+        //                     // Check if the dependent node has a connection from the current node
+        //                     var dependentConnection = dependentConnections.FirstOrDefault(c => c.SourceNode == node);
+        //                     if (dependentConnection != null)
+        //                     {
+        //                         // Save the original connection, including ModType and Strength
+        //                         originalConnections[node].Add((inputNode, dependentNode, param, connection.ModType, connection.Strength));
+
+        //                         // Disconnect the current node from the dependent node
+        //                         Disconnect(node, dependentNode, param);
+
+        //                         // Avoid duplicate connections
+        //                         if (!dependentConnections.Any(c => c.SourceNode == inputNode))
+        //                         {
+        //                             // Connect inputNode directly to the dependentNode with the same ModType and Strength
+        //                             Connect(inputNode, dependentNode, param, connection.ModType, connection.Strength);
+        //                         }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
 
         // private void RerouteConnections(AudioNode node)
@@ -386,7 +433,8 @@ namespace Synth
         {
             if (stack.Contains(node))
             {
-                throw new InvalidOperationException("Cycle detected in the audio graph");
+                //throw new InvalidOperationException("Cycle detected in the audio graph");
+                return;
             }
             if (!visited.Contains(node))
             {

@@ -21,7 +21,7 @@ namespace Synth
             if (nodes == null || nodes.Count == 0)
                 return;
 
-            foreach (MixerNode node in nodes)
+            foreach (var node in nodes)
             {
                 if (node == null || !node.Enabled)
                     continue;

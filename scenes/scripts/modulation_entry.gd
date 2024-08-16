@@ -61,7 +61,7 @@ func _on_destination_parameter_option_item_selected(index: int) -> void:
 func _on_delete_button_pressed() -> void:
 	delete_pressed.emit(self)
 
-func _on_source_option_item_selected(index: int) -> void:
+func _on_source_option_item_selected(_index: int) -> void:
 	%DestinationOption.clear()
 	var selectedItmText = get_source_name()
 	for itm in range (0, %SourceOption.item_count):

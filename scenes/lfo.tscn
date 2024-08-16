@@ -73,15 +73,19 @@ max_value = 10.0
 step = 0.001
 sensitivity = 0.1
 title = "Frequency"
+nonlinear_mode = true
+nonlinear_factor = 1.0
 current_value = 4.0
 
 [node name="GainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 20.0
+max_value = 10.0
 step = 0.001
-sensitivity = 0.1
+sensitivity = 0.01
 title = "Gain"
+nonlinear_mode = true
+nonlinear_factor = 0.5
 current_value = 1.0
 
 [node name="BiasKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]

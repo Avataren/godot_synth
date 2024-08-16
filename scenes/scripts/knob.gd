@@ -1,4 +1,3 @@
-@tool
 extends Control
 
 # Exported properties
@@ -13,6 +12,8 @@ extends Control
 	set(value):
 		title = value
 		_update_title()
+@export var nonlinear_mode: bool = false # Toggle for nonlinear mode
+@export var nonlinear_factor: float = 2.0 # Factor for non-linear adjustment
 
 # Internal state
 @export var current_value: float = min_value:
@@ -23,7 +24,7 @@ extends Control
 		if (current_value < min_value):
 			current_value = min_value
 		_update_current_value()
-		
+
 var previous_value: float = current_value
 var mouse_hovered: bool = false
 var mouse_drag: bool = false
@@ -60,7 +61,7 @@ func _process_motion(relative: Vector2) -> void:
 	accumulated_value += -relative.y * sensitivity * (max_value - min_value) / 100.0
 	current_value = clamp(mouse_drag_start_value + accumulated_value, min_value, max_value)
 	current_value = round(current_value / step) * step
-	if (previous_value != current_value):
+	if previous_value != current_value:
 		%ValueLabel.text = str(current_value)
 		previous_value = current_value
 		value_changed.emit(current_value)
@@ -92,16 +93,9 @@ func _update_pointer_rotation() -> void:
 
 func _value_to_angle(value: float) -> float:
 	# Convert a value to an angle between `start_angle` and `end_angle`
+	if nonlinear_mode:
+		# Apply non-linear scaling
+		var normalized_value = (value - min_value) / (max_value - min_value)
+		normalized_value = pow(normalized_value, nonlinear_factor) # Apply non-linear scaling
+		value = min_value + normalized_value * (max_value - min_value)
 	return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))
-
-
-#func _update_pointer_rotation() -> void:
-	## Map the current value to the corresponding angle
-	#var angle_deg = _value_to_angle(current_value)
-	#%Pointer.rotation_degrees = angle_deg
-	#var normalized_value = current_value / max_value
-	#%ColorRect.material.set("shader_parameter/progress",normalized_value)
-
-#func _value_to_angle(value: float) -> float:
-	## Convert a value to an angle between `start_angle` and `end_angle`
-	#return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))

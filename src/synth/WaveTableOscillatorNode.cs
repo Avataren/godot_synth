@@ -16,6 +16,9 @@ namespace Synth
 		public float PhaseOffset = 0.0f;
 		public bool Is_PWM { get; set; } = false;
 		private float _lastFrequency = -1; // Initialize to an invalid frequency to ensure initial update
+		float PWM_Add = 0.0f;
+		float PWM_Mul = 1.0f;
+
 		public delegate float WaveTableFunction(WaveTable waveTable, float phase);
 		public WaveTableFunction GetSampleFunc;
 
@@ -94,7 +97,7 @@ namespace Synth
 		protected float GetSample_PWM(WaveTable currWaveTable, float phase)
 		{
 			float position = phase * currWaveTable.WaveTableData.Length;
-			float offsetPhase = Mathf.PosMod(phase + PWMDutyCycle, 1.0f);
+			float offsetPhase = Mathf.PosMod(phase + (PWMDutyCycle + PWM_Add) * PWM_Mul, 1.0f);
 			float offsetPosition = offsetPhase * currWaveTable.WaveTableData.Length;
 
 			return GetInterpolatedSample(currWaveTable, position) - GetInterpolatedSample(currWaveTable, offsetPosition);
@@ -187,6 +190,8 @@ namespace Synth
 
 		public override void Process(float increment)
 		{
+			PWM_Add = 0.0f;
+			PWM_Mul = 1.0f;
 			var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
 			UpdateDetuneFactor();
 			float sampleRate = SampleFrequency;
@@ -203,6 +208,9 @@ namespace Synth
 				var gainParam = GetParameter(AudioParam.Gain, i);
 				var pmodParam = GetParameter(AudioParam.PMod, i);
 				var phaseParam = GetParameter(AudioParam.Phase, i);
+				var pwmParam = GetParameter(AudioParam.PWM, i);
+				PWM_Add = pwmParam.Item1;
+				PWM_Mul = pwmParam.Item2;
 
 
 				float detunedFreq = pitchParam.Item1 * DetuneFactor * pitchParam.Item2;
@@ -223,7 +231,6 @@ namespace Synth
 				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, (ModulationStrength + pmodParam.Item1) * pmodParam.Item2, _modulationSmoothingFactor);
 
 				// Apply modulation and calculate buffer output
-
 				float modulatedPhase = phaseForThisSample + phaseParam.Item1 * _smoothModulationStrength * phaseParam.Item2;
 				modulatedPhase += prevSample * SelfModulationStrength;
 				modulatedPhase += PhaseOffset;

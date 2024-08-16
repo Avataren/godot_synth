@@ -11,7 +11,7 @@ namespace Synth
         DetuneCents,
         DetuneSemitones,
         DetuneOctaves,
-        PWMDutyCycle,
+        PWM,
         AttackTime,
         DecayTime,
         SustainLevel,

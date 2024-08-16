@@ -26,6 +26,7 @@ func _populate_oscillator_Parameters():
 	%DestinationParameterOption.add_item("Phase")
 	%DestinationParameterOption.add_item("PhaseMod")
 	%DestinationParameterOption.add_item("Stereo Balance")
+	%DestinationParameterOption.add_item("PWM")
 		
 func _populate_lfo_Parameters():
 	%DestinationParameterOption.add_item("Depth")

@@ -37,6 +37,9 @@ func get_node_param_from_textbox_entry(node_name) -> String:
 				return "PMod"
 			"Stereo Balance":
 				return "Balance"
+			"PWM":
+				return "PWM"
+				
 		return "unknown"
 
 func get_node_name_from_textbox_entry(node_name) -> String:

@@ -93,6 +93,7 @@ theme_override_constants/separation = 25
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 4
 theme_override_constants/separation = 25
 
 [node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
@@ -131,6 +132,11 @@ layout_mode = 2
 texture = SubResource("CanvasTexture_n0w22")
 script = ExtResource("6_psdfa")
 AudioController = NodePath("../../../../../AudioOutputNode")
+
+[node name="ResetButton" type="Button" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Reset Patch"
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
@@ -230,6 +236,7 @@ text = "Amplitude Envelope
 layout_mode = 2
 
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
+[connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]
 [connection signal="delay_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/Delay" to="." method="_on_delay_delay_changed"]
 [connection signal="delay_enabled" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/Delay" to="." method="_on_delay_delay_enabled"]
 [connection signal="drymix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer/Delay" to="." method="_on_delay_drymix_changed"]

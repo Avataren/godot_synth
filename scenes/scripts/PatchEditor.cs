@@ -61,6 +61,33 @@ public partial class PatchEditor : Node2D
 		}
 	}
 
+	[Export]
+	private string scenePath = "res://scenes/patch_editor.tscn";
+
+	void _on_reset_button_pressed()
+	{
+		// Load the scene from the stored path
+		GD.Print("Resetting Patch Editor");
+		var newScene = (PackedScene)ResourceLoader.Load(scenePath);
+		if (newScene != null)
+		{
+						// Free the old scene
+			var currentScene = GetTree().CurrentScene;
+			currentScene.QueueFree();
+
+			Node newSceneInstance = newScene.Instantiate();
+			// Add the new scene to the scene tree and set it as the current scene
+			GetTree().Root.AddChild(newSceneInstance);
+			GetTree().CurrentScene = newSceneInstance;
+
+
+		}
+		else
+		{
+			GD.PrintErr("Failed to load scene from path: " + scenePath);
+		}
+	}
+
 	private WaveTableWaveType GetWaveformFromIndex(int index)
 	{
 		switch (index)

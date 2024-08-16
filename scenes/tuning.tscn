@@ -19,29 +19,20 @@ layout_mode = 2
 min_value = -8.0
 max_value = 8.0
 sensitivity = 0.25
-label_unit_scale = null
-label_unit = null
 title = "Oct"
-nonlinear_factor = null
 
 [node name="KnobSemi" parent="HBoxContainer" instance=ExtResource("2_4cp7r")]
 layout_mode = 2
 min_value = -12.0
 max_value = 12.0
 sensitivity = 0.25
-label_unit_scale = null
-label_unit = null
 title = "Semi"
-nonlinear_factor = null
 
 [node name="Knob" parent="HBoxContainer" instance=ExtResource("2_4cp7r")]
 layout_mode = 2
 min_value = -100.0
 sensitivity = 0.1
-label_unit_scale = null
-label_unit = null
 title = "Cents"
-nonlinear_factor = null
 
 [connection signal="value_changed" from="HBoxContainer/KnobOct" to="." method="_on_oct_value_changed"]
 [connection signal="value_changed" from="HBoxContainer/KnobSemi" to="." method="_on_semi_value_changed"]

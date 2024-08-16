@@ -8,6 +8,8 @@ extends Control
 @export var step: float = 1.0
 @export var angle_offset: float = -90.0
 @export var sensitivity: float = 0.5
+@export var label_unit_scale: = 1.0
+@export var label_unit: = ""
 @export var title: String = "knob":
 	set(value):
 		title = value
@@ -35,7 +37,14 @@ signal value_changed
 func _ready():
 	_update_pointer_rotation()
 	%TitleLabel.text = title
-	%ValueLabel.text = str(current_value)
+	update_value_label()
+
+func update_value_label():
+	if (label_unit_scale < 0.0001):
+		label_unit_scale = 1.0
+	if (!label_unit):
+		label_unit = ""
+	%ValueLabel.text = str(current_value * label_unit_scale) + label_unit
 
 func _update_title():
 	if Engine.is_editor_hint():
@@ -43,7 +52,8 @@ func _update_title():
 		
 func _update_current_value():
 	if Engine.is_editor_hint():
-		%ValueLabel.text = str(current_value)
+		#%ValueLabel.text = str(current_value)
+		update_value_label()
 		_update_pointer_rotation()
 		
 func _unhandled_input(event: InputEvent) -> void:
@@ -67,7 +77,8 @@ func _process_motion(relative: Vector2) -> void:
 		
 	current_value = round(new_value / step) * step
 	if previous_value != current_value:
-		%ValueLabel.text = str(current_value)
+		#%ValueLabel.text = str(current_value)
+		update_value_label()
 		previous_value = current_value
 		value_changed.emit(current_value)
 	

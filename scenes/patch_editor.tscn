@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=19 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -16,6 +16,8 @@
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.03
+
+[sub_resource type="Theme" id="Theme_7ofu8"]
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_chx7t"]
 
@@ -58,7 +60,18 @@ grow_vertical = 2
 mouse_filter = 1
 theme = ExtResource("3_fpync")
 
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/Control"]
+modulate = Color(0.197523, 0.203866, 0.232095, 1)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_7ofu8")
+
 [node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control"]
+visible = false
 self_modulate = Color(0.43134, 0.43134, 0.43134, 1)
 layout_mode = 1
 anchors_preset = 15
@@ -200,7 +213,7 @@ layout_mode = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_constants/separation = 140
+theme_override_constants/separation = 200
 
 [node name="MoogFilter" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("9_tmfms")]
 layout_mode = 2

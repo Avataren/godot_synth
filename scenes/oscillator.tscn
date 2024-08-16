@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://cbymyl68u2edq"]
 
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="1_rr1vg"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="1_rr1vg"]
 [ext_resource type="Script" path="res://scenes/scripts/Oscillator.cs" id="1_tg6q3"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_htrip"]
 [ext_resource type="PackedScene" uid="uid://d2107ijw5cg87" path="res://scenes/tuning.tscn" id="3_baww2"]

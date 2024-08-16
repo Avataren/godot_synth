@@ -4,13 +4,6 @@ extends PanelContainer
 var mod_entry = preload("res://scenes/ModulationEntry.tscn")
 
 var previous_connections:Array
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
 
 func _on_apply_connections_button_pressed() -> void:
 	_remove_existing_connections();

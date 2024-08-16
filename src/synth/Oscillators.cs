@@ -53,6 +53,32 @@ namespace Synth
             return osc;
         }
 
+        public static WaveTableMemory Noise()
+        {
+            int tableLen = 2048;  // to give full bandwidth from 20 Hz
+            double[] freqWaveRe = new double[tableLen];
+            double[] freqWaveIm = new double[tableLen];
+            Random random = new Random();
+
+            // Generate white noise in the frequency domain
+            for (int idx = 0; idx < tableLen; idx++)
+            {
+                // Generate random values for both real and imaginary parts
+                freqWaveRe[idx] = random.NextDouble() * 2.0 - 1.0; // Random value between -1 and 1
+                freqWaveIm[idx] = random.NextDouble() * 2.0 - 1.0; // Random value between -1 and 1
+            }
+
+            // DC component (idx = 0) and Nyquist frequency (idx = tableLen / 2) should be zero
+            freqWaveRe[0] = freqWaveIm[0] = 0.0;
+            freqWaveRe[tableLen / 2] = freqWaveIm[tableLen / 2] = 0.0;
+
+            // Build a wavetable oscillator
+            var osc = new WaveTableMemory();
+            WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
+            return osc;
+        }
+
+
         public static WaveTableMemory SinOsc()
         {
             int tableLen = 2048;  // to give full bandwidth from 20 Hz
@@ -112,6 +138,6 @@ namespace Synth
             var osc = new WaveTableMemory();
             WaveTableManager.FillTables(osc, paddedImags, paddedReals, TableLen);
             return osc;
-        }        
+        }
     }
 }

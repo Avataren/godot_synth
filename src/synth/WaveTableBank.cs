@@ -9,6 +9,7 @@ namespace Synth
 		TRIANGLE,
 		SQUARE,
 		SAWTOOTH,
+		NOISE,
 		FUZZY,
 		ORGAN,
 		ORGAN2,
@@ -30,6 +31,7 @@ namespace Synth
 			AddWave(WaveTableWaveType.TRIANGLE, WaveTableRepository.TriangleOsc());
 			AddWave(WaveTableWaveType.SQUARE, WaveTableRepository.SquareOsc());
 			AddWave(WaveTableWaveType.SAWTOOTH, WaveTableRepository.SawOsc());
+			AddWave(WaveTableWaveType.NOISE, WaveTableRepository.Noise());
 			// addWave(WaveTableWaveType::FUZZY, periodicWaveOsc(fuzzy_real, fuzzy_imag));
 			AddWave(WaveTableWaveType.ORGAN, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.OrganReal, PeriodicWaves.OrganImag));
 			AddWave(WaveTableWaveType.ORGAN2, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.Organ2Real, PeriodicWaves.Organ2Imag));

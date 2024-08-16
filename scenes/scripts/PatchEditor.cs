@@ -101,18 +101,20 @@ public partial class PatchEditor : Node2D
 			case 3:
 				return WaveTableWaveType.SAWTOOTH;
 			case 4:
-				return WaveTableWaveType.ORGAN;
+				return WaveTableWaveType.NOISE;
 			case 5:
-				return WaveTableWaveType.ORGAN2;
+				return WaveTableWaveType.ORGAN;
 			case 6:
-				return WaveTableWaveType.BASS;
+				return WaveTableWaveType.ORGAN2;
 			case 7:
-				return WaveTableWaveType.VOCAL_AHH;
+				return WaveTableWaveType.BASS;
 			case 8:
-				return WaveTableWaveType.FUZZY;
+				return WaveTableWaveType.VOCAL_AHH;
 			case 9:
-				return WaveTableWaveType.PIANO;
+				return WaveTableWaveType.FUZZY;
 			case 10:
+				return WaveTableWaveType.PIANO;
+			case 11:
 				return WaveTableWaveType.PWM;
 			default:
 				return WaveTableWaveType.SINE;

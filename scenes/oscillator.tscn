@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://cbymyl68u2edq"]
+[gd_scene load_steps=6 format=3 uid="uid://cbymyl68u2edq"]
 
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="1_rr1vg"]
 [ext_resource type="Script" path="res://scenes/scripts/Oscillator.cs" id="1_tg6q3"]
+[ext_resource type="PackedScene" uid="uid://cae0wby722c4o" path="res://scenes/WaveformSelect.tscn" id="2_ckkpd"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_htrip"]
 [ext_resource type="PackedScene" uid="uid://d2107ijw5cg87" path="res://scenes/tuning.tscn" id="3_baww2"]
 
@@ -74,6 +75,9 @@ popup/item_10/text = "Piano"
 popup/item_10/id = 9
 popup/item_11/text = "PWM"
 popup/item_11/id = 10
+
+[node name="WaveformSelect" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("2_ckkpd")]
+layout_mode = 2
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
@@ -170,6 +174,7 @@ nonlinear_factor = 0.5
 [connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]
 [connection signal="toggled" from="VBoxContainer/HardSyncCheckBox" to="." method="_on_hard_sync_check_box_toggled"]
 [connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_item_selected"]
+[connection signal="WaveformChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_waveform_changed"]
 [connection signal="toggled" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSRCheckBox" to="." method="_on_adsr_check_box_toggled"]
 [connection signal="AttackTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_attack_time_changed"]
 [connection signal="DecayTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_decay_time_changed"]

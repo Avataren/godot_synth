@@ -110,6 +110,11 @@ public partial class Oscillator : Control
 	{
 		EmitSignal("VolumeChanged", (float)value);
 	}
+
+	private void _on_waveform_select_waveform_changed( int index)
+	{
+		EmitSignal("WaveformChanged", index);
+	}
 	private void _on_waveform_select_item_selected(int index)
 	{
 		EmitSignal("WaveformChanged", index);

@@ -2,6 +2,7 @@ using static Godot.GD;
 using Godot;
 using System;
 using Synth;
+using System.Collections.Generic;
 
 public partial class PatchEditor : Node2D
 {
@@ -34,6 +35,8 @@ public partial class PatchEditor : Node2D
 	//private Control lfoContainer;
 	private Control gdLFONode;
 	// Called when the node enters the scene tree for the first time.
+
+	private Dictionary<String, float[]> waveforms = new Dictionary<String, float[]>();
 	public override void _Ready()
 	{
 		//lfoContainer = GetNode<Control>("%LFOContainer");
@@ -53,6 +56,8 @@ public partial class PatchEditor : Node2D
 				ConnectLFOSignals(lfos[i], i);
 			}
 			ConnectAmplitudeEnvelope();
+		    //CallDeferred(nameof(CreateWaveforms));
+			CreateWaveforms();
 		}
 		catch (Exception e)
 		{
@@ -63,6 +68,35 @@ public partial class PatchEditor : Node2D
 
 	[Export]
 	private string scenePath = "res://scenes/patch_editor.tscn";
+
+	private void CreateWaveforms()
+	{
+		waveforms.Add("Sine", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.SINE, 64));
+		waveforms.Add("Triangle", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.TRIANGLE, 64));
+		waveforms.Add("Square", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.SQUARE, 64));
+		waveforms.Add("Saw", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.SAWTOOTH, 64));
+		waveforms.Add("Noise", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.NOISE, 64));
+		waveforms.Add("Organ", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.ORGAN, 64));
+		waveforms.Add("Organ2", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.ORGAN2, 64));
+		waveforms.Add("Bass", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.BASS, 64));
+		waveforms.Add("Ahh", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.VOCAL_AHH, 64));
+		waveforms.Add("Fuzzy", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.FUZZY, 64));
+		waveforms.Add("Piano", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.PIANO, 64));
+		waveforms.Add("PWM", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.SQUARE, 64));
+		
+	}
+
+	public float[] GetWaveformData(String name)
+	{
+		if (waveforms.ContainsKey(name))
+		{
+			return waveforms[name];
+		}
+		else
+		{
+			return null;
+		}
+	}
 
 	void _on_reset_button_pressed()
 	{

@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=3 uid="uid://cae0wby722c4o"]
+
+[ext_resource type="Shader" path="res://shaders/WaveformSelect.gdshader" id="1_0uiwr"]
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_83aq4"]
+[ext_resource type="Script" path="res://scenes/scripts/WaveformSelect.cs" id="1_5082q"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wdy7r"]
+resource_local_to_scene = true
+shader = ExtResource("1_0uiwr")
+shader_parameter/curve_data = null
+shader_parameter/curve_color = Vector4(1, 1, 0, 1)
+shader_parameter/line_thickness = 0.005
+shader_parameter/height_factor = 0.5
+
+[node name="WaveformSelect" type="VBoxContainer" node_paths=PackedStringArray("colorRect", "waveformLabel")]
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_5082q")
+colorRect = NodePath("HBoxContainer/VBoxContainer/ColorRect")
+waveformLabel = NodePath("HBoxContainer/VBoxContainer/WaveLabel")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="WaveformKnob" parent="HBoxContainer" instance=ExtResource("1_83aq4")]
+layout_mode = 2
+max_value = 12.0
+title = "Waveform"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = -12
+
+[node name="ColorRect" type="ColorRect" parent="HBoxContainer/VBoxContainer"]
+material = SubResource("ShaderMaterial_wdy7r")
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
+[node name="WaveLabel" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "wave"
+horizontal_alignment = 1
+
+[connection signal="value_changed" from="HBoxContainer/WaveformKnob" to="." method="_on_waveform_knob_value_changed"]

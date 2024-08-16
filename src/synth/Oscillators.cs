@@ -53,6 +53,52 @@ namespace Synth
             return osc;
         }
 
+
+        public static WaveTableMemory CustomHarmonicWave(Func<int, double> amplitudeFunc)
+        {
+            int tableLen = 2048;
+            double[] freqWaveRe = new double[tableLen];
+            double[] freqWaveIm = new double[tableLen];
+
+            // Generate the frequency domain representation using the provided amplitude function
+            for (int harmonic = 1; harmonic < tableLen / 2; harmonic++)
+            {
+                double amplitude = amplitudeFunc(harmonic);
+                freqWaveIm[harmonic] = amplitude;
+            }
+
+            // Build a wavetable oscillator
+            var osc = new WaveTableMemory();
+            WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
+            return osc;
+        }
+
+        public static WaveTableMemory SuperSaw(int numSawtooths, double detuneAmount)
+        {
+            int tableLen = 2048;
+            double[] freqWaveRe = new double[tableLen];
+            double[] freqWaveIm = new double[tableLen];
+
+            // Generate multiple detuned sawtooth waves
+            for (int n = 0; n < numSawtooths; n++)
+            {
+                double detune = (n - numSawtooths / 2.0) * detuneAmount;
+                for (int harmonic = 1; harmonic < tableLen / 2; harmonic++)
+                {
+                    double amplitude = 1.0 / harmonic;
+                    double phaseShift = detune * harmonic * 2 * Math.PI / tableLen;
+                    freqWaveIm[harmonic] += amplitude * Math.Sin(phaseShift);
+                    freqWaveRe[harmonic] += amplitude * Math.Cos(phaseShift);
+                }
+            }
+
+            // Build a wavetable oscillator
+            var osc = new WaveTableMemory();
+            WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
+            return osc;
+        }
+
+
         public static WaveTableMemory Noise()
         {
             int tableLen = 2048;  // to give full bandwidth from 20 Hz

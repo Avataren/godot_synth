@@ -76,6 +76,11 @@ public class SynthPatch
         graph.SetNodeEnabled(delayEffectNode, false);
     }
 
+    public float[] CreateWaveform (WaveTableWaveType waveType, int bufSize)
+    {
+        return waveTableBank.GenerateFullWaveform(waveType, bufSize);
+    }
+
     public void SetReverbEffect_Enabled(bool enabled)
     {
         graph.SetNodeEnabled(reverbEffectNode, enabled);

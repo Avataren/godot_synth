@@ -32,6 +32,7 @@ namespace Synth
 			AddWave(WaveTableWaveType.SQUARE, WaveTableRepository.SquareOsc());
 			AddWave(WaveTableWaveType.SAWTOOTH, WaveTableRepository.SawOsc());
 			AddWave(WaveTableWaveType.NOISE, WaveTableRepository.Noise());
+			//AddWave(WaveTableWaveType.NOISE, WaveTableRepository.CustomHarmonicWave(harmonic => 1.0 / Math.Pow(harmonic, 2)));
 			// addWave(WaveTableWaveType::FUZZY, periodicWaveOsc(fuzzy_real, fuzzy_imag));
 			AddWave(WaveTableWaveType.ORGAN, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.OrganReal, PeriodicWaves.OrganImag));
 			AddWave(WaveTableWaveType.ORGAN2, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.Organ2Real, PeriodicWaves.Organ2Imag));
@@ -40,6 +41,23 @@ namespace Synth
 			AddWave(WaveTableWaveType.VOCAL_AHH, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.AhhReal, PeriodicWaves.AhhImag));
 			AddWave(WaveTableWaveType.FUZZY, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.FuzzyReal, PeriodicWaves.FuzzyImag));
 			AddWave(WaveTableWaveType.PIANO, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.PianoReal, PeriodicWaves.PianoImag));
+		}
+
+		public float[] GenerateFullWaveform(WaveTableWaveType type, int tableLen)
+		{
+			var wave = GetWave(type);
+			var waveData = wave.GetWaveTable(0);
+
+			var fullWave = new float[tableLen];
+			for (int idx = 0; idx < tableLen; idx++)
+			{
+				var floatWaveIdx = idx / (float)fullWave.Length * waveData.WaveTableData.Length;
+				int waveIdx = (int)floatWaveIdx;
+				float frac = floatWaveIdx - waveIdx;
+				int nextWaveIdx = (waveIdx + 1) % waveData.WaveTableData.Length;
+				fullWave[idx] = (1 - frac) * waveData.WaveTableData[waveIdx] + frac * waveData.WaveTableData[nextWaveIdx];
+			}
+			return fullWave;
 		}
 
 

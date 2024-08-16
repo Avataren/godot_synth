@@ -35,8 +35,8 @@ namespace Synth
                 float nodeBalance = node.Balance;
                 for (int i = 0; i < NumSamples; i++)
                 {
-                    var gainParam =  GetParameter(AudioParam.Gain, i);
-                    var balanceParam = GetParameter(AudioParam.Balance, i);
+                    var gainParam = GetParameter(AudioParam.Gain, i);
+                    var balanceParam = node.GetParameter(AudioParam.Balance, i);
 
                     //float nodeGain = GetParameter(AudioParam.Gain, i, 1.0f);
                     float sample = node[i] * gainParam.Item2;

@@ -354,7 +354,6 @@ public class SynthPatch
     {
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
-            GD.Print("Resetting phase for oscillator " + idx);
             oscillators[idx].ResetPhase();
         }
     }

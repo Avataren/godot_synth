@@ -74,7 +74,6 @@ namespace Synth
 
 		public void ResetPhase(double startPhase = 0.0)
 		{
-			GD.Print("Resetting phase for " + Name);
 			_phaseDouble = startPhase;
 			Phase = (float)startPhase;
 		}

@@ -91,7 +91,7 @@ namespace Synth
 			float sample0 = currWaveTable.WaveTableData[(int)position % (int)length];
 			float sample1 = currWaveTable.WaveTableData[(int)(position + 1) % (int)length];
 
-			return (sample0 + (sample1 - sample0) * fracPart);
+			return sample0 + (sample1 - sample0) * fracPart;
 		}
 
 		protected float GetSample_PWM(WaveTable currWaveTable, float phase)
@@ -100,25 +100,25 @@ namespace Synth
 			float offsetPhase = Mathf.PosMod(phase + (PWMDutyCycle + PWM_Add) * PWM_Mul, 1.0f);
 			float offsetPosition = offsetPhase * currWaveTable.WaveTableData.Length;
 
-			return GetInterpolatedSample(currWaveTable, position) - GetInterpolatedSample(currWaveTable, offsetPosition);
+			return GetCubicInterpolatedSample(currWaveTable, position) - GetCubicInterpolatedSample(currWaveTable, offsetPosition);
 		}
 
 		protected float GetSample(WaveTable currWaveTable, float phase)
 		{
 			float position = phase * currWaveTable.WaveTableData.Length;
-			return GetInterpolatedSample(currWaveTable, position);
+			return GetCubicInterpolatedSample(currWaveTable, position);
 		}
 
-		// private float GetInterpolatedSample(WaveTable table, float position)
-		// {
-		// 	int intPart = (int)position;
-		// 	float fracPart = position - intPart;
-		// 	float sample0 = table.WaveTableData[intPart % table.WaveTableData.Length];
-		// 	float sample1 = table.WaveTableData[(intPart + 1) % table.WaveTableData.Length];
-		// 	return sample0 + (sample1 - sample0) * fracPart;
-		// }
+		private float GetLinearInterpolatedSample(WaveTable table, float position)
+		{
+			int intPart = (int)position;
+			float fracPart = position - intPart;
+			float sample0 = table.WaveTableData[intPart % table.WaveTableData.Length];
+			float sample1 = table.WaveTableData[(intPart + 1) % table.WaveTableData.Length];
+			return sample0 + (sample1 - sample0) * fracPart;
+		}
 
-		private float GetInterpolatedSample(WaveTable table, float position)
+		private float GetCubicInterpolatedSample(WaveTable table, float position)
 		{
 			int length = table.WaveTableData.Length;
 			int baseIndex = (int)position;
@@ -145,39 +145,6 @@ namespace Synth
 			return a * frac * frac * frac + b * frac * frac + c * frac + d;
 		}
 
-		// float prevSample = 0.0f;
-		// public override void Process(float increment)
-		// {
-		// 	var currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
-		// 	UpdateDetuneFactor();
-		// 	float sampleRate = SampleFrequency;  // Assuming SampleFrequency is defined elsewhere in your class
-
-		// 	float initialPhase = Phase;  // Store the initial phase
-		// 	float currentFreq = 0.0f;  // Declare this outside the loop
-		// 	for (int i = 0; i < NumSamples; i++)
-		// 	{
-		// 		currentFreq = GetParameter(AudioParam.Frequency, i) * DetuneFactor;  // Update frequency each iteration
-		// 		var gain = GetParameter(AudioParam.Gain, i, 1.0f);
-		// 		if (currentFreq != _lastFrequency)
-		// 		{
-		// 			UpdateWaveTableFrequency(currentFreq);
-		// 			_lastFrequency = currentFreq;
-		// 			currWaveTable = WaveTableMem.GetWaveTable(_currentWaveTable);
-		// 		}
-		// 		float phaseForThisSample = initialPhase + (i * currentFreq / sampleRate);
-
-		// 		// Apply modulation and calculate buffer output
-		// 		float modulatedPhase = phaseForThisSample + GetParameter(AudioParam.Phase, i) * ModulationStrength;
-		// 		modulatedPhase += prevSample * SelfModulationStrength;
-		// 		modulatedPhase = Mathf.PosMod(modulatedPhase, 1.0f);
-		// 		prevSample = GetSampleFunc(currWaveTable, modulatedPhase)  * Amplitude * gain;
-		// 		buffer[i] = prevSample;
-		// 	}
-
-		// 	// Update the global phase after processing all samples to start correctly for the next call
-		// 	Phase = (initialPhase + ((float)NumSamples * currentFreq / sampleRate)) % 1.0f;
-		// }
-
 		float prevSample = 0.0f;
 
 		private float _smoothModulationStrength = 0.0f;
@@ -198,9 +165,7 @@ namespace Synth
 			float initialPhase = Phase;
 			float lastPhase = initialPhase;
 			float lastFreq = _lastFrequency; // Store the last frequency
-											 //GD.Print("PMod sample:" + GetParameter(AudioParam.PMod, 0));
-			//var gp = GetParameter(AudioParam.PMod, 0);
-			//GD.Print("PMod: " + gp.Item1 + " " + gp.Item2);
+
 
 			for (int i = 0; i < NumSamples; i++)
 			{

@@ -92,16 +92,31 @@ namespace Synth
 			int baseIndex = (int)position;
 			float frac = position - baseIndex;
 
-			int p0 = (baseIndex - 1 + length) % length;
-			int p1 = baseIndex % length;
-			int p2 = (baseIndex + 1) % length;
-			int p3 = (baseIndex + 2) % length;
+			// Ensure baseIndex is within the correct bounds
+			if (baseIndex < 0)
+				baseIndex += length;
+			else if (baseIndex >= length)
+				baseIndex -= length;
 
+			// Precompute indices with manual wrapping
+			int p0 = baseIndex - 1;
+			if (p0 < 0) p0 += length;
+
+			int p1 = baseIndex;
+
+			int p2 = baseIndex + 1;
+			if (p2 >= length) p2 -= length;
+
+			int p3 = baseIndex + 2;
+			if (p3 >= length) p3 -= length;
+
+			// Fetch samples
 			float s0 = table.WaveTableData[p0];
 			float s1 = table.WaveTableData[p1];
 			float s2 = table.WaveTableData[p2];
 			float s3 = table.WaveTableData[p3];
 
+			// Cubic interpolation
 			float a = (-0.5f * s0 + 1.5f * s1 - 1.5f * s2 + 0.5f * s3);
 			float b = (s0 - 2.5f * s1 + 2.0f * s2 - 0.5f * s3);
 			float c = (-0.5f * s0 + 0.5f * s2);

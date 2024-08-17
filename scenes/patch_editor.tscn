@@ -25,7 +25,7 @@ buffer_length = 0.03
 shader = ExtResource("5_61qe6")
 shader_parameter/wave_data = null
 shader_parameter/line_thickness = 0.01
-shader_parameter/aspect_ratio = 8.0
+shader_parameter/aspect_ratio = 4.0
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
 
@@ -129,7 +129,7 @@ popup/item_7/id = 7
 
 [node name="AudioVisualizer" type="TextureRect" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer" node_paths=PackedStringArray("AudioController")]
 material = SubResource("ShaderMaterial_8k043")
-custom_minimum_size = Vector2(512, 64)
+custom_minimum_size = Vector2(256, 64)
 layout_mode = 2
 texture = SubResource("CanvasTexture_n0w22")
 script = ExtResource("6_psdfa")

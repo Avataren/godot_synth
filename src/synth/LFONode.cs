@@ -20,7 +20,7 @@ namespace Synth
         public LFONode(int numSamples, float sampleFrequency)
             : base(numSamples, sampleFrequency)
         {
-            ADSR = new EnvelopeNode(numSamples, true)
+            ADSR = new EnvelopeNode(numSamples, sampleFrequency)
             {
                 AttackTime = 0.5f,
                 Enabled = false

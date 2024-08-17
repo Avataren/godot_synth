@@ -64,7 +64,9 @@ public class SynthPatch
         for (int idx = 0; idx < MaxOscillators; idx++)
         {
             oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
-            AmpEnvelopes.Add(new EnvelopeNode(BufferSize, false));
+            AmpEnvelopes.Add(new EnvelopeNode(BufferSize, SampleRate){
+                Enabled = false
+            });
         }
 
         oscillators[0].Enabled = true;

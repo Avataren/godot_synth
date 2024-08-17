@@ -6,73 +6,80 @@ namespace Synth
     {
         private float envelopePosition = 0.0f;
         private float releaseStartPosition = 0.0f;
-        private bool gateOpen = false;
+        private bool isGateOpen = false;
 
-        public float AttackTime { get; set; }
-        public float DecayTime { get; set; }
-        public float SustainLevel { get; set; }
-        public float ReleaseTime { get; set; }
+        public float AttackTime { get; set; } = 0.0f;
+        public float DecayTime { get; set; } = 0.0f;
+        public float SustainLevel { get; set; } = 1.0f;
+        public float ReleaseTime { get; set; } = 0.0f;
+        public float SmoothingFactor { get; set; } = 0.02f;
+        public float TransitionEndTime { get; set; } = 0.005f;
 
         private float currentAmplitude = 0.0f;
         private float releaseStartAmplitude = 0.0f;
-        private float smoothingFactor = 0.02f;
+
+        private bool isInTransition = false;
+        private float transitionStartAmplitude = 0.0f;
+        private float transitionTargetAmplitude = 0.0f;
+        private float MinimumReleaseTime = 0.0045f;
 
         public EnvelopeNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples)
         {
             SampleFrequency = sampleFrequency;
-            AttackTime = 0.0f;
-            DecayTime = 0.0f;
-            SustainLevel = 1.0f;
-            ReleaseTime = 0.0f;
-            this.Enabled = true;
-        }
-
-        public EnvelopeNode(int numSamples, bool enabled = true) : base(numSamples)
-        {
-            AttackTime = 0.0f;
-            DecayTime = 0.0f;
-            SustainLevel = 1.0f;
-            ReleaseTime = 0.0f;
-            this.Enabled = enabled;
         }
 
         public override void OpenGate()
         {
-            gateOpen = true;
+            isGateOpen = true;
             envelopePosition = 0.0f;
-            // Do not reset currentAmplitude immediately to avoid popping
+            StartTransition(CalculateAttackTargetAmplitude(TransitionEndTime));
+        }
+
+        private void StartTransition(float targetAmplitude)
+        {
+            isInTransition = true;
+            transitionStartAmplitude = currentAmplitude;
+            transitionTargetAmplitude = targetAmplitude;
+        }
+
+        private float CalculateAttackTargetAmplitude(float position)
+        {
+            return Math.Min(position / AttackTime, 1.0f);
         }
 
         public override void CloseGate()
         {
             releaseStartPosition = envelopePosition;
             releaseStartAmplitude = currentAmplitude;
-            gateOpen = false;
+            isGateOpen = false;
+            if (ReleaseTime <= MinimumReleaseTime)
+            {
+                ReleaseTime = MinimumReleaseTime;
+            }            
         }
 
         public float GetEnvelopeValue(float position)
         {
             float targetAmplitude = CalculateTargetAmplitude(position);
-            // Apply exponential smoothing
-            currentAmplitude += (targetAmplitude - currentAmplitude) * smoothingFactor;
+            currentAmplitude += (targetAmplitude - currentAmplitude) * SmoothingFactor;
             return currentAmplitude;
         }
 
         private float CalculateTargetAmplitude(float position)
         {
-            if (gateOpen)
+            if (isGateOpen)
             {
                 if (position < AttackTime)
                 {
-                    return position / AttackTime;  // Attack phase
+                    return position / AttackTime;
                 }
                 else if (position < AttackTime + DecayTime)
                 {
-                    return 1 - (position - AttackTime) / DecayTime * (1 - SustainLevel);  // Decay phase
+                    return 1 - (position - AttackTime) / DecayTime * (1 - SustainLevel);
                 }
                 else
                 {
-                    return SustainLevel;  // Sustain phase
+                    return SustainLevel;
                 }
             }
             else
@@ -86,48 +93,33 @@ namespace Synth
             }
         }
 
-        // public override void Process(float increment)
-        // {
-		// 	if (!Enabled)
-		// 	{
-		// 		Godot.GD.Print("EnvelopeNode is not enabled");
-		// 		return;
-		// 	}
-        //     float newPosition = envelopePosition;
-        //     for (int i = 0; i < NumSamples; i++)
-        //     {
-        //         buffer[i] = GetEnvelopeValue(newPosition);
-        //         newPosition += increment;
-        //     }
-        //     // Smooth handling of envelope position updates
-        //     envelopePosition = newPosition;
-        // }
+        public override void Process(float increment)
+        {
+            float newPosition = envelopePosition;
 
-		public override void Process(float increment)
-		{
-			if (!Enabled)
-			{
-				Godot.GD.Print("EnvelopeNode is not enabled");
-				return;
-			}
-			float newPosition = envelopePosition;
-			float previousAmplitude = currentAmplitude;
-			for (int i = 0; i < NumSamples; i++)
-			{
-				float newAmplitude = GetEnvelopeValue(newPosition);
-				float amplitudeChange = Math.Abs(newAmplitude - previousAmplitude);
+            for (int i = 0; i < NumSamples; i++)
+            {
+                if (isInTransition)
+                {
+                    float transitionProgress = newPosition / TransitionEndTime;
+                    if (transitionProgress >= 1.0f)
+                    {
+                        transitionProgress = 1.0f;
+                        isInTransition = false;
+                    }
+                    currentAmplitude = transitionStartAmplitude + (transitionTargetAmplitude - transitionStartAmplitude) * transitionProgress;
+                }
+                else
+                {
+                    currentAmplitude = GetEnvelopeValue(newPosition);
+                }
 
-				// Adjust smoothing factor based on amplitude change
-				smoothingFactor = Math.Clamp(0.01f + amplitudeChange * 0.1f, 0.01f, 0.1f);
+                buffer[i] = currentAmplitude;
 
-				// Update current amplitude with new smoothing factor
-				currentAmplitude += (newAmplitude - currentAmplitude) * smoothingFactor;
-				buffer[i] = currentAmplitude;
+                newPosition += increment;
+            }
 
-				previousAmplitude = newAmplitude;
-				newPosition += increment;
-			}
-			envelopePosition = newPosition;
-		}		
+            envelopePosition = newPosition;
+        }
     }
 }

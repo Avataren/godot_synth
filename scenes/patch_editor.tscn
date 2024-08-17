@@ -63,7 +63,7 @@ mouse_filter = 1
 theme = ExtResource("3_fpync")
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer/Control"]
-modulate = Color(0.131476, 0.188712, 0.231689, 1)
+modulate = Color(0.0426565, 0.0730257, 0.0958136, 1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

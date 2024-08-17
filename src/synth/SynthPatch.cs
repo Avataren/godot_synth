@@ -61,13 +61,13 @@ public class SynthPatch
 
         this.waveTableBank = waveTableBank;
         // Initialize the patch
-        for (int idx = 0; idx < MaxOscillators; idx++)
-        {
-            oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
-            AmpEnvelopes.Add(new EnvelopeNode(BufferSize, SampleRate){
-                Enabled = false
-            });
-        }
+        // for (int idx = 0; idx < MaxOscillators; idx++)
+        // {
+        //     oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
+        //     AmpEnvelopes.Add(new EnvelopeNode(BufferSize, SampleRate){
+        //         Enabled = false
+        //     });
+        // }
 
         oscillators[0].Enabled = true;
         graph.TopologicalSort();
@@ -354,6 +354,7 @@ public class SynthPatch
     {
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
+            GD.Print("Resetting phase for oscillator " + idx);
             oscillators[idx].ResetPhase();
         }
     }
@@ -533,16 +534,7 @@ public class SynthPatch
                 env.OpenGate();
             }
 
-            // AmpEnvelope.OpenGate();
-            // // Start the envelope
-            // for (int idx = 0; idx < Oscillators.Count; idx++)
-            // {
-            //     AmpEnvelopes[idx].OpenGate();
-            // }
 
-            // LFO_Manager.OpenGate();
-
-            // // Set the frequency of the oscillators
             for (int idx = 0; idx < oscillators.Count; idx++)
             {
                 AmpEnvelopes[idx].OpenGate();
@@ -551,8 +543,6 @@ public class SynthPatch
                 {
                     continue;
                 }
-                //            osc.Amplitude = velocity;
-                //osc.Frequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
                 if (osc.HardSync)
                 {
                     osc.ResetPhase();

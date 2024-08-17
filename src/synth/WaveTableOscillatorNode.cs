@@ -166,7 +166,6 @@ namespace Synth
 			float lastPhase = initialPhase;
 			float lastFreq = _lastFrequency; // Store the last frequency
 
-
 			for (int i = 0; i < NumSamples; i++)
 			{
 				var pitchParam = GetParameter(AudioParam.Pitch, i);
@@ -177,12 +176,8 @@ namespace Synth
 				PWM_Add = pwmParam.Item1;
 				PWM_Mul = pwmParam.Item2;
 
-
 				float detunedFreq = pitchParam.Item1 * DetuneFactor * pitchParam.Item2;
-				//GetParameter(AudioParam.Pitch, i) * DetuneFactor;
 				float gain = gainParam.Item2;
-				//GetParameter(AudioParam.Gain, i, 1.0f);
-
 				// Only update the wave table and frequency if it has changed
 				if (detunedFreq != lastFreq)
 				{
@@ -192,7 +187,6 @@ namespace Synth
 				}
 
 				float phaseForThisSample = lastPhase + (detunedFreq / sampleRate);
-				//float phaseModMod = GetParameter(AudioParam.PMod, i);
 				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, (ModulationStrength + pmodParam.Item1) * pmodParam.Item2, _modulationSmoothingFactor);
 
 				// Apply modulation and calculate buffer output

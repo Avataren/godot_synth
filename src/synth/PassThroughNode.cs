@@ -10,7 +10,7 @@ namespace Synth
             RightBuffer = new float[numSamples];
         }
 
-        public override void Process(float increment)
+        public override void Process(double increment)
         {
             var inputs = GetParameterNodes(AudioParam.StereoInput);
             if (inputs == null || inputs.Count == 0)

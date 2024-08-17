@@ -9,7 +9,7 @@ namespace Synth
             Value = value;
         }
 
-        public override void Process(float increment)
+        public override void Process(double increment)
         {
 
         }

@@ -32,7 +32,7 @@ namespace Synth
             phase = 0.0f;
         }
 
-        private float GetNextSample(float increment)
+        private float GetNextSample(double increment)
         {
             float sample = 0.0f;
             //float phaseIncrement = Frequency * 2.0f * (float)Math.PI * increment;
@@ -76,7 +76,7 @@ namespace Synth
             ADSR.CloseGate();
         }
 
-        public override void Process(float increment)
+        public override void Process(double increment)
         {
             if (ADSR.Enabled)
             {

@@ -4,24 +4,24 @@ namespace Synth
 {
     public class EnvelopeNode : AudioNode
     {
-        private float envelopePosition = 0.0f;
-        private float releaseStartPosition = 0.0f;
+        private double envelopePosition = 0.0;
+        private double releaseStartPosition = 0.0;
         private bool isGateOpen = false;
 
-        public float AttackTime { get; set; } = 0.0f;
-        public float DecayTime { get; set; } = 0.0f;
-        public float SustainLevel { get; set; } = 1.0f;
-        public float ReleaseTime { get; set; } = 0.0f;
-        public float SmoothingFactor { get; set; } = 0.02f;
-        public float TransitionEndTime { get; set; } = 0.005f;
+        public double AttackTime { get; set; } = 0.01;  // Set a small default attack time
+        public double DecayTime { get; set; } = 0.1;
+        public double SustainLevel { get; set; } = 0.7;
+        public double ReleaseTime { get; set; } = 0.1;
+        public double SmoothingFactor { get; set; } = 0.01;  // Adjusted for smoother transitions
+        public double TransitionEndTime { get; set; } = 0.005;
 
-        private float currentAmplitude = 0.0f;
-        private float releaseStartAmplitude = 0.0f;
+        private double currentAmplitude = 0.0;
+        private double releaseStartAmplitude = 0.0;
 
         private bool isInTransition = false;
-        private float transitionStartAmplitude = 0.0f;
-        private float transitionTargetAmplitude = 0.0f;
-        private float MinimumReleaseTime = 0.0045f;
+        private double transitionStartAmplitude = 0.0;
+        private double transitionTargetAmplitude = 0.0;
+        private double MinimumReleaseTime = 0.0045;
 
         public EnvelopeNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples)
         {
@@ -31,21 +31,15 @@ namespace Synth
         public override void OpenGate()
         {
             isGateOpen = true;
-            envelopePosition = 0.0f;
-            StartTransition(1.0f); // Aim directly for full amplitude
+            envelopePosition = 0.0;
+            StartTransition(0.0);  // Start smoothly from 0
         }
 
-
-        private void StartTransition(float targetAmplitude)
+        private void StartTransition(double targetAmplitude)
         {
             isInTransition = true;
             transitionStartAmplitude = currentAmplitude;
             transitionTargetAmplitude = targetAmplitude;
-        }
-
-        private float CalculateAttackTargetAmplitude(float position)
-        {
-            return Math.Min(position / AttackTime, 1.0f);
         }
 
         public override void CloseGate()
@@ -59,14 +53,7 @@ namespace Synth
             }
         }
 
-        public float GetEnvelopeValue(float position)
-        {
-            float targetAmplitude = CalculateTargetAmplitude(position);
-            currentAmplitude += (targetAmplitude - currentAmplitude) * SmoothingFactor;
-            return currentAmplitude;
-        }
-
-        private float CalculateTargetAmplitude(float position)
+        private double CalculateTargetAmplitude(double position)
         {
             if (isGateOpen)
             {
@@ -76,7 +63,7 @@ namespace Synth
                 }
                 else if (position < AttackTime + DecayTime)
                 {
-                    return 1 - (position - AttackTime) / DecayTime * (1 - SustainLevel);
+                    return 1.0 - (position - AttackTime) / DecayTime * (1.0 - SustainLevel);
                 }
                 else
                 {
@@ -85,27 +72,34 @@ namespace Synth
             }
             else
             {
-                float releasePosition = position - releaseStartPosition;
+                double releasePosition = position - releaseStartPosition;
                 if (releasePosition < ReleaseTime)
                 {
-                    return releaseStartAmplitude * (1 - (releasePosition / ReleaseTime));
+                    return releaseStartAmplitude * (1.0 - (releasePosition / ReleaseTime));
                 }
-                return 0.0f;
+                return 0.0;
             }
         }
 
-        public override void Process(float increment)
+        public double GetEnvelopeValue(double position)
         {
-            float newPosition = envelopePosition;
+            double targetAmplitude = CalculateTargetAmplitude(position);
+            currentAmplitude += (targetAmplitude - currentAmplitude) * SmoothingFactor;
+            return currentAmplitude;
+        }
+
+        public override void Process(double increment)
+        {
+            double newPosition = envelopePosition;
 
             for (int i = 0; i < NumSamples; i++)
             {
                 if (isInTransition)
                 {
-                    float transitionProgress = newPosition / TransitionEndTime;
-                    if (transitionProgress >= 1.0f)
+                    double transitionProgress = (newPosition - envelopePosition) / TransitionEndTime;
+                    if (transitionProgress >= 1.0)
                     {
-                        transitionProgress = 1.0f;
+                        transitionProgress = 1.0;
                         isInTransition = false;
                     }
                     currentAmplitude = transitionStartAmplitude + (transitionTargetAmplitude - transitionStartAmplitude) * transitionProgress;
@@ -115,7 +109,7 @@ namespace Synth
                     currentAmplitude = GetEnvelopeValue(newPosition);
                 }
 
-                buffer[i] = currentAmplitude;
+                buffer[i] = (float)currentAmplitude;
 
                 newPosition += increment;
             }

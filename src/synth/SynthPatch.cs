@@ -450,7 +450,7 @@ public class SynthPatch
         }
     }
 
-    public void SetADSR(float attack, float decay, float sustain, float release, int EnvelopeIndex = -1)
+    public void SetADSR(double attack, double decay, double sustain, double release, int EnvelopeIndex = -1)
     {
         if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
         {
@@ -568,7 +568,7 @@ public class SynthPatch
         }
     }
 
-    public PassThroughNode Process(float increment)
+    public PassThroughNode Process(double increment)
     {
         lock (_lock)
         {

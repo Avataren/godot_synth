@@ -19,7 +19,7 @@ namespace Synth
             LeftBuffer = new float[numSamples];
         }
 
-        public override void Process(float increment)
+        public override void Process(double increment)
         {
             var nodes = GetParameterNodes(AudioParam.Input);
             Array.Clear(LeftBuffer);

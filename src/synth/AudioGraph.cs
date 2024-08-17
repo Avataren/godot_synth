@@ -395,7 +395,7 @@ namespace Synth
         //     }
         // }
 
-        public void Process(float increment)
+        public void Process(double increment)
         {
             lock (_lock)
             {

@@ -11,7 +11,7 @@ namespace Synth
 		public float SampleFrequency = 44100.0f;
 		public float Amplitude { get; set; } = 1.0f;
 		public float Frequency { get; set; } = 440.0f;
-		public float Phase = 0.0f;
+		public double Phase = 0.0f;
 		public float Balance = 0.0f;
 		protected float[] buffer;
 		public float[] LeftBuffer;
@@ -70,7 +70,7 @@ namespace Synth
 			return this.buffer;
 		}
 
-		public virtual void Process(float increment)
+		public virtual void Process(double increment)
 		{
 		}
 

@@ -194,7 +194,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public void FillBuffer()
 	{
-		float increment = 1.0f / SampleRate;
+		double increment = 1.0 / SampleRate;
 
 
 		while (run_sound_thread)

@@ -37,7 +37,7 @@ namespace Synth
 		private float PWMAdd { get; set; } = 0.0f;
 		private float PWMMultiply { get; set; } = 1.0f;
 
-		public delegate float WaveTableFunction(WaveTable waveTable, float phase);
+		public delegate float WaveTableFunction(WaveTable waveTable, double phase);
 		public WaveTableFunction GetSampleFunction { get; private set; }
 
 		public WaveTableMemory WaveTableMemory
@@ -63,7 +63,7 @@ namespace Synth
 		public void ResetPhase(double startPhase = 0.0)
 		{
 			_phaseAccumulator = startPhase;
-			Phase = (float)startPhase;
+			Phase = startPhase;
 		}
 
 		public void UpdateSampleFunction()
@@ -71,19 +71,19 @@ namespace Synth
 			GetSampleFunction = IsPWM ? GetSamplePWM : GetSample;
 		}
 
-		protected float GetSamplePWM(WaveTable currentWaveTable, float phase)
+		protected float GetSamplePWM(WaveTable currentWaveTable, double phase)
 		{
-			float position = phase * currentWaveTable.WaveTableData.Length;
-			float offsetPhase = Mathf.PosMod(phase + (PWMDutyCycle + PWMAdd) * PWMMultiply, 1.0f);
-			float offsetPosition = offsetPhase * currentWaveTable.WaveTableData.Length;
+			double position = phase * currentWaveTable.WaveTableData.Length;
+			double offsetPhase = Mathf.PosMod((float)(phase + (PWMDutyCycle + PWMAdd) * PWMMultiply), 1.0f);
+			double offsetPosition = offsetPhase * currentWaveTable.WaveTableData.Length;
 
-			return GetCubicInterpolatedSample(currentWaveTable, position) - GetCubicInterpolatedSample(currentWaveTable, offsetPosition);
+			return GetCubicInterpolatedSample(currentWaveTable, (float)position) - GetCubicInterpolatedSample(currentWaveTable, (float)offsetPosition);
 		}
 
-		protected float GetSample(WaveTable currentWaveTable, float phase)
+		protected float GetSample(WaveTable currentWaveTable, double phase)
 		{
-			float position = phase * currentWaveTable.WaveTableData.Length;
-			return GetCubicInterpolatedSample(currentWaveTable, position);
+			double position = phase * currentWaveTable.WaveTableData.Length;
+			return GetCubicInterpolatedSample(currentWaveTable, (float)position);
 		}
 
 		private float GetCubicInterpolatedSample(WaveTable table, float position)
@@ -110,7 +110,7 @@ namespace Synth
 			return a * frac * frac * frac + b * frac * frac + c * frac + d;
 		}
 
-		public override void Process(float increment)
+		public override void Process(double increment)
 		{
 			lock (_lock)
 			{
@@ -121,7 +121,7 @@ namespace Synth
 				float sampleRate = SampleFrequency;
 				double initialPhase = _phaseAccumulator;
 				double lastPhase = initialPhase;
-				float detunedFreq = _lastFrequency;  // Initialize detunedFreq with _lastFrequency
+				float detunedFreq = _lastFrequency;
 
 				for (int i = 0; i < NumSamples; i++)
 				{
@@ -139,7 +139,7 @@ namespace Synth
 					if (Math.Abs(detunedFreq - _lastFrequency) > 1e-6)
 					{
 						UpdateWaveTableFrequency(detunedFreq);
-						_lastFrequency = detunedFreq;  // Update _lastFrequency correctly
+						_lastFrequency = detunedFreq;
 						currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 					}
 
@@ -149,10 +149,10 @@ namespace Synth
 					double modulatedPhase = phaseForThisSample + phaseParam.Item1 * _smoothModulationStrength * phaseParam.Item2;
 					modulatedPhase += _previousSample * SelfModulationStrength;
 					modulatedPhase += PhaseOffset;
-					modulatedPhase = Mathf.PosMod((float)modulatedPhase, 1.0f);
+					modulatedPhase = modulatedPhase % 1.0;
 
 					var shapedPhase = (float)modulatedPhase;
-					_previousSample = GetSampleFunction(currentWaveTable, shapedPhase) * Amplitude * gain;
+					_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * gain;
 
 					buffer[i] = _previousSample;
 
@@ -160,8 +160,8 @@ namespace Synth
 				}
 
 				_phaseAccumulator = lastPhase % 1.0;
-				Phase = (float)_phaseAccumulator;
-				_lastFrequency = detunedFreq;  // Ensure _lastFrequency is updated with the final detunedFreq
+				Phase = _phaseAccumulator;
+				_lastFrequency = detunedFreq;
 			}
 		}
 

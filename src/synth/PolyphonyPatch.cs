@@ -28,7 +28,7 @@ public class PolyphonyPatch {
                     updatePatch.GetEnvelope(idx).SustainLevel,
                     updatePatch.GetEnvelope(idx).ReleaseTime, 
                     idx);
-                patch.GetOscillator(idx).WaveTableMem = updatePatch.GetOscillator(idx).WaveTableMem;
+                patch.GetOscillator(idx).WaveTableMemory = updatePatch.GetOscillator(idx).WaveTableMemory;
             } 
         }
     }

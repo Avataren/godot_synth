@@ -420,14 +420,14 @@ public class SynthPatch
         {
             if (waveType == WaveTableWaveType.PWM)
             {
-                oscillators[OscillatorIndex].Is_PWM = true;
-                oscillators[OscillatorIndex].WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+                oscillators[OscillatorIndex].IsPWM = true;
+                oscillators[OscillatorIndex].WaveTableMemory = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
                 oscillators[OscillatorIndex].UpdateSampleFunction();
             }
             else
             {
-                oscillators[OscillatorIndex].Is_PWM = false;
-                oscillators[OscillatorIndex].WaveTableMem = waveTableBank.GetWave(waveType);
+                oscillators[OscillatorIndex].IsPWM = false;
+                oscillators[OscillatorIndex].WaveTableMemory = waveTableBank.GetWave(waveType);
                 oscillators[OscillatorIndex].UpdateSampleFunction();
             }
             return;
@@ -437,14 +437,14 @@ public class SynthPatch
         {
             if (waveType == WaveTableWaveType.PWM)
             {
-                oscillators[idx].Is_PWM = true;
-                oscillators[idx].WaveTableMem = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+                oscillators[idx].IsPWM = true;
+                oscillators[idx].WaveTableMemory = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
                 oscillators[idx].UpdateSampleFunction();
             }
             else
             {
-                oscillators[idx].Is_PWM = false;
-                oscillators[idx].WaveTableMem = waveTableBank.GetWave(waveType);
+                oscillators[idx].IsPWM = false;
+                oscillators[idx].WaveTableMemory = waveTableBank.GetWave(waveType);
                 oscillators[idx].UpdateSampleFunction();
             }
         }

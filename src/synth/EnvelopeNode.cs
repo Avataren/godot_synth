@@ -32,8 +32,9 @@ namespace Synth
         {
             isGateOpen = true;
             envelopePosition = 0.0f;
-            StartTransition(CalculateAttackTargetAmplitude(TransitionEndTime));
+            StartTransition(1.0f); // Aim directly for full amplitude
         }
+
 
         private void StartTransition(float targetAmplitude)
         {
@@ -55,7 +56,7 @@ namespace Synth
             if (ReleaseTime <= MinimumReleaseTime)
             {
                 ReleaseTime = MinimumReleaseTime;
-            }            
+            }
         }
 
         public float GetEnvelopeValue(float position)

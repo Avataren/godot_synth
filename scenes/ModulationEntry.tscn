@@ -14,7 +14,7 @@ clip_contents = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 selected = 0
-item_count = 13
+item_count = 12
 popup/item_0/text = "Oscillator 1"
 popup/item_1/text = "Oscillator 2"
 popup/item_1/id = 1
@@ -38,8 +38,6 @@ popup/item_10/text = "Envelope 2"
 popup/item_10/id = 10
 popup/item_11/text = "Envelope 3"
 popup/item_11/id = 11
-popup/item_12/text = "Envelope 4"
-popup/item_12/id = 12
 
 [node name="DestinationOption" type="OptionButton" parent="."]
 unique_name_in_owner = true

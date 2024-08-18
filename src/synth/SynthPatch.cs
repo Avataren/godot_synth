@@ -7,12 +7,15 @@ public class SynthPatch
     private readonly object _lock = new object();
     public const int MaxOscillators = 5;
     public const int MaxLFOs = 4;
+    public const int MaxCustomEnvelopes = 3;
     public static int Oversampling = 4;
     static int BufferSize = 512 * Oversampling;
     float SampleRate = 44100 * Oversampling;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
+    List<EnvelopeNode> CustomEnvelopes = new List<EnvelopeNode>();
+
     EnvelopeNode ampEnvelope;
     WaveTableBank waveTableBank;
     public AudioGraph graph { get; set; } = new AudioGraph();
@@ -43,6 +46,11 @@ public class SynthPatch
             env.Enabled = false;
             AmpEnvelopes.Add(env);
             graph.Connect(env, osc, AudioParam.Gain, ModulationType.Multiply);
+        }
+
+        for (int i = 0; i < MaxCustomEnvelopes; i++)
+        {
+            CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
         }
 
         for (int i = 0; i < MaxLFOs; i++)
@@ -78,7 +86,7 @@ public class SynthPatch
         graph.SetNodeEnabled(delayEffectNode, false);
     }
 
-    public float[] CreateWaveform (WaveTableWaveType waveType, int bufSize)
+    public float[] CreateWaveform(WaveTableWaveType waveType, int bufSize)
     {
         return waveTableBank.GenerateFullWaveform(waveType, bufSize);
     }
@@ -242,7 +250,6 @@ public class SynthPatch
         {
             graph.SetNodeEnabled(AmpEnvelopes[idx], enabled);
         }
-
     }
 
 
@@ -547,6 +554,11 @@ public class SynthPatch
                     osc.ResetPhase();
                 }
             }
+
+            for (int idx = 0; idx < MaxCustomEnvelopes; idx++)
+            {
+                CustomEnvelopes[idx].OpenGate();
+            }
         }
     }
 
@@ -564,6 +576,11 @@ public class SynthPatch
             for (int idx = 0; idx < oscillators.Count; idx++)
             {
                 AmpEnvelopes[idx].CloseGate();
+            }
+
+            for (int idx = 0; idx < MaxCustomEnvelopes; idx++)
+            {
+                CustomEnvelopes[idx].CloseGate();
             }
         }
     }

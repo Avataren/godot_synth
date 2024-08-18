@@ -16,7 +16,11 @@ func _add_new_connections() ->  void:
 			var src_name = get_node_name_from_textbox_entry(entry.get_source_name())
 			var dst_name = get_node_name_from_textbox_entry(entry.get_destination_name())
 			var param_name = get_node_param_from_textbox_entry(entry.get_parameter_name())
-			%AudioOutputNode.Connect(src_name, dst_name, param_name, 0, 1.0)
+			if (src_name.begins_with("CustomEnv")):
+				%AudioOutputNode.Connect(src_name, dst_name, param_name, 1, 1.0)
+			else:
+				%AudioOutputNode.Connect(src_name, dst_name, param_name, 0, 1.0)
+			
 			previous_connections.append({src = src_name, dst = dst_name, param = param_name})
 							
 func _remove_existing_connections() -> void:
@@ -39,6 +43,8 @@ func get_node_param_from_textbox_entry(node_name) -> String:
 				return "Balance"
 			"PWM":
 				return "PWM"
+			"Cutoff":
+				return "CutOffMod"
 				
 		return "unknown"
 
@@ -62,6 +68,14 @@ func get_node_name_from_textbox_entry(node_name) -> String:
 				return "LFO2"
 			"LFO 4":
 				return "LFO3"
+			"Envelope 1":
+				return "CustomEnv0"
+			"Envelope 2":
+				return "CustomEnv1"
+			"Envelope 3":
+				return "CustomEnv2"
+			"Filter":
+				return "MoogFilter"
 		return "unknown"
 
 func _on_add_connection_button_pressed() -> void:

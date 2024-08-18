@@ -9,16 +9,21 @@ func _ready() -> void:
 	_on_source_option_item_selected(0)
 
 func _on_destination_option_item_selected(index: int) -> void:
-	var itemName = %SourceOption.get_item_text(index);
+	var itemName = %DestinationOption.get_item_text(index)
 	%DestinationParameterOption.clear()
-	print ("Selected item ", itemName)
+	print ("Selected destination item ", itemName)
+	#print ("Selected dest item ", %DestinationParameterOption.get_item_text(index))
 	if itemName.begins_with("Oscillator"):
+		print("populating oscillator params")
 		_populate_oscillator_Parameters()
 	elif itemName.begins_with("LFO"):
+		print("populating lfo params")
 		_populate_lfo_Parameters()
 	elif itemName.begins_with("Envelope"):
+		print("populating envelope params")
 		_populate_envelope_Parameters()
 	elif itemName.begins_with("Filter"):
+		print("populating filter params")
 		_populate_filter_Parameters()
 
 func _populate_oscillator_Parameters():
@@ -39,9 +44,8 @@ func _populate_envelope_Parameters():
 	%DestinationParameterOption.add_item("Release")
 	
 func _populate_filter_Parameters():
+	print("Filter options")
 	%DestinationParameterOption.add_item("Cutoff")
-	%DestinationParameterOption.add_item("Resonance")
-	%DestinationParameterOption.add_item("Gain")
 	pass		
 
 func get_source_name():
@@ -69,4 +73,6 @@ func _on_source_option_item_selected(_index: int) -> void:
 		var txt = %SourceOption.get_item_text(itm)
 		if (txt != selectedItmText):
 			%DestinationOption.add_item(txt)
+	%DestinationOption.add_item("Filter")
+	_on_destination_option_item_selected(%DestinationOption.get_selected_id())
 	

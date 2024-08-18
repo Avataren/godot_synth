@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/scripts/ADSR_Envelope.cs" id="1_qpam7"]
 
-[node name="ADSR_Envelope" type="VBoxContainer"]
+[node name="ADSR_Envelope" type="VBoxContainer" node_paths=PackedStringArray("EnvelopeLabel")]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -15,6 +15,10 @@ offset_bottom = 51.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_qpam7")
+EnvelopeLabel = NodePath("Label")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2

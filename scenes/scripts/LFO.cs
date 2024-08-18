@@ -1,7 +1,7 @@
 using static Godot.GD;
 using Godot;
 
-public partial class LFO : Control
+public partial class LFO : VBoxContainer
 {
 	[Signal]
 	public delegate void FreqValueChangedEventHandler(float value);

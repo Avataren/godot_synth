@@ -19,6 +19,23 @@ public partial class ADSR_Envelope : VBoxContainer
 
 	[Export]
 	private float MaxReleaseTimeMS = 10000.0f;
+	[Export]
+	private Label EnvelopeLabel;
+
+	[Export]
+	private string EnvelopeName
+	{
+		get => EnvelopeLabel.Text;
+		set { EnvelopeLabel.Text = value; }
+	}
+
+	public override void _Ready()
+	{
+		if (EnvelopeLabel?.Text == "")
+		{
+				EnvelopeLabel.Visible = false;
+		}
+	}
 
 	public void Enable()
 	{

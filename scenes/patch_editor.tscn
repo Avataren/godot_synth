@@ -36,10 +36,10 @@ Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/Oscilla
 Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator3")
 Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator4")
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator5")
-LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO1")
-LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO2")
-LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO3")
-LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/LFO4")
+LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO1")
+LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO2")
+LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO3")
+LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO4")
 ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
 metadata/_edit_vertical_guides_ = [-573.0]
@@ -206,17 +206,46 @@ theme_override_constants/separation = 25
 [node name="ModulationMatrix" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("10_o17te")]
 layout_mode = 2
 
-[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer"]
 layout_mode = 2
+theme_override_constants/separation = 30
 
-[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 20
 
-[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
+size_flags_vertical = 4
 
-[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 90
+
+[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("4_lv3dd")]
+layout_mode = 2
+EnvelopeName = "Envelope 1"
+
+[node name="ADSR_Envelope2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("4_lv3dd")]
+layout_mode = 2
+EnvelopeName = "Envelope 2"
+
+[node name="ADSR_Envelope3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("4_lv3dd")]
+layout_mode = 2
+EnvelopeName = "Envelope 3"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2

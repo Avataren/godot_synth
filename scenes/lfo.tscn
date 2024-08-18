@@ -4,40 +4,23 @@
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_7ovjp"]
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="2_w58r0"]
 
-[node name="LFO" type="Control" node_paths=PackedStringArray("WaveformOptions")]
-custom_minimum_size = Vector2(240, 360)
-layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
+[node name="VBoxContainer" type="VBoxContainer"]
+offset_right = 164.0
+offset_bottom = 184.0
 script = ExtResource("1_3hl2b")
-WaveformOptions = NodePath("VBoxContainer/WaveformOptions")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="Label" type="Label" parent="."]
 layout_mode = 2
 text = "LFO"
 horizontal_alignment = 1
 
-[node name="AbsCheckButton" type="CheckButton" parent="VBoxContainer"]
+[node name="AbsCheckButton" type="CheckButton" parent="."]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 text = "Absolute"
 
-[node name="WaveformOptions" type="OptionButton" parent="VBoxContainer"]
+[node name="WaveformOptions" type="OptionButton" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 0
@@ -50,23 +33,23 @@ popup/item_2/id = 2
 popup/item_3/text = "Square"
 popup/item_3/id = 3
 
-[node name="Enable Envelope" type="CheckButton" parent="VBoxContainer"]
+[node name="Enable Envelope" type="CheckButton" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 text = "ADSR Envelope
 "
 
-[node name="ADSR_Envelope" parent="VBoxContainer" instance=ExtResource("2_w58r0")]
+[node name="ADSR_Envelope" parent="." instance=ExtResource("2_w58r0")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="FreqKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
+[node name="FreqKnob" parent="HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 10.0
@@ -78,7 +61,7 @@ title = "Frequency"
 nonlinear_factor = 0.25
 current_value = 4.0
 
-[node name="GainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
+[node name="GainKnob" parent="HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 10.0
@@ -90,7 +73,7 @@ title = "Gain"
 nonlinear_factor = 0.25
 current_value = 1.0
 
-[node name="BiasKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_7ovjp")]
+[node name="BiasKnob" parent="HBoxContainer" instance=ExtResource("1_7ovjp")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -100,8 +83,3 @@ label_unit_scale = 1.0
 label_unit = ""
 title = "Bias"
 nonlinear_factor = 1.0
-
-[connection signal="toggled" from="VBoxContainer/Enable Envelope" to="." method="_on_enable_envelope_toggled"]
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/FreqKnob" to="." method="OnFreqKnobValueChanged"]
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/GainKnob" to="." method="OnGainKnobValueChanged"]
-[connection signal="value_changed" from="VBoxContainer/HBoxContainer/BiasKnob" to="." method="OnBiasKnobValueChanged"]

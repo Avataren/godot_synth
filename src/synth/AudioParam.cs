@@ -18,7 +18,8 @@ namespace Synth
         ReleaseTime,
         Phase,
         PMod, // phase modulation strength
-        PhaseModStrength
+        PhaseModStrength,
+        CutOffMod
     }
 
 }

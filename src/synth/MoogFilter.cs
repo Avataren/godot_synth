@@ -21,12 +21,12 @@ namespace Synth
         private void init()
         {
             y1 = y2 = y3 = y4 = oldx = oldy1 = oldy2 = oldy3 = 0;
-            calc();
+            calc(CutOff);
         }
 
-        private void calc()
+        private void calc(float cutOff)
         {
-            float f = (cutoff + cutoff) / fs; //[0 - 1]
+            float f = (cutOff + cutOff) / fs; //[0 - 1]
             p = f * (1.8f - 0.8f * f);
             k = p + p - 1f;
 
@@ -35,8 +35,9 @@ namespace Synth
             r = res * (t2 + 6f * t) / (t2 - 6f * t);
         }
 
-        public float Process(float input)
+        public float Process(float input, float env_gain = 1.0f)
         {
+            calc(CutOff * env_gain);
             // Apply drive with soft clipping using tanh for a more analog-like distortion
             input = (float)Math.Tanh(input * drive);
             // Process input through the Moog filter
@@ -65,13 +66,13 @@ namespace Synth
             set { drive = value; }
         }
 
-        public float Cutoff
+        public float CutOff
         {
             get { return cutoff; }
             set
             {
                 cutoff = value;
-                calc();
+                calc(cutoff);
             }
         }
 
@@ -81,7 +82,7 @@ namespace Synth
             set
             {
                 res = value;
-                calc();
+                calc(CutOff);
             }
         }
     }

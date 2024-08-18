@@ -148,7 +148,7 @@ public class SynthPatch
 
     public void SetCutoff(float cutoff)
     {
-        moogFilterNode.Cutoff = cutoff;
+        moogFilterNode.CutOff = cutoff;
     }
     public void SetResonance(float resonance)
     {

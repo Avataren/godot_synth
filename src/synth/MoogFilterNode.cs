@@ -6,6 +6,7 @@ namespace Synth
     {
         private MoogFilter leftFilter;
         private MoogFilter rightFilter;
+        private ADSR_Envelope adsr_envelope;
 
         public MoogFilterNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
         {
@@ -17,6 +18,7 @@ namespace Synth
 
         public override void Process(double increment)
         {
+
             var nodes = GetParameterNodes(AudioParam.StereoInput);
             if (nodes == null || nodes.Count == 0)
                 return;
@@ -26,24 +28,28 @@ namespace Synth
                 if (node == null || !node.Enabled)
                     continue;
 
+
                 for (int i = 0; i < NumSamples; i++)
                 {
+                    var cutoff_mod_param = GetParameter(AudioParam.CutOffMod, i);
+                    //var cutOffMod_Params = GetParameter(AudioParam.CutOffMod, i);
                     float sampleL = node.LeftBuffer[i];
                     float sampleR = node.RightBuffer[i];
 
-                    LeftBuffer[i] = leftFilter.Process(sampleL);
-                    RightBuffer[i] = rightFilter.Process(sampleR);
+                    float gain = cutoff_mod_param.Item2;
+                    LeftBuffer[i] = leftFilter.Process(sampleL, gain);
+                    RightBuffer[i] = rightFilter.Process(sampleR, gain);
                 }
             }
         }
 
-        public float Cutoff
+        public float CutOff
         {
-            get { return leftFilter.Cutoff; }
+            get { return leftFilter.CutOff; }
             set
             {
-                leftFilter.Cutoff = value;
-                rightFilter.Cutoff = value; // Assuming both channels have the same cutoff
+                leftFilter.CutOff = value;
+                rightFilter.CutOff = value; // Assuming both channels have the same cutoff
             }
         }
 

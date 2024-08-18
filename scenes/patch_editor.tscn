@@ -29,7 +29,7 @@ shader_parameter/aspect_ratio = 4.0
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
 
-[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "ADSREnvelope", "AudioOutputNode")]
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "CustomADSR1", "CustomADSR2", "CustomADSR3", "ADSREnvelope", "AudioOutputNode")]
 script = ExtResource("1_ox65v")
 Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator1")
 Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator2")
@@ -40,6 +40,9 @@ LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/V
 LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO2")
 LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO3")
 LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO4")
+CustomADSR1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2/ADSR_Envelope")
+CustomADSR2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2/ADSR_Envelope2")
+CustomADSR3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2/ADSR_Envelope3")
 ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
 metadata/_edit_vertical_guides_ = [-573.0]
@@ -176,9 +179,8 @@ layout_mode = 2
 [node name="VSeparator4" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator5" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer" node_paths=PackedStringArray("OscillatorEnabled") instance=ExtResource("3_p4jms")]
+[node name="Oscillator5" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
-OscillatorEnabled = NodePath("../Oscillator4/VBoxContainer/CheckBox")
 
 [node name="VSeparator6" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
 layout_mode = 2

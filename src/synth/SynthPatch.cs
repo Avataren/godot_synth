@@ -179,6 +179,26 @@ public class SynthPatch
         ampEnvelope.ReleaseTime = release;
     }
 
+    public void SetCustomAttack(float attack, int idx)
+    {
+        CustomEnvelopes[idx].AttackTime = attack;
+    }
+
+    public void SetCustomDecay(float decay, int idx)
+    {
+        CustomEnvelopes[idx].DecayTime = decay;
+    }
+
+    public void SetCustomSustain(float sustain, int idx)
+    {
+        CustomEnvelopes[idx].SustainLevel = sustain;
+    }
+
+    public void SetCustomRelease(float release, int idx)
+    {
+        CustomEnvelopes[idx].ReleaseTime = release;
+    }
+
     public void SetFeedback(float feedback, int OscillatorIndex = -1)
     {
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)

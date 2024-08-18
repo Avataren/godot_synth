@@ -27,6 +27,13 @@ public partial class PatchEditor : Node2D
 	private LFO LFO4;
 
 	[Export]
+	private ADSR_Envelope CustomADSR1;
+	[Export]
+	private ADSR_Envelope CustomADSR2;
+	[Export]
+	private ADSR_Envelope CustomADSR3;
+
+	[Export]
 	private ADSR_Envelope ADSREnvelope;
 
 	[Export]
@@ -56,6 +63,7 @@ public partial class PatchEditor : Node2D
 				ConnectLFOSignals(lfos[i], i);
 			}
 			ConnectAmplitudeEnvelope();
+			ConnectCustomEnvelopes();
 		    //CallDeferred(nameof(CreateWaveforms));
 			CreateWaveforms();
 		}
@@ -336,6 +344,34 @@ public partial class PatchEditor : Node2D
 			AudioOutputNode.CurrentPatch.SetModulationStrength(mod, oscNum);
 		};
 
+	}
+
+	protected void ConnectCustomEnvelopes()
+	{
+		ADSR_Envelope[] envelopes = [CustomADSR1, CustomADSR2, CustomADSR3];
+		for (int i = 0; i < envelopes.Length; i++)
+		{
+			envelopes[i].AttackTimeChanged += (attackTime) =>
+			{
+				Print("Attack Time Changed: ", attackTime);
+				AudioOutputNode.CurrentPatch.SetCustomAttack(attackTime / 1000.0f, i);
+			};
+			envelopes[i].DecayTimeChanged += (decayTime) =>
+			{
+				Print("Decay Time Changed: ", decayTime);
+				AudioOutputNode.CurrentPatch.SetCustomDecay(decayTime / 1000.0f, i);
+			};
+			envelopes[i].SustainLevelChanged += (sustainLevel) =>
+			{
+				Print("Sustain Level Changed: ", sustainLevel);
+				AudioOutputNode.CurrentPatch.SetCustomSustain(sustainLevel, i);
+			};
+			envelopes[i].ReleaseTimeChanged += (releaseTime) =>
+			{
+				Print("Release Time Changed: ", releaseTime);
+				AudioOutputNode.CurrentPatch.SetCustomRelease(releaseTime / 1000.0f, i);
+			};
+		}		
 	}
 
 	protected void ConnectAmplitudeEnvelope()

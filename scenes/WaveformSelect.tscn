@@ -25,6 +25,7 @@ layout_mode = 2
 [node name="WaveformKnob" parent="HBoxContainer" instance=ExtResource("1_83aq4")]
 layout_mode = 2
 max_value = 11.0
+sensitivity = 0.25
 title = "Waveform"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]

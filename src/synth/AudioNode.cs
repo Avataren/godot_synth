@@ -22,7 +22,15 @@ namespace Synth
 		public Dictionary<AudioParam, List<ParameterConnection>> AudioParameters = new Dictionary<AudioParam, List<ParameterConnection>>();
 	    private Dictionary<AudioParam, List<ParameterConnection>> originalConnections = new Dictionary<AudioParam, List<ParameterConnection>>();
 
-
+		public static double ModuloOne(double val)
+		{
+			val = Math.IEEERemainder(val, 1.0);
+			if (val < 0)
+			{
+				val += 1.0;
+			}
+			return val;
+		}
 		public Tuple<float, float> GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
 		{
 

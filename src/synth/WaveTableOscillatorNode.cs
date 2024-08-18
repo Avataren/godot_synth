@@ -9,7 +9,7 @@ namespace Synth
 		private readonly object _lock = new object();
 		private WaveTableMemory _waveTableMemory;
 		private int _currentWaveTableIndex;
-		private double _phaseAccumulator;
+		//private double _phaseAccumulator;
 		private float _lastFrequency = -1f;
 		private float _smoothModulationStrength;
 		private float _detuneFactor;
@@ -27,6 +27,13 @@ namespace Synth
 		public float PhaseOffset { get; set; } = 0.0f;
 		public bool IsPWM { get; set; } = false;
 
+		Tuple<float, float> pitchParam;
+		Tuple<float, float> gainParam;
+		Tuple<float, float> pmodParam;
+		Tuple<float, float> phaseParam;
+		Tuple<float, float> pwmParam;
+		float Gain = 1.0f;
+		float FrequencyChangeThreshold = 0.000001f;
 		private float _pwmDutyCycle = 0.5f;
 		public float PWMDutyCycle
 		{
@@ -62,7 +69,6 @@ namespace Synth
 
 		public void ResetPhase(double startPhase = 0.0)
 		{
-			_phaseAccumulator = startPhase;
 			Phase = startPhase;
 		}
 
@@ -92,24 +98,11 @@ namespace Synth
 			int baseIndex = (int)position;
 			float frac = position - baseIndex;
 
-			// Ensure baseIndex is within the correct bounds
-			if (baseIndex < 0)
-				baseIndex += length;
-			else if (baseIndex >= length)
-				baseIndex -= length;
-
 			// Precompute indices with manual wrapping
-			int p0 = baseIndex - 1;
-			if (p0 < 0) p0 += length;
-
-			int p1 = baseIndex;
-
-			int p2 = baseIndex + 1;
-			if (p2 >= length) p2 -= length;
-
-			int p3 = baseIndex + 2;
-			if (p3 >= length) p3 -= length;
-
+			int p0 = (baseIndex - 1 + length) % length;
+			int p1 = baseIndex % length;
+			int p2 = (baseIndex + 1) % length;
+			int p3 = (baseIndex + 2) % length;
 			// Fetch samples
 			float s0 = table.WaveTableData[p0];
 			float s1 = table.WaveTableData[p1];
@@ -129,55 +122,79 @@ namespace Synth
 		{
 			lock (_lock)
 			{
-				PWMAdd = 0.0f;
-				PWMMultiply = 1.0f;
+				ResetPWMParameters();
+
 				var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 				UpdateDetuneFactor();
+
 				float sampleRate = SampleFrequency;
-				double initialPhase = _phaseAccumulator;
-				double lastPhase = initialPhase;
+				double lastPhase = Phase;
 				float detunedFreq = _lastFrequency;
 
 				for (int i = 0; i < NumSamples; i++)
 				{
-					var pitchParam = GetParameter(AudioParam.Pitch, i);
-					var gainParam = GetParameter(AudioParam.Gain, i);
-					var pmodParam = GetParameter(AudioParam.PMod, i);
-					var phaseParam = GetParameter(AudioParam.Phase, i);
-					var pwmParam = GetParameter(AudioParam.PWM, i);
-					PWMAdd = pwmParam.Item1;
-					PWMMultiply = pwmParam.Item2;
+					UpdateParameters(i);
 
-					detunedFreq = pitchParam.Item1 * _detuneFactor * pitchParam.Item2;
-					float gain = gainParam.Item2;
+					detunedFreq = CalculateDetunedFrequency(detunedFreq);
 
-					if (Math.Abs(detunedFreq - _lastFrequency) > 1e-6)
+					if (HasFrequencyChanged(detunedFreq))
 					{
 						UpdateWaveTableFrequency(detunedFreq);
 						_lastFrequency = detunedFreq;
 						currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 					}
 
-					double phaseForThisSample = lastPhase + (detunedFreq / sampleRate);
-					_smoothModulationStrength = SmoothValue(_smoothModulationStrength, (ModulationStrength + pmodParam.Item1) * pmodParam.Item2, 0.01f);
+					double phaseForThisSample = lastPhase + detunedFreq * increment;
+					double modulatedPhase = CalculateModulatedPhase(phaseForThisSample);
 
-					double modulatedPhase = phaseForThisSample + phaseParam.Item1 * _smoothModulationStrength * phaseParam.Item2;
-					modulatedPhase += _previousSample * SelfModulationStrength;
-					modulatedPhase += PhaseOffset;
-					modulatedPhase = modulatedPhase % 1.0;
-
-					var shapedPhase = (float)modulatedPhase;
-					_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * gain;
+					_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * Gain;
 
 					buffer[i] = _previousSample;
 
 					lastPhase = phaseForThisSample;
 				}
 
-				_phaseAccumulator = lastPhase % 1.0;
-				Phase = _phaseAccumulator;
+				Phase = ModuloOne(lastPhase);
 				_lastFrequency = detunedFreq;
 			}
+		}
+
+		private void ResetPWMParameters()
+		{
+			PWMAdd = 0.0f;
+			PWMMultiply = 1.0f;
+		}
+
+		private void UpdateParameters(int sampleIndex)
+		{
+			pitchParam = GetParameter(AudioParam.Pitch, sampleIndex);
+			gainParam = GetParameter(AudioParam.Gain, sampleIndex);
+			pmodParam = GetParameter(AudioParam.PMod, sampleIndex);
+			phaseParam = GetParameter(AudioParam.Phase, sampleIndex);
+			pwmParam = GetParameter(AudioParam.PWM, sampleIndex);
+
+			PWMAdd = pwmParam.Item1;
+			PWMMultiply = pwmParam.Item2;
+			Gain = gainParam.Item2;
+			_smoothModulationStrength = SmoothValue(_smoothModulationStrength, (ModulationStrength + pmodParam.Item1) * pmodParam.Item2, 0.01f);
+		}
+
+		private float CalculateDetunedFrequency(float currentFrequency)
+		{
+			return pitchParam.Item1 * _detuneFactor * pitchParam.Item2;
+		}
+
+		private bool HasFrequencyChanged(float newFrequency)
+		{
+			return Math.Abs(newFrequency - _lastFrequency) > FrequencyChangeThreshold;
+		}
+
+		private double CalculateModulatedPhase(double phaseForThisSample)
+		{
+			double modulatedPhase = phaseForThisSample + phaseParam.Item1 * _smoothModulationStrength * phaseParam.Item2;
+			modulatedPhase += _previousSample * SelfModulationStrength;
+			modulatedPhase += PhaseOffset;
+			return ModuloOne(modulatedPhase);
 		}
 
 		private void UpdateWaveTableFrequency(float freq)

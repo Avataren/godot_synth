@@ -15,17 +15,20 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 script = ExtResource("1_tg6q3")
-OscillatorEnabled = NodePath("VBoxContainer/CheckBox")
+OscillatorEnabled = NodePath("VBoxContainer/HBoxContainer2/EnabledCheckBox")
 ADSREnvelope = NodePath("VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="CheckBox" type="CheckBox" parent="VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="EnabledCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 text = "Enabled"
 
-[node name="HardSyncCheckBox" type="CheckBox" parent="VBoxContainer"]
+[node name="HardSyncCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 text = "Hard Sync"
 
@@ -79,17 +82,6 @@ popup/item_11/text = "PWM"
 popup/item_11/id = 10
 
 [node name="WaveformSelect" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("2_ckkpd")]
-layout_mode = 2
-
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="ADSRCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
-layout_mode = 2
-text = "ADSR Envelope"
-
-[node name="ADSR_Envelope" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("1_rr1vg")]
-visible = false
 layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
@@ -173,15 +165,18 @@ label_unit = ""
 title = "PMod"
 nonlinear_factor = 0.5
 
-[connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]
-[connection signal="toggled" from="VBoxContainer/HardSyncCheckBox" to="." method="_on_hard_sync_check_box_toggled"]
+[node name="ADSRCheckBox" type="CheckBox" parent="VBoxContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+text = "ADSR Envelope"
+
+[node name="ADSR_Envelope" parent="VBoxContainer/HBoxContainer/VBoxContainer" instance=ExtResource("1_rr1vg")]
+visible = false
+layout_mode = 2
+
+[connection signal="toggled" from="VBoxContainer/HBoxContainer2/EnabledCheckBox" to="." method="_on_check_box_toggled"]
+[connection signal="toggled" from="VBoxContainer/HBoxContainer2/HardSyncCheckBox" to="." method="_on_hard_sync_check_box_toggled"]
 [connection signal="item_selected" from="VBoxContainer/HBoxContainer/VBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_item_selected"]
 [connection signal="WaveformChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/WaveformSelect" to="." method="_on_waveform_select_waveform_changed"]
-[connection signal="toggled" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSRCheckBox" to="." method="_on_adsr_check_box_toggled"]
-[connection signal="AttackTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_attack_time_changed"]
-[connection signal="DecayTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_decay_time_changed"]
-[connection signal="ReleaseTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_release_time_changed"]
-[connection signal="SustainLevelChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_sustain_level_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/PWMKnob" to="." method="_on_pwm_slider_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/GainKnob" to="." method="_On_Volume_Changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer/BalanceKnob" to="." method="_on_balance_value_changed"]
@@ -191,3 +186,8 @@ nonlinear_factor = 0.5
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2/PhaseKnob" to="." method="_on_phase_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2/FeedbackKNob" to="." method="_on_feedback_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/VBoxContainer/HBoxContainer2/ModKnob" to="." method="_on_mod_value_changed"]
+[connection signal="toggled" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSRCheckBox" to="." method="_on_adsr_check_box_toggled"]
+[connection signal="AttackTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_attack_time_changed"]
+[connection signal="DecayTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_decay_time_changed"]
+[connection signal="ReleaseTimeChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_release_time_changed"]
+[connection signal="SustainLevelChanged" from="VBoxContainer/HBoxContainer/VBoxContainer/ADSR_Envelope" to="." method="_on_sustain_level_changed"]

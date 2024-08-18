@@ -1,4 +1,5 @@
 using System;
+using Godot;
 
 namespace Synth
 {
@@ -7,8 +8,20 @@ namespace Synth
         private double envelopePosition = 0.0;
         private double releaseStartPosition = 0.0;
         private bool isGateOpen = false;
-
-        public double AttackTime { get; set; } = 0.01;  // Set a small default attack time
+        private double _attackTime = 0.005f;
+        public double AttackTime
+        {
+            get
+            {   
+                return _attackTime;
+            }
+            set
+            {
+                _attackTime = value;
+                if (_attackTime < 0.005) { _attackTime = 0.005; }  // Set a small default attack time
+                GD.Print("Attack Time: " + _attackTime + " for " + Name);
+            }  // Set a small default attack time
+        }
         public double DecayTime { get; set; } = 0.1;
         public double SustainLevel { get; set; } = 0.7;
         public double ReleaseTime { get; set; } = 0.1;
@@ -91,7 +104,6 @@ namespace Synth
         public override void Process(double increment)
         {
             double newPosition = envelopePosition;
-
             for (int i = 0; i < NumSamples; i++)
             {
                 if (isInTransition)

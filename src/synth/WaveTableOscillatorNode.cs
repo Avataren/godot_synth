@@ -135,7 +135,7 @@ namespace Synth
 				{
 					UpdateParameters(i);
 
-					detunedFreq = CalculateDetunedFrequency(detunedFreq);
+					detunedFreq = CalculateDetunedFrequency(detunedFreq) * pitchParam.Item2;
 
 					if (HasFrequencyChanged(detunedFreq))
 					{
@@ -181,7 +181,7 @@ namespace Synth
 
 		private float CalculateDetunedFrequency(float currentFrequency)
 		{
-			return pitchParam.Item1 * _detuneFactor * pitchParam.Item2;
+			return pitchParam.Item1 * _detuneFactor;
 		}
 
 		private bool HasFrequencyChanged(float newFrequency)

@@ -104,7 +104,7 @@ public class SynthPatch
 
     public void SetReverbEffect_Damp(float damp)
     {
-        GD.Print("Setting damp to " + damp);
+        // GD.Print("Setting damp to " + damp);
         reverbEffectNode.Damp = damp;
     }
 
@@ -181,21 +181,25 @@ public class SynthPatch
 
     public void SetCustomAttack(float attack, int idx)
     {
+         GD.Print("Setting custom envelope " + idx + " attack to " + attack);
         CustomEnvelopes[idx].AttackTime = attack;
     }
 
     public void SetCustomDecay(float decay, int idx)
     {
+        // GD.Print("Setting custom envelope " + idx + " decay to " + decay);
         CustomEnvelopes[idx].DecayTime = decay;
     }
 
     public void SetCustomSustain(float sustain, int idx)
     {
+        // GD.Print("Setting custom envelope " + idx + " sustain to " + sustain);
         CustomEnvelopes[idx].SustainLevel = sustain;
     }
 
     public void SetCustomRelease(float release, int idx)
     {
+        // GD.Print("Setting custom envelope " + idx + " release to " + release);
         CustomEnvelopes[idx].ReleaseTime = release;
     }
 

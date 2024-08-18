@@ -49,6 +49,7 @@ public partial class PatchEditor : Node2D
 		//lfoContainer = GetNode<Control>("%LFOContainer");
 		var oscs = new Oscillator[] { Oscillator1, Oscillator2, Oscillator3, Oscillator4, Oscillator5 };
 		var lfos = new LFO[] { LFO1, LFO2, LFO3, LFO4 };
+		var customEnvelopes = new ADSR_Envelope[] { CustomADSR1, CustomADSR2, CustomADSR3 };
 		try
 		{
 			Print("Patch Editor Ready");
@@ -63,9 +64,12 @@ public partial class PatchEditor : Node2D
 				ConnectLFOSignals(lfos[i], i);
 			}
 			ConnectAmplitudeEnvelope();
-			ConnectCustomEnvelopes();
-		    //CallDeferred(nameof(CreateWaveforms));
+			//CallDeferred(nameof(CreateWaveforms));
 			CreateWaveforms();
+			for (int i = 0; i < customEnvelopes.Length; i++)
+			{
+				ConnectCustomEnvelopes(customEnvelopes[i], i);
+			}
 		}
 		catch (Exception e)
 		{
@@ -91,7 +95,7 @@ public partial class PatchEditor : Node2D
 		waveforms.Add("Fuzzy", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.FUZZY, 64));
 		waveforms.Add("Piano", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.PIANO, 64));
 		waveforms.Add("PWM", AudioOutputNode.CurrentPatch.CreateWaveform(WaveTableWaveType.SQUARE, 64));
-		
+
 	}
 
 	public float[] GetWaveformData(String name)
@@ -113,7 +117,7 @@ public partial class PatchEditor : Node2D
 		var newScene = (PackedScene)ResourceLoader.Load(scenePath);
 		if (newScene != null)
 		{
-						// Free the old scene
+			// Free the old scene
 			var currentScene = GetTree().CurrentScene;
 			currentScene.QueueFree();
 
@@ -346,32 +350,29 @@ public partial class PatchEditor : Node2D
 
 	}
 
-	protected void ConnectCustomEnvelopes()
+	protected void ConnectCustomEnvelopes(ADSR_Envelope env, int envNum)
 	{
-		ADSR_Envelope[] envelopes = [CustomADSR1, CustomADSR2, CustomADSR3];
-		for (int i = 0; i < envelopes.Length; i++)
+		Print("id is ", envNum);
+		env.AttackTimeChanged += (attackTime) =>
 		{
-			envelopes[i].AttackTimeChanged += (attackTime) =>
-			{
-				Print("Attack Time Changed: ", attackTime);
-				AudioOutputNode.CurrentPatch.SetCustomAttack(attackTime / 1000.0f, i);
-			};
-			envelopes[i].DecayTimeChanged += (decayTime) =>
-			{
-				Print("Decay Time Changed: ", decayTime);
-				AudioOutputNode.CurrentPatch.SetCustomDecay(decayTime / 1000.0f, i);
-			};
-			envelopes[i].SustainLevelChanged += (sustainLevel) =>
-			{
-				Print("Sustain Level Changed: ", sustainLevel);
-				AudioOutputNode.CurrentPatch.SetCustomSustain(sustainLevel, i);
-			};
-			envelopes[i].ReleaseTimeChanged += (releaseTime) =>
-			{
-				Print("Release Time Changed: ", releaseTime);
-				AudioOutputNode.CurrentPatch.SetCustomRelease(releaseTime / 1000.0f, i);
-			};
-		}		
+			Print("Attack Time Changed: ", attackTime, " for id ", envNum);
+			AudioOutputNode.CurrentPatch.SetCustomAttack(attackTime / 1000.0f, envNum);
+		};
+		env.DecayTimeChanged += (decayTime) =>
+		{
+			// Print("Decay Time Changed: ", decayTime);
+			AudioOutputNode.CurrentPatch.SetCustomDecay(decayTime / 1000.0f, envNum);
+		};
+		env.SustainLevelChanged += (sustainLevel) =>
+		{
+			// Print("Sustain Level Changed: ", sustainLevel);
+			AudioOutputNode.CurrentPatch.SetCustomSustain(sustainLevel, envNum);
+		};
+		env.ReleaseTimeChanged += (releaseTime) =>
+		{
+			// Print("Release Time Changed: ", releaseTime);
+			AudioOutputNode.CurrentPatch.SetCustomRelease(releaseTime / 1000.0f, envNum);
+		};
 	}
 
 	protected void ConnectAmplitudeEnvelope()

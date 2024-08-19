@@ -1,6 +1,6 @@
 shader_type canvas_item;
-#define DEBUG
 #define BUFFER_SIZE 512
+uniform bool show_debug = true;
 uniform float wave_data[BUFFER_SIZE];
 uniform float line_thickness = 0.002; // Thickness of the waveform line (in normalized space)
 uniform float vertical_line_thickness = 0.003; // Thickness of the vertical lines (in normalized space)
@@ -19,7 +19,8 @@ float sdSegment(vec2 p, vec2 a, vec2 b) {
 
 float get_data(int index)
 {
-    #ifdef DEBUG
+    if (show_debug)
+	{
         // Simple ADSR envelope with normalized indices (0 to 1)
         float attack_time = 0.2;
         float decay_time = 0.2;
@@ -37,9 +38,11 @@ float get_data(int index)
         } else {
             return sustain_level * (1.0 - (t - (1.0 - release_time)) / release_time); // Linear release: ramp down to 0
         }
-    #else
+    }
+	else
+	{
         return wave_data[index];
-    #endif
+    }
 }
 
 void fragment() {

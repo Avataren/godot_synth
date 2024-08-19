@@ -1,10 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://c4ngt17drrav4"]
+[gd_scene load_steps=5 format=3 uid="uid://c4ngt17drrav4"]
 
 [ext_resource type="Shader" path="res://shaders/ADSR_Visualizer.gdshader" id="1_d82p3"]
+[ext_resource type="Script" path="res://scenes/scripts/AdsrVisualizer.cs" id="1_js4wc"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_mjixn"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_vchxs"]
+resource_local_to_scene = true
 shader = ExtResource("1_d82p3")
+shader_parameter/show_debug = false
 shader_parameter/wave_data = PackedFloat32Array()
 shader_parameter/line_thickness = 0.004
 shader_parameter/vertical_line_thickness = 0.003
@@ -13,10 +16,12 @@ shader_parameter/total_time = 5.0
 shader_parameter/waveform_color = Vector3(0.75, 0.85, 0.85)
 shader_parameter/vertical_line_color = Vector3(0.3, 0.4, 0.5)
 
-[node name="PanelContainer" type="PanelContainer"]
+[node name="PanelContainer" type="PanelContainer" node_paths=PackedStringArray("ShaderRect")]
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 1
+script = ExtResource("1_js4wc")
+ShaderRect = NodePath("VBoxContainer/ShaderVisualizer")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -33,20 +38,33 @@ theme_override_constants/separation = 20
 
 [node name="AttackKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+max_value = 1.0
+step = 0.001
 title = "Attack"
-
-[node name="HoldKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
-layout_mode = 2
-title = "Hold"
+nonlinear_factor = 0.5
 
 [node name="DecayKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+max_value = 1.0
+step = 0.001
 title = "Decay"
+nonlinear_factor = 0.5
 
 [node name="SustainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+max_value = 1.0
+step = 0.001
 title = "Sustain"
+nonlinear_factor = 0.5
 
 [node name="ReleaseKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+max_value = 1.0
+step = 0.001
 title = "Release"
+nonlinear_factor = 0.5
+
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/AttackKnob" to="." method="_on_attack_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/DecayKnob" to="." method="_on_decay_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/SustainKnob" to="." method="_on_sustain_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/ReleaseKnob" to="." method="_on_release_knob_value_changed"]

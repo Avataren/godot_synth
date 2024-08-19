@@ -12,7 +12,7 @@ namespace Synth
         private double _decayTime = 0.1;
         private double _sustainLevel = 0.7;
         private double _releaseTime = 0.1;
-        private double _smoothingFactor = 0.01;
+        private double _smoothingFactor = 1.0f;// 0.01;
         private double _transitionEndTime = 0.005;
 
         private double currentAmplitude = 0.0;
@@ -23,9 +23,9 @@ namespace Synth
 
         private const double MinimumReleaseTime = 0.0045;
 
-        private double _AttackCtrl = -0.45;
-        private double _DecayCtrl = -0.48;
-        private double _ReleaseCtrl = -0.5;
+        private double _AttackCtrl = -2.5;//-0.45 * 4.0;
+        private double _DecayCtrl = -2.5;//-0.48 * 4.0;
+        private double _ReleaseCtrl = -3.0;//-0.5 * 4.0;
 
         private double expBaseAttack, expBaseDecay, expBaseRelease;
 
@@ -207,5 +207,90 @@ namespace Synth
 
             envelopePosition = newPosition;
         }
+        public float[] GetVisualBuffer(int numSamples, double visualizationDuration = 3.0)
+        {
+            // Calculate the duration of the envelope without the sustain phase
+            double nonSustainDuration = _attackTime + _decayTime + _releaseTime;
+
+            // The total buffer duration is defined by the visualizationDuration parameter
+            double bufferDuration = visualizationDuration;
+
+            // Calculate the required sustain duration to fill the buffer
+            double sustainDuration = Math.Max(0.0, bufferDuration - nonSustainDuration);
+
+            // Recalculate the total duration now including the extended sustain phase
+            double totalDuration = nonSustainDuration + sustainDuration;
+
+            // Calculate the time increment based on the total duration and the number of samples
+            double timeIncrement = totalDuration / numSamples;
+
+            // Create a buffer to hold the amplitude values
+            float[] visualBuffer = new float[numSamples];
+
+            // Initialize variables for simulating the envelope
+            double simulatedPosition = 0.0;
+            double simulatedCurrentAmplitude = 0.0;
+            bool isGateOpen = true;
+            double releaseStartPosition = 0.0;
+            double releaseStartAmplitude = 0.0;
+
+            for (int i = 0; i < numSamples; i++)
+            {
+                double targetAmplitude = simulatedCurrentAmplitude;
+
+                if (isGateOpen)
+                {
+                    if (simulatedPosition < _attackTime)
+                    {
+                        // Attack phase
+                        targetAmplitude = ExponentialCurve(simulatedPosition / _attackTime, _AttackCtrl, expBaseAttack);
+                    }
+                    else if (simulatedPosition < _attackTime + _decayTime)
+                    {
+                        // Decay phase
+                        double decayPosition = (simulatedPosition - _attackTime) / _decayTime;
+                        targetAmplitude = 1.0 - ExponentialCurve(decayPosition, _DecayCtrl, expBaseDecay) * (1.0 - _sustainLevel);
+                    }
+                    else if (simulatedPosition < _attackTime + _decayTime + sustainDuration)
+                    {
+                        // Sustain phase
+                        targetAmplitude = _sustainLevel;
+                    }
+                    else
+                    {
+                        // Transition to release phase after the sustain phase
+                        isGateOpen = false;
+                        releaseStartPosition = simulatedPosition;
+                        releaseStartAmplitude = _sustainLevel; // Start release from sustain level
+                    }
+                }
+                else
+                {
+                    // Release phase
+                    double releasePosition = (simulatedPosition - releaseStartPosition) / _releaseTime;
+                    if (releasePosition < 1.0)
+                    {
+                        targetAmplitude = releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, _ReleaseCtrl, expBaseRelease));
+                    }
+                    else
+                    {
+                        targetAmplitude = 0.0; // Fully released
+                    }
+                }
+
+                // Apply smoothing to the amplitude change
+                simulatedCurrentAmplitude += (targetAmplitude - simulatedCurrentAmplitude) * _smoothingFactor;
+
+                // Store the calculated amplitude in the buffer
+                visualBuffer[i] = (float)simulatedCurrentAmplitude;
+
+                // Advance the simulated position by the correct time increment
+                simulatedPosition += timeIncrement;
+            }
+
+            return visualBuffer;
+        }
+
+
     }
 }

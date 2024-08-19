@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scenes/scripts/LFO.cs" id="1_3hl2b"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_7ovjp"]
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/adsr_envelope.tscn" id="2_w58r0"]
+[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="2_w58r0"]
 
 [node name="VBoxContainer" type="VBoxContainer"]
 offset_right = 164.0

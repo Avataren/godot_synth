@@ -12,7 +12,7 @@ namespace Synth
         public double AttackTime
         {
             get
-            {   
+            {
                 return _attackTime;
             }
             set
@@ -36,9 +36,57 @@ namespace Synth
         private double transitionTargetAmplitude = 0.0;
         private double MinimumReleaseTime = 0.0045;
 
+        private double _AttackCtrl;     // Control parameter for the Attack phase
+        private double _DecayCtrl;     // Control parameter for the Decay phase
+        private double _ReleaseCtrl;   // Control parameter for the Release phase
+
+        public double AttackCtrl
+        {
+            get
+            {
+                return _AttackCtrl;
+            }
+            set
+            {
+                _AttackCtrl = value;
+                expBaseAttack = Math.Pow(2.0, value) - 1.0;
+            }
+        }
+
+        public double DecayCtrl
+        {
+            get
+            {
+                return _DecayCtrl;
+            }
+            set
+            {
+                _DecayCtrl = value;
+                expBaseDecay = Math.Pow(2.0, value) - 1.0;
+            }
+        }
+
+        public double ReleaseCtrl
+        {
+            get
+            {
+                return _ReleaseCtrl;
+            }
+            set
+            {
+                _ReleaseCtrl = value;
+                expBaseRelease = Math.Pow(2.0, value) - 1.0;
+            }
+        }
+
+        private double expBaseAttack, expBaseDecay, expBaseRelease;
+
         public EnvelopeNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples)
         {
             SampleFrequency = sampleFrequency;
+            AttackCtrl = -0.45;
+            DecayCtrl = -0.48;
+            ReleaseCtrl = -0.5;
         }
 
         public override void OpenGate()
@@ -66,17 +114,23 @@ namespace Synth
             }
         }
 
+        private double ExponentialCurve(double x, double c, double precomputedBase)
+        {
+            return (Math.Pow(2, c * x) - 1) / precomputedBase;
+        }
+
         private double CalculateTargetAmplitude(double position)
         {
             if (isGateOpen)
             {
                 if (position < AttackTime)
                 {
-                    return position / AttackTime;
+                    return ExponentialCurve(position / AttackTime, AttackCtrl, expBaseAttack);
                 }
                 else if (position < AttackTime + DecayTime)
                 {
-                    return 1.0 - (position - AttackTime) / DecayTime * (1.0 - SustainLevel);
+                    double decayPosition = (position - AttackTime) / DecayTime;
+                    return 1.0 - ExponentialCurve(decayPosition, DecayCtrl, expBaseDecay) * (1.0 - SustainLevel);
                 }
                 else
                 {
@@ -85,14 +139,42 @@ namespace Synth
             }
             else
             {
-                double releasePosition = position - releaseStartPosition;
-                if (releasePosition < ReleaseTime)
+                double releasePosition = (position - releaseStartPosition) / ReleaseTime;
+                if (releasePosition < 1.0)
                 {
-                    return releaseStartAmplitude * (1.0 - (releasePosition / ReleaseTime));
+                    return releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, ReleaseCtrl, expBaseRelease));
                 }
                 return 0.0;
             }
         }
+
+        // private double CalculateTargetAmplitude(double position)
+        // {
+        //     if (isGateOpen)
+        //     {
+        //         if (position < AttackTime)
+        //         {
+        //             return position / AttackTime;
+        //         }
+        //         else if (position < AttackTime + DecayTime)
+        //         {
+        //             return 1.0 - (position - AttackTime) / DecayTime * (1.0 - SustainLevel);
+        //         }
+        //         else
+        //         {
+        //             return SustainLevel;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         double releasePosition = position - releaseStartPosition;
+        //         if (releasePosition < ReleaseTime)
+        //         {
+        //             return releaseStartAmplitude * (1.0 - (releasePosition / ReleaseTime));
+        //         }
+        //         return 0.0;
+        //     }
+        // }
 
         public double GetEnvelopeValue(double position)
         {

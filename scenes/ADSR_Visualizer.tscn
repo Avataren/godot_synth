@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://c4ngt17drrav4"]
+[gd_scene load_steps=6 format=3 uid="uid://c4ngt17drrav4"]
 
 [ext_resource type="Shader" path="res://shaders/ADSR_Visualizer.gdshader" id="1_d82p3"]
 [ext_resource type="Script" path="res://scenes/scripts/AdsrVisualizer.cs" id="1_js4wc"]
+[ext_resource type="ButtonGroup" uid="uid://4eqbv5kao5ro" path="res://resources/envelope_button_group.tres" id="2_l85fp"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_mjixn"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_vchxs"]
@@ -12,7 +13,7 @@ shader_parameter/wave_data = PackedFloat32Array()
 shader_parameter/line_thickness = 0.004
 shader_parameter/vertical_line_thickness = 0.003
 shader_parameter/aspect_ratio = 2.0
-shader_parameter/total_time = 4.0
+shader_parameter/total_time = 3.0
 shader_parameter/waveform_color = Vector3(0.75, 0.85, 0.85)
 shader_parameter/vertical_line_color = Vector3(0.3, 0.4, 0.5)
 
@@ -29,26 +30,49 @@ layout_mode = 2
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
 custom_minimum_size = Vector2(0, 47.98)
 layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
 
-[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer2"]
+[node name="EnvelopeButton" type="Button" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+size_flags_horizontal = 2
 size_flags_vertical = 4
+toggle_mode = true
+button_pressed = true
+button_group = ExtResource("2_l85fp")
 text = "Envelope 1"
 
-[node name="Button2" type="Button" parent="VBoxContainer/HBoxContainer2"]
+[node name="EnvelopeButton2" type="Button" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+size_flags_horizontal = 2
 size_flags_vertical = 4
+toggle_mode = true
+button_group = ExtResource("2_l85fp")
 text = "Envelope 2"
 
-[node name="Button3" type="Button" parent="VBoxContainer/HBoxContainer2"]
+[node name="EnvelopeButton3" type="Button" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+size_flags_horizontal = 2
 size_flags_vertical = 4
+toggle_mode = true
+button_group = ExtResource("2_l85fp")
 text = "Envelope 3"
 
-[node name="Button4" type="Button" parent="VBoxContainer/HBoxContainer2"]
+[node name="EnvelopeButton4" type="Button" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
+size_flags_horizontal = 2
 size_flags_vertical = 4
+toggle_mode = true
+button_group = ExtResource("2_l85fp")
 text = "Envelope 4"
+
+[node name="EnvelopeButton5" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 4
+toggle_mode = true
+button_group = ExtResource("2_l85fp")
+text = "Envelope 5"
 
 [node name="ShaderVisualizer" type="ColorRect" parent="VBoxContainer"]
 material = SubResource("ShaderMaterial_vchxs")

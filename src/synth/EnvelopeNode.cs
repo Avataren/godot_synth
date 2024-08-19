@@ -31,9 +31,9 @@ namespace Synth
         private double _transitionStartAmplitude = 0.0;
         private double _transitionTargetAmplitude = 0.0;
 
-        private double _attackCtrl = -0.45 * 4.0;
-        private double _decayCtrl = -0.48 * 4.0;
-        private double _releaseCtrl = -0.5 * 4.0;
+        private double _attackCtrl = 2.0;//-0.45;
+        private double _decayCtrl = -3.0;//-0.48;
+        private double _releaseCtrl = -3.5;//-0.5;
 
         private double _expBaseAttack, _expBaseDecay, _expBaseRelease;
 
@@ -208,7 +208,7 @@ namespace Synth
             _envelopePosition = newPosition;
         }
 
-        public double GetEnvelopeBufferPosition(double visualizationDuration = 4.0)
+        public double GetEnvelopeBufferPosition(double visualizationDuration = 3.0)
         {
             double nonSustainDuration = _attackTime + _decayTime + _releaseTime;
             double sustainDuration = Math.Max(0.0, visualizationDuration - nonSustainDuration);
@@ -224,7 +224,7 @@ namespace Synth
             return Math.Clamp(currentPosition / totalDuration, 0.0, 1.0);
         }
 
-        public float[] GetVisualBuffer(int numSamples, double visualizationDuration = 4.0)
+        public float[] GetVisualBuffer(int numSamples, double visualizationDuration = 3.0)
         {
             float[] visualBuffer = new float[numSamples];
 
@@ -238,10 +238,9 @@ namespace Synth
             int sustainSamples = numSamples - (attackSamples + decaySamples + releaseSamples);
             sustainSamples = Math.Max(sustainSamples, 0); // Ensure positive or zero sample counts
 
-            double releaseStartAmplitude = 0.0; // Initialize this to store the amplitude at the start of the release phase
+            double releaseStartAmplitude = 0.0;
             bool hasReleaseStarted = false; // Flag to detect the start of the release phase
 
-            // Simulate each phase
             for (int i = 0; i < numSamples; i++)
             {
                 double targetAmplitude;
@@ -277,8 +276,5 @@ namespace Synth
 
             return visualBuffer;
         }
-
-
-
     }
 }

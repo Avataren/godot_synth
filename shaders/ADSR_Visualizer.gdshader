@@ -1,6 +1,6 @@
 shader_type canvas_item;
 #define DEBUG
-#define BUFFER_SIZE 400
+#define BUFFER_SIZE 512
 uniform float wave_data[BUFFER_SIZE];
 uniform float line_thickness = 0.002; // Thickness of the waveform line (in normalized space)
 uniform float vertical_line_thickness = 0.003; // Thickness of the vertical lines (in normalized space)

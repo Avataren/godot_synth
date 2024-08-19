@@ -18,30 +18,35 @@ offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 1
 
-[node name="VSplitContainer" type="VSplitContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="ShaderVisualizer" type="ColorRect" parent="VSplitContainer"]
+[node name="ShaderVisualizer" type="ColorRect" parent="VBoxContainer"]
 material = SubResource("ShaderMaterial_vchxs")
-custom_minimum_size = Vector2(400, 200)
+custom_minimum_size = Vector2(512, 200)
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VSplitContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 20
 
-[node name="AttackKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+[node name="AttackKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+title = "Attack"
 
-[node name="HoldKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+[node name="HoldKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+title = "Hold"
 
-[node name="DecayKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+[node name="DecayKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+title = "Decay"
 
-[node name="SustainKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+[node name="SustainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+title = "Sustain"
 
-[node name="ReleaseKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+[node name="ReleaseKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
 layout_mode = 2
+title = "Release"

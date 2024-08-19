@@ -4,6 +4,9 @@ using Synth;
 public partial class AdsrVisualizer : PanelContainer
 {
 	[Export]
+	private Control attack_knob;
+
+	[Export]
 	private ColorRect ShaderRect;
 	EnvelopeNode envelopeNode = new EnvelopeNode(512, 44100);
 	float[] visualBuffer = new float[512];

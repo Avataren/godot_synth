@@ -1,4 +1,5 @@
 extends Control
+class_name Knob
 
 # Exported properties
 @export var min_value: float = 0.0

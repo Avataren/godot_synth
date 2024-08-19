@@ -23,10 +23,6 @@ shader_parameter/cap_radius = 0.035
 offset_right = 64.0
 offset_bottom = 87.0
 script = ExtResource("1_4trod")
-label_unit_scale = null
-label_unit = null
-nonlinear_factor = null
-current_value = 0.0
 
 [node name="TitleLabel" type="Label" parent="."]
 unique_name_in_owner = true

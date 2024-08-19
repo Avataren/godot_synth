@@ -207,6 +207,34 @@ namespace Synth
 
             envelopePosition = newPosition;
         }
+
+        // Method to map the current envelope value to the buffer position
+        public double GetEnvelopeBufferPosition(double visualizationDuration = 3.0)
+        {
+            // Calculate the duration of the envelope without the sustain phase
+            double nonSustainDuration = _attackTime + _decayTime + _releaseTime;
+
+            // Calculate the required sustain duration to fill the buffer
+            double sustainDuration = Math.Max(0.0, visualizationDuration - nonSustainDuration);
+
+            // Recalculate the total duration now including the extended sustain phase
+            double totalDuration = nonSustainDuration + sustainDuration;
+
+            // Calculate the current position in the envelope relative to the total duration
+            double currentPosition = envelopePosition;
+
+            if (!isGateOpen)
+            {
+                // If the gate is closed (in release phase), calculate the position relative to the release phase
+                currentPosition = releaseStartPosition + (currentPosition - releaseStartPosition) * (_releaseTime / (totalDuration - releaseStartPosition));
+            }
+
+            // Normalize the current position to a value between 0 and 1
+            double normalizedPosition = Math.Clamp(currentPosition / totalDuration, 0.0, 1.0);
+
+            return normalizedPosition;
+        }
+
         public float[] GetVisualBuffer(int numSamples, double visualizationDuration = 3.0)
         {
             // Calculate the duration of the envelope without the sustain phase

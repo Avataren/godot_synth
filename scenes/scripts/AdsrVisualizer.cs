@@ -15,10 +15,10 @@ public partial class AdsrVisualizer : PanelContainer
 	{
 		node_shader_material = (ShaderMaterial)ShaderRect.Material;
 		visualBuffer = envelopeNode.GetVisualBuffer(512);
-		for (int i = 0; i < visualBuffer.Length; i++)
-		{
-			GD.Print("visualBuffer[" + i + "] = " + visualBuffer[i]);
-		}
+		// for (int i = 0; i < visualBuffer.Length; i++)
+		// {
+		// 	GD.Print("visualBuffer[" + i + "] = " + visualBuffer[i]);
+		// }
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 

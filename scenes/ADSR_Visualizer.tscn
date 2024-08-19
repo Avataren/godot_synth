@@ -12,7 +12,7 @@ shader_parameter/wave_data = PackedFloat32Array()
 shader_parameter/line_thickness = 0.004
 shader_parameter/vertical_line_thickness = 0.003
 shader_parameter/aspect_ratio = 2.0
-shader_parameter/total_time = 5.0
+shader_parameter/total_time = 4.0
 shader_parameter/waveform_color = Vector3(0.75, 0.85, 0.85)
 shader_parameter/vertical_line_color = Vector3(0.3, 0.4, 0.5)
 
@@ -25,6 +25,30 @@ ShaderRect = NodePath("VBoxContainer/ShaderVisualizer")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 47.98)
+layout_mode = 2
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Envelope 1"
+
+[node name="Button2" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Envelope 2"
+
+[node name="Button3" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Envelope 3"
+
+[node name="Button4" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Envelope 4"
 
 [node name="ShaderVisualizer" type="ColorRect" parent="VBoxContainer"]
 material = SubResource("ShaderMaterial_vchxs")

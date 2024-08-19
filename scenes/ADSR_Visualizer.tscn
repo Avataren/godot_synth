@@ -1,0 +1,47 @@
+[gd_scene load_steps=4 format=3 uid="uid://c4ngt17drrav4"]
+
+[ext_resource type="Shader" path="res://shaders/ADSR_Visualizer.gdshader" id="1_d82p3"]
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="2_mjixn"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vchxs"]
+shader = ExtResource("1_d82p3")
+shader_parameter/wave_data = PackedFloat32Array()
+shader_parameter/line_thickness = 0.004
+shader_parameter/vertical_line_thickness = 0.003
+shader_parameter/aspect_ratio = 2.0
+shader_parameter/total_time = 5.0
+shader_parameter/waveform_color = Vector3(0.75, 0.85, 0.85)
+shader_parameter/vertical_line_color = Vector3(0.3, 0.4, 0.5)
+
+[node name="PanelContainer" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 1
+
+[node name="VSplitContainer" type="VSplitContainer" parent="."]
+layout_mode = 2
+
+[node name="ShaderVisualizer" type="ColorRect" parent="VSplitContainer"]
+material = SubResource("ShaderMaterial_vchxs")
+custom_minimum_size = Vector2(400, 200)
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VSplitContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+
+[node name="AttackKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+
+[node name="HoldKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+
+[node name="DecayKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+
+[node name="SustainKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+
+[node name="ReleaseKnob" parent="VSplitContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+layout_mode = 2

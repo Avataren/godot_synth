@@ -5,98 +5,102 @@ namespace Synth
 {
     public class EnvelopeNode : AudioNode
     {
-        private double envelopePosition = 0.0;
-        private double releaseStartPosition = 0.0;
-        private bool isGateOpen = false;
-        private double _attackTime = 0.005;
-        private double _decayTime = 0.1;
-        private double _sustainLevel = 0.7;
-        private double _releaseTime = 0.1;
-        private double _smoothingFactor = 1.0f;// 0.01;
-        private double _transitionEndTime = 0.005;
-
-        private double currentAmplitude = 0.0;
-        private double releaseStartAmplitude = 0.0;
-        private bool isInTransition = false;
-        private double transitionStartAmplitude = 0.0;
-        private double transitionTargetAmplitude = 0.0;
-
+        // Constants for default values
+        private const double DefaultDecayTime = 0.0;
+        private const double DefaultSmoothingFactor = 0.01;
+        private const double DefaultTransitionEndTime = 0.005;
         private const double MinimumReleaseTime = 0.0045;
+        private const double MinimumAttackTime = 0.005;
+        private const double DefaultSustainLevel = 1.0;
+        private const double DefaultAttackTime = MinimumAttackTime;
+        private const double DefaultReleaseTime = MinimumReleaseTime;        
+        // Private fields
+        private double _envelopePosition = 0.0;
+        private double _releaseStartPosition = 0.0;
+        private bool _isGateOpen = false;
+        private double _attackTime = DefaultAttackTime;
+        private double _decayTime = DefaultDecayTime;
+        private double _sustainLevel = DefaultSustainLevel;
+        private double _releaseTime = DefaultReleaseTime;
+        private double _smoothingFactor = DefaultSmoothingFactor;
+        private double _transitionEndTime = DefaultTransitionEndTime;
 
-        private double _AttackCtrl = -2.5;//-0.45 * 4.0;
-        private double _DecayCtrl = -2.5;//-0.48 * 4.0;
-        private double _ReleaseCtrl = -3.0;//-0.5 * 4.0;
+        private double _currentAmplitude = 0.0;
+        private double _releaseStartAmplitude = 0.0;
+        private bool _isInTransition = false;
+        private double _transitionStartAmplitude = 0.0;
+        private double _transitionTargetAmplitude = 0.0;
 
-        private double expBaseAttack, expBaseDecay, expBaseRelease;
+        private double _attackCtrl = -0.45 * 4.0;
+        private double _decayCtrl = -0.48 * 4.0;
+        private double _releaseCtrl = -0.5 * 4.0;
+
+        private double _expBaseAttack, _expBaseDecay, _expBaseRelease;
 
         // Properties with appropriate getters and setters
         public double AttackTime
         {
             get => _attackTime;
-            set
-            {
-                _attackTime = value < 0.005 ? 0.005 : value;
-                GD.Print("Attack Time: " + _attackTime + " for " + Name);
-            }
+            set => _attackTime = Math.Max(value, MinimumAttackTime);
         }
 
         public double DecayTime
         {
             get => _decayTime;
-            set => _decayTime = value >= 0 ? value : 0.1; // Ensure DecayTime is not negative
+            set => _decayTime = Math.Max(value, 0);
         }
 
         public double SustainLevel
         {
             get => _sustainLevel;
-            set => _sustainLevel = Math.Clamp(value, 0.0, 1.0); // Ensure SustainLevel is between 0 and 1
+            set => _sustainLevel = Math.Clamp(value, 0.0, 1.0);
         }
 
         public double ReleaseTime
         {
             get => _releaseTime;
-            set => _releaseTime = value >= MinimumReleaseTime ? value : MinimumReleaseTime;
+            set => _releaseTime = Math.Max(value, MinimumReleaseTime);
         }
 
         public double SmoothingFactor
         {
             get => _smoothingFactor;
-            set => _smoothingFactor = value > 0 ? value : 0.01; // Ensure SmoothingFactor is positive
+            set => _smoothingFactor = Math.Max(value, DefaultSmoothingFactor);
         }
 
         public double TransitionEndTime
         {
             get => _transitionEndTime;
-            set => _transitionEndTime = value > 0 ? value : 0.005; // Ensure TransitionEndTime is positive
+            set => _transitionEndTime = Math.Max(value, DefaultTransitionEndTime);
         }
 
         public double AttackCtrl
         {
-            get => _AttackCtrl;
+            get => _attackCtrl;
             set
             {
-                _AttackCtrl = value;
-                expBaseAttack = Math.Pow(2.0, value) - 1.0;
+                _attackCtrl = value;
+                _expBaseAttack = Math.Pow(2.0, value) - 1.0;
             }
         }
 
         public double DecayCtrl
         {
-            get => _DecayCtrl;
+            get => _decayCtrl;
             set
             {
-                _DecayCtrl = value;
-                expBaseDecay = Math.Pow(2.0, value) - 1.0;
+                _decayCtrl = value;
+                _expBaseDecay = Math.Pow(2.0, value) - 1.0;
             }
         }
 
         public double ReleaseCtrl
         {
-            get => _ReleaseCtrl;
+            get => _releaseCtrl;
             set
             {
-                _ReleaseCtrl = value;
-                expBaseRelease = Math.Pow(2.0, value) - 1.0;
+                _releaseCtrl = value;
+                _expBaseRelease = Math.Pow(2.0, value) - 1.0;
             }
         }
 
@@ -108,34 +112,30 @@ namespace Synth
 
         private void UpdateExponentialCurves()
         {
-            expBaseAttack = Math.Pow(2.0, _AttackCtrl) - 1.0;
-            expBaseDecay = Math.Pow(2.0, _DecayCtrl) - 1.0;
-            expBaseRelease = Math.Pow(2.0, _ReleaseCtrl) - 1.0;
+            _expBaseAttack = Math.Pow(2.0, _attackCtrl) - 1.0;
+            _expBaseDecay = Math.Pow(2.0, _decayCtrl) - 1.0;
+            _expBaseRelease = Math.Pow(2.0, _releaseCtrl) - 1.0;
         }
 
         public override void OpenGate()
         {
-            isGateOpen = true;
-            envelopePosition = 0.0;
+            _isGateOpen = true;
+            _envelopePosition = 0.0;
             StartTransition(0.0);
         }
 
         private void StartTransition(double targetAmplitude)
         {
-            isInTransition = true;
-            transitionStartAmplitude = currentAmplitude;
-            transitionTargetAmplitude = targetAmplitude;
+            _isInTransition = true;
+            _transitionStartAmplitude = _currentAmplitude;
+            _transitionTargetAmplitude = targetAmplitude;
         }
 
         public override void CloseGate()
         {
-            releaseStartPosition = envelopePosition;
-            releaseStartAmplitude = currentAmplitude;
-            isGateOpen = false;
-            if (_releaseTime <= MinimumReleaseTime)
-            {
-                _releaseTime = MinimumReleaseTime;
-            }
+            _releaseStartPosition = _envelopePosition;
+            _releaseStartAmplitude = _currentAmplitude;
+            _isGateOpen = false;
         }
 
         private double ExponentialCurve(double x, double c, double precomputedBase)
@@ -145,16 +145,16 @@ namespace Synth
 
         private double CalculateTargetAmplitude(double position)
         {
-            if (isGateOpen)
+            if (_isGateOpen)
             {
                 if (position < _attackTime)
                 {
-                    return ExponentialCurve(position / _attackTime, _AttackCtrl, expBaseAttack);
+                    return ExponentialCurve(position / _attackTime, _attackCtrl, _expBaseAttack);
                 }
                 else if (position < _attackTime + _decayTime)
                 {
                     double decayPosition = (position - _attackTime) / _decayTime;
-                    return 1.0 - ExponentialCurve(decayPosition, _DecayCtrl, expBaseDecay) * (1.0 - _sustainLevel);
+                    return 1.0 - ExponentialCurve(decayPosition, _decayCtrl, _expBaseDecay) * (1.0 - _sustainLevel);
                 }
                 else
                 {
@@ -163,10 +163,10 @@ namespace Synth
             }
             else
             {
-                double releasePosition = (position - releaseStartPosition) / _releaseTime;
+                double releasePosition = (position - _releaseStartPosition) / _releaseTime;
                 if (releasePosition < 1.0)
                 {
-                    return releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, _ReleaseCtrl, expBaseRelease));
+                    return _releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, _releaseCtrl, _expBaseRelease));
                 }
                 return 0.0;
             }
@@ -175,87 +175,70 @@ namespace Synth
         private double GetEnvelopeValue(double position)
         {
             double targetAmplitude = CalculateTargetAmplitude(position);
-            return currentAmplitude += (targetAmplitude - currentAmplitude) * _smoothingFactor;
+            return _currentAmplitude += (targetAmplitude - _currentAmplitude) * _smoothingFactor;
         }
 
         public override void Process(double increment)
         {
-            double newPosition = envelopePosition;
+            double newPosition = _envelopePosition;
             float[] bufferRef = buffer; // Cache the buffer reference
 
             for (int i = 0; i < NumSamples; i++)
             {
-                if (isInTransition)
+                if (_isInTransition)
                 {
-                    double transitionProgress = (newPosition - envelopePosition) / _transitionEndTime;
+                    double transitionProgress = (newPosition - _envelopePosition) / _transitionEndTime;
                     if (transitionProgress >= 1.0)
                     {
                         transitionProgress = 1.0;
-                        isInTransition = false;
+                        _isInTransition = false;
                     }
-                    currentAmplitude = transitionStartAmplitude + (transitionTargetAmplitude - transitionStartAmplitude) * transitionProgress;
+                    _currentAmplitude = _transitionStartAmplitude + (_transitionTargetAmplitude - _transitionStartAmplitude) * transitionProgress;
                 }
                 else
                 {
-                    currentAmplitude = GetEnvelopeValue(newPosition);
+                    _currentAmplitude = GetEnvelopeValue(newPosition);
                 }
 
-                bufferRef[i] = (float)currentAmplitude;
+                bufferRef[i] = (float)_currentAmplitude;
 
                 newPosition += increment;
             }
 
-            envelopePosition = newPosition;
+            _envelopePosition = newPosition;
         }
 
-        // Method to map the current envelope value to the buffer position
         public double GetEnvelopeBufferPosition(double visualizationDuration = 3.0)
         {
-            // Calculate the duration of the envelope without the sustain phase
             double nonSustainDuration = _attackTime + _decayTime + _releaseTime;
-
-            // Calculate the required sustain duration to fill the buffer
             double sustainDuration = Math.Max(0.0, visualizationDuration - nonSustainDuration);
-
-            // Recalculate the total duration now including the extended sustain phase
             double totalDuration = nonSustainDuration + sustainDuration;
 
-            // Calculate the current position in the envelope relative to the total duration
-            double currentPosition = envelopePosition;
+            double currentPosition = _envelopePosition;
 
-            if (!isGateOpen)
+            if (!_isGateOpen)
             {
-                // If the gate is closed (in release phase), calculate the position relative to the release phase
-                currentPosition = releaseStartPosition + (currentPosition - releaseStartPosition) * (_releaseTime / (totalDuration - releaseStartPosition));
+                currentPosition = _releaseStartPosition + (currentPosition - _releaseStartPosition) * (_releaseTime / (totalDuration - _releaseStartPosition));
             }
 
-            // Normalize the current position to a value between 0 and 1
-            double normalizedPosition = Math.Clamp(currentPosition / totalDuration, 0.0, 1.0);
-
-            return normalizedPosition;
+            return Math.Clamp(currentPosition / totalDuration, 0.0, 1.0);
         }
 
         public float[] GetVisualBuffer(int numSamples, double visualizationDuration = 3.0)
         {
-            // Calculate the duration of the envelope without the sustain phase
             double nonSustainDuration = _attackTime + _decayTime + _releaseTime;
-
-            // The total buffer duration is defined by the visualizationDuration parameter
             double bufferDuration = visualizationDuration;
-
-            // Calculate the required sustain duration to fill the buffer
             double sustainDuration = Math.Max(0.0, bufferDuration - nonSustainDuration);
-
-            // Recalculate the total duration now including the extended sustain phase
             double totalDuration = nonSustainDuration + sustainDuration;
-
-            // Calculate the time increment based on the total duration and the number of samples
             double timeIncrement = totalDuration / numSamples;
 
-            // Create a buffer to hold the amplitude values
+            double visualizationSampleRate = numSamples / visualizationDuration;
+            double adjustmentRatio = SampleFrequency / visualizationSampleRate;            
+            double originalSmoothingFactor = 0.01; // This should be retrieved from your actual smoothing factor setting
+            double adjustedSmoothingFactor = 1 - Math.Pow(1 - originalSmoothingFactor, adjustmentRatio);
+
             float[] visualBuffer = new float[numSamples];
 
-            // Initialize variables for simulating the envelope
             double simulatedPosition = 0.0;
             double simulatedCurrentAmplitude = 0.0;
             bool isGateOpen = true;
@@ -270,55 +253,45 @@ namespace Synth
                 {
                     if (simulatedPosition < _attackTime)
                     {
-                        // Attack phase
-                        targetAmplitude = ExponentialCurve(simulatedPosition / _attackTime, _AttackCtrl, expBaseAttack);
+                        targetAmplitude = ExponentialCurve(simulatedPosition / _attackTime, _attackCtrl, _expBaseAttack);
                     }
                     else if (simulatedPosition < _attackTime + _decayTime)
                     {
-                        // Decay phase
                         double decayPosition = (simulatedPosition - _attackTime) / _decayTime;
-                        targetAmplitude = 1.0 - ExponentialCurve(decayPosition, _DecayCtrl, expBaseDecay) * (1.0 - _sustainLevel);
+                        targetAmplitude = 1.0 - ExponentialCurve(decayPosition, _decayCtrl, _expBaseDecay) * (1.0 - _sustainLevel);
                     }
                     else if (simulatedPosition < _attackTime + _decayTime + sustainDuration)
                     {
-                        // Sustain phase
                         targetAmplitude = _sustainLevel;
                     }
                     else
                     {
-                        // Transition to release phase after the sustain phase
                         isGateOpen = false;
                         releaseStartPosition = simulatedPosition;
-                        releaseStartAmplitude = _sustainLevel; // Start release from sustain level
+                        releaseStartAmplitude = _sustainLevel;
                     }
                 }
                 else
                 {
-                    // Release phase
                     double releasePosition = (simulatedPosition - releaseStartPosition) / _releaseTime;
                     if (releasePosition < 1.0)
                     {
-                        targetAmplitude = releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, _ReleaseCtrl, expBaseRelease));
+                        targetAmplitude = releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, _releaseCtrl, _expBaseRelease));
                     }
                     else
                     {
-                        targetAmplitude = 0.0; // Fully released
+                        targetAmplitude = 0.0;
                     }
                 }
 
-                // Apply smoothing to the amplitude change
-                simulatedCurrentAmplitude += (targetAmplitude - simulatedCurrentAmplitude) * _smoothingFactor;
+                simulatedCurrentAmplitude += (targetAmplitude - simulatedCurrentAmplitude) * adjustedSmoothingFactor;
 
-                // Store the calculated amplitude in the buffer
                 visualBuffer[i] = (float)simulatedCurrentAmplitude;
 
-                // Advance the simulated position by the correct time increment
                 simulatedPosition += timeIncrement;
             }
 
             return visualBuffer;
         }
-
-
     }
 }

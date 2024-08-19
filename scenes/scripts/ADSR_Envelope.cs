@@ -13,12 +13,12 @@ public partial class ADSR_Envelope : VBoxContainer
 	public delegate void ReleaseTimeChangedEventHandler(float releaseTime);
 
 	[Export]
-	private float MaxAttackTimeMS = 20000.0f;
+	private float AttackDurationMS = 1000.0f;
 	[Export]
-	private float MaxDecayTimeMS = 20000.0f;
+	private float DecayDurationMS = 1000.0f;
 
 	[Export]
-	private float MaxReleaseTimeMS = 10000.0f;
+	private float MaxReleaseTimeMS = 1000.0f;
 	[Export]
 	private Label EnvelopeLabel;
 
@@ -52,14 +52,14 @@ public partial class ADSR_Envelope : VBoxContainer
 	{
 		if (value < 0.0015)
 			value = 0.0;
-		EmitSignal("AttackTimeChanged", (float)value * MaxAttackTimeMS);
+		EmitSignal("AttackTimeChanged", (float)value * AttackDurationMS);
 	}
 
 	private void _on_decay_slider_value_changed(double value)
 	{
 		if (value < 0.0015)
 			value = 0.0;
-		EmitSignal("DecayTimeChanged", (float)value * MaxDecayTimeMS);
+		EmitSignal("DecayTimeChanged", (float)value * DecayDurationMS);
 	}
 
 	private void _on_sustain_slider_value_changed(double value)

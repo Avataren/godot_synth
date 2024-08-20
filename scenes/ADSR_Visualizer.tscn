@@ -151,8 +151,8 @@ current_value = -3.5
 
 [node name="TimeKnob" parent="VBoxContainer/HBoxContainer3" instance=ExtResource("2_mjixn")]
 layout_mode = 2
-min_value = 1.0
-max_value = 10.0
+min_value = 0.5
+max_value = 5.0
 step = 0.01
 title = "TimeScale"
 nonlinear_factor = 0.5

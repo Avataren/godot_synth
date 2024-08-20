@@ -358,10 +358,10 @@ public partial class PatchEditor : Node2D
 		// {
 		// 	AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f, oscNum);
 		// };
-		// osc.VolumeChanged += (volume) =>
-		// {
-		// 	AudioOutputNode.CurrentPatch.SetAmplitude(volume, oscNum);
-		// };
+		osc.VolumeChanged += (volume) =>
+		{
+			AudioOutputNode.CurrentPatch.SetAmplitude(volume, oscNum);
+		};
 		osc.DetuneOctavesChanged += (detuneOctaves) =>
 		{
 			GD.Print("Detune Octaves Changed");

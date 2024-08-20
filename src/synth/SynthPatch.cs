@@ -42,8 +42,6 @@ public class SynthPatch
             oscillators.Add(osc);
             graph.Connect(osc, mix1, AudioParam.Input, ModulationType.Add);
             graph.Connect(freq, osc, AudioParam.Pitch, ModulationType.Add);
-
-
         }
 
         for (int i=0;i< MaxEnvelopes; i++)

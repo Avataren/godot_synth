@@ -108,42 +108,42 @@ public partial class Oscillator : Control
 
 	private void _On_Volume_Changed(double value)
 	{
-		EmitSignal("VolumeChanged", (float)value);
+		EmitSignal(SignalName.VolumeChanged, (float)value);
 	}
 
 	private void _on_waveform_select_waveform_changed( int index)
 	{
 		GD.Print("OSC:Waveform changed: ", index);
-		EmitSignal("WaveformChanged", index);
+		EmitSignal(SignalName.WaveformChanged, index);
 	}
 	private void _on_waveform_select_item_selected(int index)
 	{
-		EmitSignal("WaveformChanged", index);
+		EmitSignal(SignalName.WaveformChanged, index);
 	}
 	private void _on_hard_sync_check_box_toggled(bool value)
 	{
-		EmitSignal("HardSyncToggled", value);
+		EmitSignal(SignalName.HardSyncToggled, value);
 	}
 	private void _on_check_box_toggled(bool value)
 	{
-		EmitSignal("OscillatorEnabledToggled", value);
+		EmitSignal(SignalName.OscillatorEnabledToggled, value);
 	}
-	private void _on_attack_time_changed(double value)
-	{
-		EmitSignal("AttackTimeChanged", (float)value);
-	}
-	private void _on_decay_time_changed(double value)
-	{
-		EmitSignal("DecayTimeChanged", (float)value);
-	}
-	private void _on_sustain_level_changed(double value)
-	{
-		EmitSignal("SustainLevelChanged", (float)value);
-	}
-	private void _on_release_time_changed(double value)
-	{
-		EmitSignal("ReleaseTimeChanged", (float)value);
-	}
+	// private void _on_attack_time_changed(double value)
+	// {
+	// 	EmitSignal(SignalName.AttackTimeChanged., (float)value);
+	// }
+	// private void _on_decay_time_changed(double value)
+	// {
+	// 	EmitSignal("DecayTimeChanged", (float)value);
+	// }
+	// private void _on_sustain_level_changed(double value)
+	// {
+	// 	EmitSignal("SustainLevelChanged", (float)value);
+	// }
+	// private void _on_release_time_changed(double value)
+	// {
+	// 	EmitSignal("ReleaseTimeChanged", (float)value);
+	// }
 	private void _on_tuning_octave_changed(float value)
 	{
 		EmitSignal("DetuneOctavesChanged", value);

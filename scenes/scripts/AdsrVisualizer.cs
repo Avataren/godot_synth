@@ -94,7 +94,7 @@ public partial class AdsrVisualizer : PanelContainer
 	private void _on_time_knob_value_changed(float val)
 	{
 		TimeScale = val;
-		//envelopeNode.TimeScale = val;
+		currentEnvelopeNode.TimeScale = val;
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 		node_shader_material.SetShaderParameter("total_time", TimeScale* 3.0f);

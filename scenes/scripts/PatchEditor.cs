@@ -70,13 +70,13 @@ public partial class PatchEditor : Node2D
 				Print("Connecting LFO Signals" + i);
 				ConnectLFOSignals(lfos[i], i);
 			}
-			ConnectAmplitudeEnvelope();
+			//ConnectAmplitudeEnvelope();
 			//CallDeferred(nameof(CreateWaveforms));
 			CreateWaveforms();
-			for (int i = 0; i < customEnvelopes.Length; i++)
-			{
-				ConnectCustomEnvelopes(customEnvelopes[i], i);
-			}
+			// for (int i = 0; i < customEnvelopes.Length; i++)
+			// {
+			// 	ConnectCustomEnvelopes(customEnvelopes[i], i);
+			// }
 			ConnectPerformanceUpdate();
 
 
@@ -341,26 +341,27 @@ public partial class PatchEditor : Node2D
 		{
 			AudioOutputNode.CurrentPatch.SetOscillatorEnabled(enabled, oscNum);
 		};
-		osc.AttackTimeChanged += (attackTime) =>
-		{
-			AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f, oscNum);
-		};
-		osc.DecayTimeChanged += (decayTime) =>
-		{
-			AudioOutputNode.CurrentPatch.SetDecay(decayTime / 1000.0f, oscNum);
-		};
-		osc.SustainLevelChanged += (sustainLevel) =>
-		{
-			AudioOutputNode.CurrentPatch.SetSustain(sustainLevel, oscNum);
-		};
-		osc.ReleaseTimeChanged += (releaseTime) =>
-		{
-			AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f, oscNum);
-		};
-		osc.VolumeChanged += (volume) =>
-		{
-			AudioOutputNode.CurrentPatch.SetAmplitude(volume, oscNum);
-		};
+
+		// osc.AttackTimeChanged += (attackTime) =>
+		// {
+		// 	AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f, oscNum);
+		// };
+		// osc.DecayTimeChanged += (decayTime) =>
+		// {
+		// 	AudioOutputNode.CurrentPatch.SetDecay(decayTime / 1000.0f, oscNum);
+		// };
+		// osc.SustainLevelChanged += (sustainLevel) =>
+		// {
+		// 	AudioOutputNode.CurrentPatch.SetSustain(sustainLevel, oscNum);
+		// };
+		// osc.ReleaseTimeChanged += (releaseTime) =>
+		// {
+		// 	AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f, oscNum);
+		// };
+		// osc.VolumeChanged += (volume) =>
+		// {
+		// 	AudioOutputNode.CurrentPatch.SetAmplitude(volume, oscNum);
+		// };
 		osc.DetuneOctavesChanged += (detuneOctaves) =>
 		{
 			GD.Print("Detune Octaves Changed");
@@ -398,50 +399,50 @@ public partial class PatchEditor : Node2D
 
 	}
 
-	protected void ConnectCustomEnvelopes(ADSR_Envelope env, int envNum)
-	{
-		//Print("id is ", envNum);
-		env.AttackTimeChanged += (attackTime) =>
-		{
-			Print("Attack Time Changed: ", attackTime, " for id ", envNum);
-			AudioOutputNode.CurrentPatch.SetCustomAttack(attackTime / 1000.0f, envNum);
-		};
-		env.DecayTimeChanged += (decayTime) =>
-		{
-			// Print("Decay Time Changed: ", decayTime);
-			AudioOutputNode.CurrentPatch.SetCustomDecay(decayTime / 1000.0f, envNum);
-		};
-		env.SustainLevelChanged += (sustainLevel) =>
-		{
-			// Print("Sustain Level Changed: ", sustainLevel);
-			AudioOutputNode.CurrentPatch.SetCustomSustain(sustainLevel, envNum);
-		};
-		env.ReleaseTimeChanged += (releaseTime) =>
-		{
-			// Print("Release Time Changed: ", releaseTime);
-			AudioOutputNode.CurrentPatch.SetCustomRelease(releaseTime / 1000.0f, envNum);
-		};
-	}
+	// protected void ConnectCustomEnvelopes(ADSR_Envelope env, int envNum)
+	// {
+	// 	//Print("id is ", envNum);
+	// 	env.AttackTimeChanged += (attackTime) =>
+	// 	{
+	// 		Print("Attack Time Changed: ", attackTime, " for id ", envNum);
+	// 		AudioOutputNode.CurrentPatch.SetCustomAttack(attackTime / 1000.0f, envNum);
+	// 	};
+	// 	env.DecayTimeChanged += (decayTime) =>
+	// 	{
+	// 		// Print("Decay Time Changed: ", decayTime);
+	// 		AudioOutputNode.CurrentPatch.SetCustomDecay(decayTime / 1000.0f, envNum);
+	// 	};
+	// 	env.SustainLevelChanged += (sustainLevel) =>
+	// 	{
+	// 		// Print("Sustain Level Changed: ", sustainLevel);
+	// 		AudioOutputNode.CurrentPatch.SetCustomSustain(sustainLevel, envNum);
+	// 	};
+	// 	env.ReleaseTimeChanged += (releaseTime) =>
+	// 	{
+	// 		// Print("Release Time Changed: ", releaseTime);
+	// 		AudioOutputNode.CurrentPatch.SetCustomRelease(releaseTime / 1000.0f, envNum);
+	// 	};
+	// }
 
-	protected void ConnectAmplitudeEnvelope()
-	{
-		ADSREnvelope.AttackTimeChanged += (attackTime) =>
-		{
-			AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f);
-		};
-		ADSREnvelope.DecayTimeChanged += (decayTime) =>
-		{
-			AudioOutputNode.CurrentPatch.SetDecay(decayTime / 1000.0f);
-		};
-		ADSREnvelope.SustainLevelChanged += (sustainLevel) =>
-		{
-			AudioOutputNode.CurrentPatch.SetSustain(sustainLevel);
-		};
-		ADSREnvelope.ReleaseTimeChanged += (releaseTime) =>
-		{
-			AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f);
-		};
-	}
+	// protected void ConnectAmplitudeEnvelope()
+	// {
+	// 	ADSREnvelope.AttackTimeChanged += (attackTime) =>
+	// 	{
+	// 		AudioOutputNode.CurrentPatch.SetAttack(attackTime / 1000.0f);
+	// 	};
+	// 	ADSREnvelope.DecayTimeChanged += (decayTime) =>
+	// 	{
+	// 		AudioOutputNode.CurrentPatch.SetDecay(decayTime / 1000.0f);
+	// 	};
+	// 	ADSREnvelope.SustainLevelChanged += (sustainLevel) =>
+	// 	{
+	// 		AudioOutputNode.CurrentPatch.SetSustain(sustainLevel);
+	// 	};
+	// 	ADSREnvelope.ReleaseTimeChanged += (releaseTime) =>
+	// 	{
+	// 		AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f);
+	// 	};
+	// }
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)

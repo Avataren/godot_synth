@@ -34,19 +34,26 @@ namespace Synth
         private double _attackCtrl = 2.0;//-0.45;
         private double _decayCtrl = -3.0;//-0.48;
         private double _releaseCtrl = -3.5;//-0.5;
+        private double _timeScale = 1.0;
+
+        public double TimeScale
+        {
+            get => _timeScale;
+            set => _timeScale = Math.Max(value, 0.1);
+        }
 
         private double _expBaseAttack, _expBaseDecay, _expBaseRelease;
 
         // Properties with appropriate getters and setters
         public double AttackTime
         {
-            get => _attackTime;
+            get => _attackTime * TimeScale;
             set => _attackTime = Math.Max(value, MinimumAttackTime);
         }
 
         public double DecayTime
         {
-            get => _decayTime;
+            get => _decayTime * TimeScale;
             set => _decayTime = Math.Max(value, 0);
         }
 
@@ -58,7 +65,7 @@ namespace Synth
 
         public double ReleaseTime
         {
-            get => _releaseTime;
+            get => _releaseTime * TimeScale;
             set => _releaseTime = Math.Max(value, MinimumReleaseTime);
         }
 
@@ -147,26 +154,26 @@ namespace Synth
         {
             if (_isGateOpen)
             {
-                if (position < _attackTime)
+                if (position < AttackTime)
                 {
-                    return ExponentialCurve(position / _attackTime, _attackCtrl, _expBaseAttack);
+                    return ExponentialCurve(position / AttackTime, AttackCtrl, _expBaseAttack);
                 }
-                else if (position < _attackTime + _decayTime)
+                else if (position < AttackTime + DecayTime)
                 {
-                    double decayPosition = (position - _attackTime) / _decayTime;
-                    return 1.0 - ExponentialCurve(decayPosition, _decayCtrl, _expBaseDecay) * (1.0 - _sustainLevel);
+                    double decayPosition = (position - AttackTime) / DecayTime;
+                    return 1.0 - ExponentialCurve(decayPosition, DecayCtrl, _expBaseDecay) * (1.0 - SustainLevel);
                 }
                 else
                 {
-                    return _sustainLevel;
+                    return SustainLevel;
                 }
             }
             else
             {
-                double releasePosition = (position - _releaseStartPosition) / _releaseTime;
+                double releasePosition = (position - _releaseStartPosition) / ReleaseTime;
                 if (releasePosition < 1.0)
                 {
-                    return _releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, _releaseCtrl, _expBaseRelease));
+                    return _releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, ReleaseCtrl, _expBaseRelease));
                 }
                 return 0.0;
             }

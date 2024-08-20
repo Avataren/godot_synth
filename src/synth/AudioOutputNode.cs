@@ -167,15 +167,15 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public void Connect(string srcName, string dstName, string param, ModulationType modType, float strength = 1.0f)
 	{
-		Print("Connecting " + srcName + " to " + dstName + " with param " + param);
+		// Print("Connecting " + srcName + " to " + dstName + " with param " + param);
 		var srcNode = CurrentPatch.graph.GetNode(srcName);
 		var dstNode = CurrentPatch.graph.GetNode(dstName);
 		var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
-		Print("paramEnum is " + paramEnum);
+		// Print("paramEnum is " + paramEnum);
 		//disconnect default connections
 		if (srcName.StartsWith("Osc"))
 		{
-			GD.Print("Disconnecting " + srcName + " from Mixer");
+			// GD.Print("Disconnecting " + srcName + " from Mixer");
 			CurrentPatch.graph.Disconnect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input);
 		}
 		CurrentPatch.graph.Connect(srcNode, dstNode, paramEnum, modType, strength);
@@ -183,14 +183,14 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public void Disconnect(string srcName, string dstName, string param)
 	{
-		Print("Disconnecting " + srcName + " from " + dstName + " with param " + param);
+		// Print("Disconnecting " + srcName + " from " + dstName + " with param " + param);
 		var srcNode = CurrentPatch.graph.GetNode(srcName);
 		var dstNode = CurrentPatch.graph.GetNode(dstName);
 		var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
 		CurrentPatch.graph.Disconnect(srcNode, dstNode, paramEnum);
 		if (srcName.StartsWith("Osc"))
 		{
-			GD.Print("Connecting " + srcName + " to Mixer");
+			// GD.Print("Connecting " + srcName + " to Mixer");
 			CurrentPatch.graph.Connect(srcNode, CurrentPatch.graph.GetNode("Mix1"), AudioParam.Input, ModulationType.Add, 1.0f);
 		}
 	}

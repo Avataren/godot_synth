@@ -13,6 +13,9 @@ config_version=5
 config/name="Synthesizer"
 run/main_scene="res://scenes/patch_editor.tscn"
 config/features=PackedStringArray("4.3", "C#", "Forward Plus")
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/image="res://assets/app/splash.png"
+boot_splash/fullsize=false
 config/icon="res://icon.svg"
 
 [display]

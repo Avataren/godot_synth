@@ -3,6 +3,7 @@ using Godot;
 using System;
 using Synth;
 using System.Collections.Generic;
+using System.Linq;
 
 public partial class PatchEditor : Node2D
 {
@@ -25,7 +26,8 @@ public partial class PatchEditor : Node2D
 	private LFO LFO3;
 	[Export]
 	private LFO LFO4;
-
+	[Export]
+	private Label PerformanceLabel;
 	[Export]
 	private ADSR_Envelope CustomADSR1;
 	[Export]
@@ -70,6 +72,7 @@ public partial class PatchEditor : Node2D
 			{
 				ConnectCustomEnvelopes(customEnvelopes[i], i);
 			}
+			ConnectPerformanceUpdate();
 		}
 		catch (Exception e)
 		{
@@ -80,6 +83,28 @@ public partial class PatchEditor : Node2D
 
 	[Export]
 	private string scenePath = "res://scenes/patch_editor.tscn";
+
+	double lastCpu = 0.0;
+	private List<double> cpuUsageHistory = new List<double>();
+	private const int historySize = 32;
+	private void ConnectPerformanceUpdate()
+	{
+		AudioOutputNode.PerformanceTimeUpdate += (process_time, buffer_push_time, frames) =>
+		{
+			if (PerformanceLabel != null)
+			{
+				var cpuUsage = process_time / (double)buffer_push_time * 100.0;
+				cpuUsageHistory.Add(cpuUsage);
+				if (cpuUsageHistory.Count > historySize)
+				{
+					cpuUsageHistory.RemoveAt(0);
+				}
+				var smoothedCpuUsage = cpuUsageHistory.Average();
+				var perf = $"Frames avialable: ${frames,5} CPU load: {Math.Round(smoothedCpuUsage)}%";
+				PerformanceLabel.Text = perf;
+			}
+		};
+	}
 
 	private void CreateWaveforms()
 	{

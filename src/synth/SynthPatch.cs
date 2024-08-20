@@ -26,8 +26,9 @@ public class SynthPatch
     MoogFilterNode moogFilterNode;
     PassThroughNode speakerNode;
 
-    public SynthPatch(WaveTableBank waveTableBank, float sampleRate = 44100)
+    public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
+        BufferSize = bufferSize * Oversampling;
         SampleRate = sampleRate;
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
@@ -181,7 +182,7 @@ public class SynthPatch
 
     public void SetCustomAttack(float attack, int idx)
     {
-         GD.Print("Setting custom envelope " + idx + " attack to " + attack);
+        GD.Print("Setting custom envelope " + idx + " attack to " + attack);
         CustomEnvelopes[idx].AttackTime = attack;
     }
 

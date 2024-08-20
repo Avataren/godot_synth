@@ -7,6 +7,8 @@ using Synth;
 
 public partial class AudioOutputNode : AudioStreamPlayer
 {
+	[Signal]
+	public delegate void PerformanceTimeUpdateEventHandler(float process_time, float buffer_push_time, int available_frames);
 	public delegate void BufferFilledEventHandler(float[] buffer);
 	public event BufferFilledEventHandler BufferFilled;
 
@@ -21,6 +23,9 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	int KeyDownCount = 0;
 	public int BaseOctave = 2;
 	public SynthPatch CurrentPatch;
+	private int AvailableFrames = 0;
+	public int process_time = 0;
+	public int total_time = 0;
 	public override void _Ready()
 	{
 
@@ -34,7 +39,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				GD.Print("Initializing AudioOutputNode at " + generator.MixRate + " Hz");
 				SampleRate = generator.MixRate * SynthPatch.Oversampling;
 				waveTableBank = new WaveTableBank();
-				CurrentPatch = new SynthPatch(waveTableBank, SampleRate);
+				CurrentPatch = new SynthPatch(waveTableBank, num_samples, SampleRate);
 			}
 			catch (Exception e)
 			{
@@ -42,15 +47,13 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				PrintErr(e.StackTrace);
 			}
 
-			
 			Play();
 			_playback = (AudioStreamGeneratorPlayback)GetStreamPlayback();
 
-			// Initialize nodes
-			//waveTableNode = new WaveTableOscillatorNode(num_samples, _sampleHz, waveTableBank.GetWave(WaveTableWaveType.SINE));
-			//envelopeNode = new EnvelopeNode(num_samples);
-
-			sound_thread = new Thread(new ThreadStart(FillBuffer));
+			sound_thread = new Thread(new ThreadStart(FillBuffer))
+			{
+				Priority = ThreadPriority.Highest
+			};
 			sound_thread.Start();
 		}
 	}
@@ -199,6 +202,8 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 		while (run_sound_thread)
 		{
+			var timestamp_now = Time.GetTicksUsec();
+
 			var mix = CurrentPatch.Process(increment);
 
 			// Pre-calculate length to avoid repetitive property access
@@ -227,13 +232,17 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				// Mix buffer average directly in the same loop
 				buffer_copy[i] = (mix.LeftBuffer[i] + mix.RightBuffer[i]) / 2;
 			}
-
+			var timestamp_process_done = Time.GetTicksUsec();
 			// Avoid tight loop and sleep
 			while (!_playback.CanPushBuffer(num_samples))
 			{
 				Thread.Sleep(1);
 			}
+			//AvailableFrames = _playback.GetFramesAvailable();
 			_playback.PushBuffer(audioData);
+			var timestamp_buffer_pushed = Time.GetTicksUsec();
+			process_time = (int)(timestamp_process_done - timestamp_now);
+			total_time = (int)(timestamp_buffer_pushed - timestamp_now);
 		}
 	}
 
@@ -256,6 +265,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	public override void _Process(double delta)
 	{
 		base._Process(delta);
+		EmitSignal(SignalName.PerformanceTimeUpdate, process_time, total_time, AvailableFrames);
 	}
 
 }

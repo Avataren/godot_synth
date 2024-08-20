@@ -114,7 +114,52 @@ step = 0.001
 title = "Release"
 nonlinear_factor = 0.5
 
+[node name="TimeKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+min_value = 1.0
+max_value = 10.0
+step = 0.01
+title = "TimeScale"
+nonlinear_factor = 0.5
+current_value = 1.0
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+
+[node name="AttackCKnob" parent="VBoxContainer/HBoxContainer3" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+min_value = -10.0
+max_value = 10.0
+step = 0.001
+sensitivity = 0.25
+title = "A Coeff"
+current_value = 2.0
+
+[node name="DecayCKnob" parent="VBoxContainer/HBoxContainer3" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+min_value = -10.0
+max_value = 10.0
+step = 0.001
+sensitivity = 0.25
+title = "D Coeff"
+current_value = -3.0
+
+[node name="ReleaseCKnob" parent="VBoxContainer/HBoxContainer3" instance=ExtResource("2_mjixn")]
+layout_mode = 2
+min_value = -10.0
+max_value = 10.0
+step = 0.001
+sensitivity = 0.25
+title = "R Coeff"
+current_value = -3.5
+
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/AttackKnob" to="." method="_on_attack_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/DecayKnob" to="." method="_on_decay_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/SustainKnob" to="." method="_on_sustain_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/ReleaseKnob" to="." method="_on_release_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/TimeKnob" to="." method="_on_time_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer3/AttackCKnob" to="." method="_on_attack_c_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer3/DecayCKnob" to="." method="_on_decay_c_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer3/ReleaseCKnob" to="." method="_on_release_c_knob_value_changed"]

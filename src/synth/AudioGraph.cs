@@ -85,9 +85,9 @@ namespace Synth
                 {
                     destination.AudioParameters[param] = new List<ParameterConnection>();
                 }
-                GD.Print("Adding connection from " + source.Name + " to " + destination.Name + " with param " + param);
+                //GD.Print("Adding connection from " + source.Name + " to " + destination.Name + " with param " + param);
                 destination.AudioParameters[param].Add(new ParameterConnection(source, strength, modType));
-                GD.Print("Destination " + destination.Name + " now has " + destination.AudioParameters[param].Count + " connections, they are:");
+                //GD.Print("Destination " + destination.Name + " now has " + destination.AudioParameters[param].Count + " connections, they are:");
                 foreach (var paramCon in destination.AudioParameters[param])
                 {
                     GD.Print(paramCon.SourceNode.Name);
@@ -102,7 +102,7 @@ namespace Synth
             {
                 if (destination.AudioParameters.ContainsKey(param))
                 {
-                    GD.Print("Removing connection from " + source.Name + " to " + destination.Name + " with param " + param);
+                    //GD.Print("Removing connection from " + source.Name + " to " + destination.Name + " with param " + param);
 
                     destination.AudioParameters[param].RemoveAll(x => x.SourceNode == source);
                 }

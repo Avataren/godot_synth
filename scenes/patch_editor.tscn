@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=21 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -30,7 +30,9 @@ shader_parameter/aspect_ratio = 4.0
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
 
-[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "PerformanceLabel", "CustomADSR1", "CustomADSR2", "CustomADSR3", "ADSREnvelope", "AudioOutputNode")]
+[sub_resource type="ButtonGroup" id="ButtonGroup_w374g"]
+
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "PerformanceLabel", "CustomADSR1", "CustomADSR2", "CustomADSR3", "ADSREnvelope", "AudioOutputNode", "AdsrVisualizer")]
 script = ExtResource("1_ox65v")
 Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator1")
 Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator2")
@@ -47,6 +49,7 @@ CustomADSR2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOCont
 CustomADSR3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2/ADSR_Envelope3")
 ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
+AdsrVisualizer = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/ADSR_Envelope")
 metadata/_edit_vertical_guides_ = [-573.0]
 
 [node name="AudioOutputNode" type="AudioStreamPlayer" parent="."]
@@ -205,8 +208,9 @@ layout_mode = 2
 theme_override_constants/separation = 60
 alignment = 1
 
-[node name="PanelContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" instance=ExtResource("10_6jxek")]
+[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" instance=ExtResource("10_6jxek")]
 layout_mode = 2
+button_group = SubResource("ButtonGroup_w374g")
 
 [node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 unique_name_in_owner = true

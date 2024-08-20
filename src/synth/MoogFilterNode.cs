@@ -6,8 +6,6 @@ namespace Synth
     {
         private MoogFilter leftFilter;
         private MoogFilter rightFilter;
-        private ADSR_Envelope adsr_envelope;
-
         public MoogFilterNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
         {
             leftFilter = new MoogFilter(sampleFrequency);
@@ -32,7 +30,6 @@ namespace Synth
                 for (int i = 0; i < NumSamples; i++)
                 {
                     var cutoff_mod_param = GetParameter(AudioParam.CutOffMod, i);
-                    //var cutOffMod_Params = GetParameter(AudioParam.CutOffMod, i);
                     float sampleL = node.LeftBuffer[i];
                     float sampleR = node.RightBuffer[i];
 

@@ -40,6 +40,9 @@ public partial class PatchEditor : Node2D
 
 	[Export]
 	private AudioOutputNode AudioOutputNode;
+	[Export]
+	private AdsrVisualizer AdsrVisualizer;
+
 
 	//private Control lfoContainer;
 	private Control gdLFONode;
@@ -55,6 +58,8 @@ public partial class PatchEditor : Node2D
 		try
 		{
 			Print("Patch Editor Ready");
+			ConnectEnvelopesToGui();
+			Print("envelopes connected");
 			Oscillator1.Enable();
 			for (int i = 0; i < oscs.Length; i++)
 			{
@@ -73,6 +78,8 @@ public partial class PatchEditor : Node2D
 				ConnectCustomEnvelopes(customEnvelopes[i], i);
 			}
 			ConnectPerformanceUpdate();
+
+
 		}
 		catch (Exception e)
 		{
@@ -87,6 +94,22 @@ public partial class PatchEditor : Node2D
 	double lastCpu = 0.0;
 	private List<double> cpuUsageHistory = new List<double>();
 	private const int historySize = 32;
+
+	private void ConnectEnvelopesToGui()
+	{
+		if (AdsrVisualizer != null)
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				AdsrVisualizer.SetADSRNodeReference(AudioOutputNode.CurrentPatch.GetEnvelope(i), i);
+			}
+			AdsrVisualizer.SetActiveEnvelopeIndex(0);
+		}
+		else
+		{
+			PrintErr("AdsrVisualizer not set!");
+		}
+	}
 	private void ConnectPerformanceUpdate()
 	{
 		AudioOutputNode.PerformanceTimeUpdate += (process_time, buffer_push_time, frames) =>
@@ -377,7 +400,7 @@ public partial class PatchEditor : Node2D
 
 	protected void ConnectCustomEnvelopes(ADSR_Envelope env, int envNum)
 	{
-		Print("id is ", envNum);
+		//Print("id is ", envNum);
 		env.AttackTimeChanged += (attackTime) =>
 		{
 			Print("Attack Time Changed: ", attackTime, " for id ", envNum);

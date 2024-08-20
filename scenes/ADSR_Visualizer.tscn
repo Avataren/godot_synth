@@ -17,11 +17,12 @@ shader_parameter/total_time = 3.0
 shader_parameter/waveform_color = Vector3(0.75, 0.85, 0.85)
 shader_parameter/vertical_line_color = Vector3(0.3, 0.4, 0.5)
 
-[node name="PanelContainer" type="PanelContainer" node_paths=PackedStringArray("ShaderRect")]
+[node name="ADSR_Envelope" type="PanelContainer" node_paths=PackedStringArray("ShaderRect")]
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 1
 script = ExtResource("1_js4wc")
+button_group = ExtResource("2_l85fp")
 ShaderRect = NodePath("VBoxContainer/ShaderVisualizer")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
@@ -33,7 +34,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 10
 
-[node name="EnvelopeButton" type="Button" parent="VBoxContainer/HBoxContainer2"]
+[node name="EnvelopeButton1" type="Button" parent="VBoxContainer/HBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 4

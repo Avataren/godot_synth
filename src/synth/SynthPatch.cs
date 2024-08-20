@@ -55,10 +55,10 @@ public class SynthPatch
             }
         }
 
-        for (int i = 0; i < MaxEnvelopes; i++)
-        {
-            CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
-        }
+        // for (int i = 0; i < MaxEnvelopes; i++)
+        // {
+        //     CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
+        // }
 
         for (int i = 0; i < MaxLFOs; i++)
         {

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=21 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -29,6 +29,8 @@ shader_parameter/line_thickness = 0.01
 shader_parameter/aspect_ratio = 4.0
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_n0w22"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_plx0a"]
 
 [node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "PerformanceLabel", "CustomADSR1", "CustomADSR2", "CustomADSR3", "ADSREnvelope", "AudioOutputNode", "AdsrVisualizer")]
 script = ExtResource("1_ox65v")
@@ -208,6 +210,7 @@ alignment = 1
 
 [node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" instance=ExtResource("10_6jxek")]
 layout_mode = 2
+button_group = SubResource("ButtonGroup_plx0a")
 
 [node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 unique_name_in_owner = true

@@ -16,7 +16,7 @@ func _add_new_connections() ->  void:
 			var src_name = get_node_name_from_textbox_entry(entry.get_source_name())
 			var dst_name = get_node_name_from_textbox_entry(entry.get_destination_name())
 			var param_name = get_node_param_from_textbox_entry(entry.get_parameter_name())
-			if (src_name.begins_with("CustomEnv")):
+			if (src_name.begins_with("Envelope")):
 				%AudioOutputNode.Connect(src_name, dst_name, param_name, 1, 1.0)
 			else:
 				%AudioOutputNode.Connect(src_name, dst_name, param_name, 0, 1.0)
@@ -69,11 +69,15 @@ func get_node_name_from_textbox_entry(node_name) -> String:
 			"LFO 4":
 				return "LFO3"
 			"Envelope 1":
-				return "CustomEnv0"
+				return "Envelope1"
 			"Envelope 2":
-				return "CustomEnv1"
+				return "Envelope2"
 			"Envelope 3":
-				return "CustomEnv2"
+				return "Envelope3"
+			"Envelope 4":
+				return "Envelope4"
+			"Envelope 5":
+				return "Envelope5"								
 			"Filter":
 				return "MoogFilter"
 		return "unknown"

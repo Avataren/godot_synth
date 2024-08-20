@@ -118,3 +118,11 @@ func _update_pointer_rotation() -> void:
 	#normalized_value = pow(normalized_value, nonlinear_factor)
 	#value = min_value + normalized_value * (max_value - min_value)
 	#return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))
+
+
+func _on_value_updated(val: float) -> void:
+	current_value = val
+	update_value_label()
+	previous_value = current_value
+	value_changed.emit(current_value)
+	_update_pointer_rotation()	

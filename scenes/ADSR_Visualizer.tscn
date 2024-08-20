@@ -158,6 +158,14 @@ title = "TimeScale"
 nonlinear_factor = 0.5
 current_value = 1.0
 
+[connection signal="AttackCoeff" from="." to="VBoxContainer/HBoxContainer3/AttackCKnob" method="_on_value_updated"]
+[connection signal="AttackUpdated" from="." to="VBoxContainer/HBoxContainer/AttackKnob" method="_on_value_updated"]
+[connection signal="DecayCoeff" from="." to="VBoxContainer/HBoxContainer3/DecayCKnob" method="_on_value_updated"]
+[connection signal="DecayUpdated" from="." to="VBoxContainer/HBoxContainer/DecayKnob" method="_on_value_updated"]
+[connection signal="ReleaseCoeff" from="." to="VBoxContainer/HBoxContainer3/ReleaseCKnob" method="_on_value_updated"]
+[connection signal="ReleaseUpdated" from="." to="VBoxContainer/HBoxContainer/ReleaseKnob" method="_on_value_updated"]
+[connection signal="SustainUpdated" from="." to="VBoxContainer/HBoxContainer/SustainKnob" method="_on_value_updated"]
+[connection signal="TimeScaleUpdate" from="." to="VBoxContainer/HBoxContainer3/TimeKnob" method="_on_value_updated"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/AttackKnob" to="." method="_on_attack_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/DecayKnob" to="." method="_on_decay_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/SustainKnob" to="." method="_on_sustain_knob_value_changed"]

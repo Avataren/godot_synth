@@ -14,6 +14,24 @@ public partial class AdsrVisualizer : PanelContainer
 	float[] visualBuffer = new float[512];
 	ShaderMaterial node_shader_material;
 
+	[Signal]
+	public delegate void AttackUpdatedEventHandler (float attackTime);
+	[Signal]
+	public delegate void DecayUpdatedEventHandler (float attackTime);
+	[Signal]
+	public delegate void SustainUpdatedEventHandler (float attackTime);
+	[Signal]
+	public delegate void ReleaseUpdatedEventHandler (float attackTime);			
+	[Signal]
+	public delegate void AttackCoeffEventHandler (float attackTime);			
+	[Signal]
+	public delegate void DecayCoeffEventHandler (float attackTime);			
+	[Signal]
+	public delegate void ReleaseCoeffEventHandler (float attackTime);
+	[Signal]
+	public delegate void TimeScaleUpdateEventHandler (float attackTime);			
+
+
 	float TimeScale = 1.0f;
 	public override void _Ready()
 	{
@@ -59,8 +77,19 @@ public partial class AdsrVisualizer : PanelContainer
 			return;
 		}
 		currentEnvelopeNode = envelopeNodes[envelopeIndex];
+		EmitSignal(SignalName.AttackUpdated, currentEnvelopeNode.AttackTime / currentEnvelopeNode.TimeScale);
+		EmitSignal(SignalName.DecayUpdated, currentEnvelopeNode.DecayTime / currentEnvelopeNode.TimeScale);
+		EmitSignal(SignalName.SustainUpdated, currentEnvelopeNode.SustainLevel);
+		EmitSignal(SignalName.ReleaseUpdated, currentEnvelopeNode.ReleaseTime / currentEnvelopeNode.TimeScale);
+		EmitSignal(SignalName.AttackCoeff, currentEnvelopeNode.AttackCtrl);
+		EmitSignal(SignalName.DecayCoeff, currentEnvelopeNode.DecayCtrl);
+		EmitSignal(SignalName.ReleaseCoeff, currentEnvelopeNode.ReleaseCtrl);
+		EmitSignal(SignalName.TimeScaleUpdate, currentEnvelopeNode.TimeScale);
+		
+
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
+
 	}
 
 	public void SetActiveEnvelopeIndex(int index)
@@ -97,7 +126,7 @@ public partial class AdsrVisualizer : PanelContainer
 		currentEnvelopeNode.TimeScale = val;
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
-		node_shader_material.SetShaderParameter("total_time", TimeScale* 3.0f);
+        node_shader_material.SetShaderParameter("total_time", TimeScale * 3.0f);
 	}
 
 	private void _on_attack_c_knob_value_changed(float val)

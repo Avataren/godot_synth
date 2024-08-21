@@ -27,6 +27,7 @@ func _on_destination_option_item_selected(index: int) -> void:
 		_populate_filter_Parameters()
 
 func _populate_oscillator_Parameters():
+	%DestinationParameterOption.add_item("Gain")
 	%DestinationParameterOption.add_item("Pitch")
 	%DestinationParameterOption.add_item("Phase")
 	%DestinationParameterOption.add_item("PhaseMod")

@@ -35,6 +35,8 @@ func get_node_param_from_textbox_entry(node_name) -> String:
 		match node_name:
 			"Pitch":
 				return "Pitch"
+			"Gain":
+				return "Gain"
 			"Phase":
 				return "Phase"
 			"PhaseMod":

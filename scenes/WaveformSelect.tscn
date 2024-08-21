@@ -25,7 +25,6 @@ layout_mode = 2
 [node name="WaveformKnob" parent="HBoxContainer" instance=ExtResource("1_83aq4")]
 layout_mode = 2
 max_value = 11.0
-sensitivity = 0.25
 title = "Waveform"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
@@ -45,4 +44,5 @@ layout_mode = 2
 text = "wave"
 horizontal_alignment = 1
 
+[connection signal="UpdateNumWaveforms" from="." to="HBoxContainer/WaveformKnob" method="set_max_value"]
 [connection signal="value_changed" from="HBoxContainer/WaveformKnob" to="." method="_on_waveform_knob_value_changed"]

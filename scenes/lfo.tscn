@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://cewu6w24764u8"]
+[gd_scene load_steps=5 format=3 uid="uid://cewu6w24764u8"]
 
 [ext_resource type="Script" path="res://scenes/scripts/LFO.cs" id="1_3hl2b"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_7ovjp"]
+[ext_resource type="PackedScene" uid="uid://cae0wby722c4o" path="res://scenes/WaveformSelect.tscn" id="2_iuelo"]
 [ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="2_w58r0"]
 
 [node name="VBoxContainer" type="VBoxContainer"]
@@ -20,18 +21,9 @@ visible = false
 layout_mode = 2
 text = "Absolute"
 
-[node name="WaveformOptions" type="OptionButton" parent="."]
-unique_name_in_owner = true
+[node name="WaveformSelect" parent="." instance=ExtResource("2_iuelo")]
 layout_mode = 2
-selected = 0
-item_count = 4
-popup/item_0/text = "Sine"
-popup/item_1/text = "Triangle"
-popup/item_1/id = 1
-popup/item_2/text = "Saw"
-popup/item_2/id = 2
-popup/item_3/text = "Square"
-popup/item_3/id = 3
+isLFO = true
 
 [node name="Enable Envelope" type="CheckButton" parent="."]
 unique_name_in_owner = true

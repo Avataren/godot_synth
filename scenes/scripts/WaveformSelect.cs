@@ -1,4 +1,5 @@
 using Godot;
+using Synth;
 using System;
 
 public partial class WaveformSelect : Control
@@ -11,8 +12,14 @@ public partial class WaveformSelect : Control
     [Export]
     Label waveformLabel;
 
+    [Export]
+    bool isLFO = false;
+
     [Signal]
     public delegate void WaveformChangedEventHandler(int idx);
+
+    [Signal]
+    public delegate void UpdateNumWaveformsEventHandler(float numWaveforms);
 
     private bool initialized = false;
 
@@ -31,6 +38,13 @@ public partial class WaveformSelect : Control
         "PWM",
     ];
 
+    LFONode.LFOWaveform[] LFOWaveforms = {
+        LFONode.LFOWaveform.Sine,
+        LFONode.LFOWaveform.Saw,
+        LFONode.LFOWaveform.Triangle,
+        LFONode.LFOWaveform.Pulse,
+    };
+
     public override void _Ready()
     {
 
@@ -40,16 +54,17 @@ public partial class WaveformSelect : Control
 
     private void InitializePatchEditor()
     {
+        if (isLFO)
+        {
+            EmitSignal(SignalName.UpdateNumWaveforms, LFOWaveforms.Length - 1.0f);
+        }
         // GD.Print("Initializing waveform select");
         patchEditor = GetTree().Root.GetNode<PatchEditor>("PatchEditor");
         if (patchEditor == null)
         {
             GD.PrintErr("Patch Editor not found in the scene tree.");
         }
-        else
-        {
-            _on_waveform_knob_value_changed(0);
-        }
+        _on_waveform_knob_value_changed(0);
         initialized = true;
     }
 
@@ -57,8 +72,25 @@ public partial class WaveformSelect : Control
     {
     }
 
+    private void _on_waveoform_value_changed_LFO(int index)
+    {
+        if (index < 0 || index >= LFOWaveforms.Length)
+        {
+            GD.PrintErr($"Waveform knob value changed, but index {index} is out of bounds, max index is {LFOWaveforms.Length}");
+            return;
+        }
+        var data = LFONode.GetWaveformData(LFOWaveforms[index], 64);
+        colorRect.Material.Set("shader_parameter/curve_data", data);
+        EmitSignal(SignalName.WaveformChanged, index);
+    }
+
     private void _on_waveform_knob_value_changed(int index)
     {
+        if (isLFO)
+        {
+            _on_waveoform_value_changed_LFO(index);
+            return;
+        }
         if (patchEditor == null)
         {
             GD.PrintErr("Patch Editor not set!");

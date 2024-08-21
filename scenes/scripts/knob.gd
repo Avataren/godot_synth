@@ -51,6 +51,9 @@ func _update_title():
 	if Engine.is_editor_hint():
 		%TitleLabel.text = title
 		
+func set_max_value(val):
+	max_value = val
+	
 func _update_current_value():
 	if Engine.is_editor_hint():
 		#%ValueLabel.text = str(current_value)

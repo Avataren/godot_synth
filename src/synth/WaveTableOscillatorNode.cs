@@ -83,33 +83,48 @@ namespace Synth
 		// 	_phaseTransitionSpeed = Math.Abs(_targetPhase - Phase) / transitionSamples;
 		// }
 
-		public void ResetPhase(double startPhase = 0.0, int transitionSamples = 64)
+		// public void ResetPhase(double startPhase = 0.0, int transitionSamples = 64)
+		// {
+		// 	lock (_lock)
+		// 	{
+		// 		// If a transition is already ongoing, we need to calculate the remaining transition to avoid drift
+		// 		if (_isPhaseTransitioning)
+		// 		{
+		// 			// Calculate the remaining phase difference from the current phase to the target phase
+		// 			double remainingPhaseDifference = ModuloOne(_targetPhase - Phase);
+
+		// 			// Adjust the new target phase based on the remaining difference
+		// 			_targetPhase = ModuloOne(startPhase + remainingPhaseDifference);
+		// 		}
+		// 		else
+		// 		{
+		// 			// Set the new target phase directly
+		// 			_targetPhase = ModuloOne(startPhase);
+		// 		}
+
+		// 		// Calculate the phase transition speed
+		// 		_phaseTransitionSpeed = Math.Abs(_targetPhase - Phase) / transitionSamples;
+
+		// 		// Enable the phase transitioning flag
+		// 		_isPhaseTransitioning = true;
+		// 	}
+		// }
+
+		public void ResetPhase(double startPhase = 0.0, int crossfadeSamples = 64)
 		{
-			lock (_lock)
+			//lock (_lock)
 			{
-				// If a transition is already ongoing, we need to calculate the remaining transition to avoid drift
-				if (_isPhaseTransitioning)
-				{
-					// Calculate the remaining phase difference from the current phase to the target phase
-					double remainingPhaseDifference = ModuloOne(_targetPhase - Phase);
+				// // Set the target phase to the start phase modulo 1 to ensure it stays within the [0, 1) range.
+				// _targetPhase = ModuloOne(startPhase);
 
-					// Adjust the new target phase based on the remaining difference
-					_targetPhase = ModuloOne(startPhase + remainingPhaseDifference);
-				}
-				else
-				{
-					// Set the new target phase directly
-					_targetPhase = ModuloOne(startPhase);
-				}
+				// // Store the number of samples over which to perform the crossfade.
+				// _phaseTransitionSpeed = 1.0 / crossfadeSamples;
 
-				// Calculate the phase transition speed
-				_phaseTransitionSpeed = Math.Abs(_targetPhase - Phase) / transitionSamples;
-
-				// Enable the phase transitioning flag
-				_isPhaseTransitioning = true;
+				// // Set the flag indicating that a phase transition is happening.
+				// _isPhaseTransitioning = true;
+				Phase = startPhase;
 			}
 		}
-
 
 
 		private double ExponentialInterpolation(double current, double target, double alpha)
@@ -166,8 +181,10 @@ namespace Synth
 
 		public override void Process(double increment)
 		{
-			lock (_lock)
+			//lock (_lock)
 			{
+				//GD.Print(Name + " => Pase: " + Phase);
+
 				ResetPWMParameters();
 
 				var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
@@ -175,7 +192,12 @@ namespace Synth
 
 				float sampleRate = SampleFrequency;
 				float detunedFreq = _lastFrequency;
-				double alpha = 5.0 / sampleRate; // Adjust alpha based on sample rate to control interpolation smoothness
+
+				// Calculate the phase increment for one sample
+				double phaseIncrement = detunedFreq * increment;
+
+				// Save the initial phase
+				double initialPhase = Phase;
 
 				for (int i = 0; i < NumSamples; i++)
 				{
@@ -188,39 +210,34 @@ namespace Synth
 						UpdateWaveTableFrequency(detunedFreq);
 						_lastFrequency = detunedFreq;
 						currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
+
+						// Recalculate phase increment if the frequency changes
+						phaseIncrement = detunedFreq * increment;
 					}
 
-					double currentPhaseIncrement = detunedFreq * increment;
+					// Calculate the absolute base phase for this sample
+					double basePhase = initialPhase + i * phaseIncrement;
 
-					if (_isPhaseTransitioning)
-					{
-						// Apply exponential interpolation
-						Phase = ExponentialInterpolation(Phase, _targetPhase, alpha);
+					// Apply the phase offset
+					double phaseWithOffset = ModuloOne(basePhase + PhaseOffset);
 
-						// Stop transitioning when close enough to the target
-						if (Math.Abs(Phase - _targetPhase) <= _phaseTransitionSpeed)
-						{
-							Phase = _targetPhase;
-							_isPhaseTransitioning = false;
-						}
-					}
+					// Apply modulation to the phase (assuming modulation is additive)
+					double modulatedPhase = ModuloOne(CalculateModulatedPhase(phaseWithOffset));
 
-					double phaseForThisSample = Phase + currentPhaseIncrement;
-					double modulatedPhase = CalculateModulatedPhase(phaseForThisSample);
-
-					// Retrieve the audio sample from the wavetable using the modulated phase
-					_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * Gain;
+					// Retrieve the sample from the wavetable using the modulated phase
+					_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase);
 
 					// Store the generated sample in the output buffer
-					buffer[i] = _previousSample;
-
-					// Evolve Phase for the next iteration/sample
-					Phase = ModuloOne(Phase + currentPhaseIncrement);
+					buffer[i] = _previousSample * Amplitude * Gain;
 				}
+
+				// After processing all samples, update the Phase based on the accumulated phase increment
+				Phase = ModuloOne(initialPhase + NumSamples * phaseIncrement);
 
 				_lastFrequency = detunedFreq;
 			}
 		}
+
 
 		private void ResetPWMParameters()
 		{
@@ -256,7 +273,6 @@ namespace Synth
 		{
 			double modulatedPhase = phaseForThisSample + phaseParam.Item1 * _smoothModulationStrength * phaseParam.Item2;
 			modulatedPhase += _previousSample * SelfModulationStrength;
-			modulatedPhase += PhaseOffset;
 			return ModuloOne(modulatedPhase);
 		}
 

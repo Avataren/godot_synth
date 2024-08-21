@@ -44,14 +44,14 @@ public class SynthPatch
             graph.Connect(freq, osc, AudioParam.Pitch, ModulationType.Add);
         }
 
-        for (int i=0;i< MaxEnvelopes; i++)
+        for (int i = 0; i < MaxEnvelopes; i++)
         {
             //CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
-            var env = graph.CreateNode<EnvelopeNode>("Envelope" + (i+1), BufferSize, SampleRate);
+            var env = graph.CreateNode<EnvelopeNode>("Envelope" + (i + 1), BufferSize, SampleRate);
             envelopes.Add(env);
             if (i == 0)
             {
-                graph.Connect(env, mix1, AudioParam.Gain, ModulationType.Multiply);            
+                graph.Connect(env, mix1, AudioParam.Gain, ModulationType.Multiply);
             }
         }
 
@@ -562,9 +562,10 @@ public class SynthPatch
 
     public void NoteOn(int note, float velocity = 1.0f)
     {
-        freq.Value = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
         lock (_lock)
         {
+            freq.Value = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
+
 
             foreach (var env in envelopes)
             {
@@ -574,7 +575,6 @@ public class SynthPatch
 
             for (int idx = 0; idx < oscillators.Count; idx++)
             {
-                //AmpEnvelopes[idx].OpenGate();
                 var osc = oscillators[idx];
                 if (!osc.Enabled)
                 {
@@ -585,11 +585,6 @@ public class SynthPatch
                     osc.ResetPhase();
                 }
             }
-
-            // for (int idx = 0; idx < MaxEnvelopes; idx++)
-            // {
-            //     CustomEnvelopes[idx].OpenGate();
-            // }
         }
     }
 

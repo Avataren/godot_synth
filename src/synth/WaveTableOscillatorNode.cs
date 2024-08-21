@@ -27,6 +27,11 @@ namespace Synth
 		public float PhaseOffset { get; set; } = 0.0f;
 		public bool IsPWM { get; set; } = false;
 
+		private double _targetPhase;         // The phase you want to transition to
+		private double _phaseTransitionSpeed; // Speed of the phase transition
+		private bool _isPhaseTransitioning;  // Flag to indicate if a transition is happening
+
+
 		Tuple<float, float> pitchParam;
 		Tuple<float, float> gainParam;
 		Tuple<float, float> pmodParam;
@@ -67,10 +72,18 @@ namespace Synth
 			UpdateSampleFunction();
 		}
 
-		public void ResetPhase(double startPhase = 0.0)
+		// public void ResetPhase(double startPhase = 0.0)
+		// {
+		// 	Phase = startPhase;
+		// }
+		public void ResetPhase(double startPhase = 0.0, int transitionSamples = 512)
 		{
-			Phase = startPhase;
+			_targetPhase = ModuloOne(startPhase);
+			_isPhaseTransitioning = true;
+			_phaseTransitionSpeed = Math.Abs(_targetPhase - Phase) / transitionSamples;
 		}
+
+
 
 		public void UpdateSampleFunction()
 		{
@@ -128,7 +141,6 @@ namespace Synth
 				UpdateDetuneFactor();
 
 				float sampleRate = SampleFrequency;
-				double lastPhase = Phase;
 				float detunedFreq = _lastFrequency;
 
 				for (int i = 0; i < NumSamples; i++)
@@ -144,20 +156,87 @@ namespace Synth
 						currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 					}
 
-					double phaseForThisSample = lastPhase + detunedFreq * increment;
-					double modulatedPhase = CalculateModulatedPhase(phaseForThisSample);
+					// Calculate how much the phase should increment for this sample, based on frequency.
+					double currentPhaseIncrement = detunedFreq * increment;
 
+					// Handle phase transition
+					if (_isPhaseTransitioning)
+					{
+						if (Math.Abs(Phase - _targetPhase) <= _phaseTransitionSpeed)
+						{
+							Phase = _targetPhase;
+							_isPhaseTransitioning = false;
+						}
+						else
+						{
+							// Increment Phase towards _targetPhase
+							Phase += _phaseTransitionSpeed * Math.Sign(_targetPhase - Phase);
+
+							// Evolve _targetPhase as well, applying the same modulation effects
+							double targetModulatedPhase = CalculateModulatedPhase(_targetPhase + currentPhaseIncrement);
+							_targetPhase = ModuloOne(targetModulatedPhase);
+						}
+					}
+
+					// Calculate the final phase to use for this sample.
+					double modulatedPhase = CalculateModulatedPhase(Phase + currentPhaseIncrement);
+
+					// Retrieve the audio sample from the wavetable using the modulated phase.
 					_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * Gain;
 
+					// Store the generated sample in the output buffer.
 					buffer[i] = _previousSample;
 
-					lastPhase = phaseForThisSample;
+					// Evolve Phase for the next iteration/sample, using modulation.
+					Phase = ModuloOne(CalculateModulatedPhase(Phase + currentPhaseIncrement));
 				}
 
-				Phase = ModuloOne(lastPhase);
+				// Store the last frequency used for the next processing cycle.
 				_lastFrequency = detunedFreq;
 			}
 		}
+
+
+		// public override void Process(double increment)
+		// {
+		// 	lock (_lock)
+		// 	{
+		// 		ResetPWMParameters();
+
+		// 		var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
+		// 		UpdateDetuneFactor();
+
+		// 		float sampleRate = SampleFrequency;
+		// 		double lastPhase = Phase;
+		// 		float detunedFreq = _lastFrequency;
+
+		// 		for (int i = 0; i < NumSamples; i++)
+		// 		{
+		// 			UpdateParameters(i);
+
+		// 			detunedFreq = CalculateDetunedFrequency(detunedFreq) * pitchParam.Item2;
+
+		// 			if (HasFrequencyChanged(detunedFreq))
+		// 			{
+		// 				UpdateWaveTableFrequency(detunedFreq);
+		// 				_lastFrequency = detunedFreq;
+		// 				currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
+		// 			}
+
+		// 			double phaseForThisSample = lastPhase + detunedFreq * increment;
+		// 			double modulatedPhase = CalculateModulatedPhase(phaseForThisSample);
+
+		// 			_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * Gain;
+
+		// 			buffer[i] = _previousSample;
+
+		// 			lastPhase = phaseForThisSample;
+		// 		}
+
+		// 		Phase = ModuloOne(lastPhase);
+		// 		_lastFrequency = detunedFreq;
+		// 	}
+		// }
 
 		private void ResetPWMParameters()
 		{

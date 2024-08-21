@@ -20,7 +20,7 @@ namespace Synth
 		public bool HardSync = false;
 		public string Name { get; set; }
 		public Dictionary<AudioParam, List<ParameterConnection>> AudioParameters = new Dictionary<AudioParam, List<ParameterConnection>>();
-	    private Dictionary<AudioParam, List<ParameterConnection>> originalConnections = new Dictionary<AudioParam, List<ParameterConnection>>();
+		private Dictionary<AudioParam, List<ParameterConnection>> originalConnections = new Dictionary<AudioParam, List<ParameterConnection>>();
 
 		public static double ModuloOne(double val)
 		{

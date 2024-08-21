@@ -24,7 +24,7 @@ namespace Synth
 
 		public static double ModuloOne(double val)
 		{
-			return (val + 1.0) % 1.0;
+			return (val + 100.0) % 1.0;
 			// val = Math.IEEERemainder(val, 1.0);
 			// if (val < 0)
 			// {

@@ -159,7 +159,7 @@ namespace Synth
 				_smoothModulationStrength = SmoothValue(_smoothModulationStrength, (ModulationStrength + pmodParam.Item1) * pmodParam.Item2, 0.01f);
 
 				// Calculate the detuned frequency inline
-				detunedFreq = (pitchParam.Item1 + _detuneFactor) * pitchParam.Item2;
+				detunedFreq = pitchParam.Item1 * _detuneFactor * pitchParam.Item2;
 
 				if (HasFrequencyChanged(detunedFreq))
 				{

@@ -76,13 +76,46 @@ namespace Synth
 		// {
 		// 	Phase = startPhase;
 		// }
-		public void ResetPhase(double startPhase = 0.0, int transitionSamples = 512)
+		// public void ResetPhase(double startPhase = 0.0, int transitionSamples = 64)
+		// {
+		// 	_targetPhase = ModuloOne(startPhase);
+		// 	_isPhaseTransitioning = true;
+		// 	_phaseTransitionSpeed = Math.Abs(_targetPhase - Phase) / transitionSamples;
+		// }
+
+		public void ResetPhase(double startPhase = 0.0, int transitionSamples = 64)
 		{
-			_targetPhase = ModuloOne(startPhase);
-			_isPhaseTransitioning = true;
-			_phaseTransitionSpeed = Math.Abs(_targetPhase - Phase) / transitionSamples;
+			lock (_lock)
+			{
+				// If a transition is already ongoing, we need to calculate the remaining transition to avoid drift
+				if (_isPhaseTransitioning)
+				{
+					// Calculate the remaining phase difference from the current phase to the target phase
+					double remainingPhaseDifference = ModuloOne(_targetPhase - Phase);
+
+					// Adjust the new target phase based on the remaining difference
+					_targetPhase = ModuloOne(startPhase + remainingPhaseDifference);
+				}
+				else
+				{
+					// Set the new target phase directly
+					_targetPhase = ModuloOne(startPhase);
+				}
+
+				// Calculate the phase transition speed
+				_phaseTransitionSpeed = Math.Abs(_targetPhase - Phase) / transitionSamples;
+
+				// Enable the phase transitioning flag
+				_isPhaseTransitioning = true;
+			}
 		}
 
+
+
+		private double ExponentialInterpolation(double current, double target, double alpha)
+		{
+			return current + (target - current) * (1 - Math.Exp(-alpha));
+		}
 
 
 		public void UpdateSampleFunction()
@@ -142,6 +175,7 @@ namespace Synth
 
 				float sampleRate = SampleFrequency;
 				float detunedFreq = _lastFrequency;
+				double alpha = 5.0 / sampleRate; // Adjust alpha based on sample rate to control interpolation smoothness
 
 				for (int i = 0; i < NumSamples; i++)
 				{
@@ -156,87 +190,37 @@ namespace Synth
 						currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 					}
 
-					// Calculate how much the phase should increment for this sample, based on frequency.
 					double currentPhaseIncrement = detunedFreq * increment;
 
-					// Handle phase transition
 					if (_isPhaseTransitioning)
 					{
+						// Apply exponential interpolation
+						Phase = ExponentialInterpolation(Phase, _targetPhase, alpha);
+
+						// Stop transitioning when close enough to the target
 						if (Math.Abs(Phase - _targetPhase) <= _phaseTransitionSpeed)
 						{
 							Phase = _targetPhase;
 							_isPhaseTransitioning = false;
 						}
-						else
-						{
-							// Increment Phase towards _targetPhase
-							Phase += _phaseTransitionSpeed * Math.Sign(_targetPhase - Phase);
-
-							// Evolve _targetPhase as well, applying the same modulation effects
-							double targetModulatedPhase = CalculateModulatedPhase(_targetPhase + currentPhaseIncrement);
-							_targetPhase = ModuloOne(targetModulatedPhase);
-						}
 					}
 
-					// Calculate the final phase to use for this sample.
-					double modulatedPhase = CalculateModulatedPhase(Phase + currentPhaseIncrement);
+					double phaseForThisSample = Phase + currentPhaseIncrement;
+					double modulatedPhase = CalculateModulatedPhase(phaseForThisSample);
 
-					// Retrieve the audio sample from the wavetable using the modulated phase.
+					// Retrieve the audio sample from the wavetable using the modulated phase
 					_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * Gain;
 
-					// Store the generated sample in the output buffer.
+					// Store the generated sample in the output buffer
 					buffer[i] = _previousSample;
 
-					// Evolve Phase for the next iteration/sample, using modulation.
-					Phase = ModuloOne(CalculateModulatedPhase(Phase + currentPhaseIncrement));
+					// Evolve Phase for the next iteration/sample
+					Phase = ModuloOne(Phase + currentPhaseIncrement);
 				}
 
-				// Store the last frequency used for the next processing cycle.
 				_lastFrequency = detunedFreq;
 			}
 		}
-
-
-		// public override void Process(double increment)
-		// {
-		// 	lock (_lock)
-		// 	{
-		// 		ResetPWMParameters();
-
-		// 		var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
-		// 		UpdateDetuneFactor();
-
-		// 		float sampleRate = SampleFrequency;
-		// 		double lastPhase = Phase;
-		// 		float detunedFreq = _lastFrequency;
-
-		// 		for (int i = 0; i < NumSamples; i++)
-		// 		{
-		// 			UpdateParameters(i);
-
-		// 			detunedFreq = CalculateDetunedFrequency(detunedFreq) * pitchParam.Item2;
-
-		// 			if (HasFrequencyChanged(detunedFreq))
-		// 			{
-		// 				UpdateWaveTableFrequency(detunedFreq);
-		// 				_lastFrequency = detunedFreq;
-		// 				currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
-		// 			}
-
-		// 			double phaseForThisSample = lastPhase + detunedFreq * increment;
-		// 			double modulatedPhase = CalculateModulatedPhase(phaseForThisSample);
-
-		// 			_previousSample = GetSampleFunction(currentWaveTable, modulatedPhase) * Amplitude * Gain;
-
-		// 			buffer[i] = _previousSample;
-
-		// 			lastPhase = phaseForThisSample;
-		// 		}
-
-		// 		Phase = ModuloOne(lastPhase);
-		// 		_lastFrequency = detunedFreq;
-		// 	}
-		// }
 
 		private void ResetPWMParameters()
 		{

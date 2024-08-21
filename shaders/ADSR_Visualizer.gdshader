@@ -17,30 +17,23 @@ float sdSegment(vec2 p, vec2 a, vec2 b) {
     return length(pa - ba * h);
 }
 
-float get_data(int index)
-{
-    if (show_debug)
-	{
-        // Simple ADSR envelope with normalized indices (0 to 1)
+float get_data(int index) {
+    if (show_debug) {
         float attack_time = 0.2;
         float decay_time = 0.2;
-        float sustain_level = 0.5; // Sustain level (normalized amplitude)
+        float sustain_level = 0.5;
         float release_time = 0.2;
-
         float t = float(index) / float(BUFFER_SIZE - 1);
-
         if (t < attack_time) {
-            return t / attack_time; // Linear attack: ramp up from 0 to 1
+            return t / attack_time;
         } else if (t < attack_time + decay_time) {
-            return 1.0 - ((t - attack_time) / decay_time) * (1.0 - sustain_level); // Linear decay: ramp down to sustain level
+            return 1.0 - ((t - attack_time) / decay_time) * (1.0 - sustain_level);
         } else if (t < 1.0 - release_time) {
-            return sustain_level; // Sustain phase: hold at sustain level
+            return sustain_level;
         } else {
-            return sustain_level * (1.0 - (t - (1.0 - release_time)) / release_time); // Linear release: ramp down to 0
+            return sustain_level * (1.0 - (t - (1.0 - release_time)) / release_time);
         }
-    }
-	else
-	{
+    } else {
         return wave_data[index];
     }
 }
@@ -50,42 +43,51 @@ void fragment() {
     uv.x *= aspect_ratio; // Correct UV mapping for non-square textures
 
     float min_distance = 1.0; // Large initial distance
+    float max_wave_y = 0.0; // Track highest point of the waveform for gradient
 
     // Iterate over waveform segments
     for (int i = 0; i < BUFFER_SIZE - 1; i++) {
-        // Convert the data from 0-1 range to -1 to 1 range and flip vertically
-        float y1 = 1.0 - get_data(i);          // Invert the Y axis (0 at top, 1 at bottom)
-        float y2 = 1.0 - get_data(i + 1);      // Invert the Y axis (0 at top, 1 at bottom)
-
-        // Create points for the current segment
+		float y1 = 1.0;
+		if (i > 0)
+         y1 = 1.0 - get_data(i);
+        float y2 = 1.0 - get_data(i + 1);
+		if (i == BUFFER_SIZE - 2)
+		{
+			y2 = 1.0;
+		}
         vec2 p1 = vec2(float(i) / float(BUFFER_SIZE - 1) * aspect_ratio, y1);
         vec2 p2 = vec2(float(i + 1) / float(BUFFER_SIZE - 1) * aspect_ratio, y2);
-        
-        // Calculate distance to segment
         float dist_to_segment = sdSegment(uv, p1, p2);
         min_distance = min(min_distance, dist_to_segment);
+        max_wave_y = max(max_wave_y, max(y1, y2)); // Get the maximum y position of the waveform
     }
 
     // Add vertical lines to indicate whole seconds
     float seconds_interval = aspect_ratio / total_time;
     float line_intensity = 0.0;
-
     for (float t = 0.0; t <= total_time; t += 1.0) {
         float x_pos = t * seconds_interval;
         float dist_to_line = abs(uv.x - x_pos);
-        // Use aspect ratio to ensure vertical line thickness is consistent across different aspect ratios
         float adjusted_thickness = vertical_line_thickness * aspect_ratio;
         line_intensity += smoothstep(adjusted_thickness, 0.0, dist_to_line);
     }
 
     // Signed distance field adjusted for aspect ratio
     float sdf = min_distance - line_thickness;
-
     // Intensity based on SDF
     float intensity = smoothstep(line_thickness * 2.0, 0.0, sdf);
 
+    // Compute gradient alpha below the waveform
+    float gradient_alpha = (uv.y > max_wave_y) ? 1.0 : 0.0;
+
     // Combine waveform intensity with vertical line intensity
     vec3 color = mix(vertical_line_color * line_intensity, waveform_color * intensity, step(line_intensity, intensity));
+    float alpha = max(intensity, line_intensity);
 
-    COLOR = vec4(color, max(intensity, line_intensity));
+    // Apply the gradient
+
+	float gradient = pow(1.0-sdf, 12.5);
+	vec3 gradientColor = vec3(0.1,0.4, 0.5);
+
+    COLOR = vec4(color, alpha) * (1.0 - gradient_alpha) + vec4(0.0, 0.0, 0.0, gradient_alpha) + vec4(gradientColor, gradient*0.5);
 }

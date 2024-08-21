@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqic6ky7yxt0h"]
+[gd_scene load_steps=3 format=3 uid="uid://bqic6ky7yxt0h"]
 
 [ext_resource type="Script" path="res://scenes/scripts/modulation_matrix.gd" id="1_tbenb"]
+[ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="1_vvfv3"]
 
 [node name="ModulationMatrix" type="PanelContainer"]
 custom_minimum_size = Vector2(510, 0)
@@ -8,30 +9,34 @@ offset_right = 40.0
 offset_bottom = 40.0
 size_flags_horizontal = 4
 size_flags_vertical = 0
+theme = ExtResource("1_vvfv3")
 script = ExtResource("1_tbenb")
 
 [node name="VBoxContainer2" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2"]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer2"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer2/HBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer2/PanelContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer2/PanelContainer/HBoxContainer"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 text = "Source"
 
-[node name="Label2" type="Label" parent="VBoxContainer2/HBoxContainer"]
+[node name="Label2" type="Label" parent="VBoxContainer2/PanelContainer/HBoxContainer"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 text = "Destination"
 
-[node name="Label3" type="Label" parent="VBoxContainer2/HBoxContainer"]
+[node name="Label3" type="Label" parent="VBoxContainer2/PanelContainer/HBoxContainer"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 text = "Parameter"
 
-[node name="Label4" type="Label" parent="VBoxContainer2/HBoxContainer"]
+[node name="Label4" type="Label" parent="VBoxContainer2/PanelContainer/HBoxContainer"]
 visible = false
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
@@ -39,7 +44,7 @@ text = "Amount
 "
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2"]
-custom_minimum_size = Vector2(0, 260)
+custom_minimum_size = Vector2(0, 400)
 layout_mode = 2
 
 [node name="ModEntryVBoxContainer" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer"]

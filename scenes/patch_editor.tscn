@@ -1,11 +1,10 @@
-[gd_scene load_steps=21 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=20 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
 [ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="3_fpync"]
 [ext_resource type="PackedScene" uid="uid://cbymyl68u2edq" path="res://scenes/oscillator.tscn" id="3_p4jms"]
 [ext_resource type="Texture2D" uid="uid://df7mck8vnomus" path="res://assets/brushedsteel4.jpg" id="4_101k7"]
-[ext_resource type="PackedScene" uid="uid://d33lbw03x3d2y" path="res://scenes/ADSR_Envelope.tscn" id="4_lv3dd"]
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
 [ext_resource type="PackedScene" uid="uid://cewu6w24764u8" path="res://scenes/lfo.tscn" id="6_4sevq"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
@@ -32,22 +31,18 @@ shader_parameter/aspect_ratio = 4.0
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_plx0a"]
 
-[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "PerformanceLabel", "CustomADSR1", "CustomADSR2", "CustomADSR3", "ADSREnvelope", "AudioOutputNode", "AdsrVisualizer")]
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "PerformanceLabel", "AudioOutputNode", "AdsrVisualizer")]
 script = ExtResource("1_ox65v")
 Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator1")
 Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator2")
 Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator3")
 Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator4")
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator5")
-LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO1")
-LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO2")
-LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO3")
-LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer/LFO4")
+LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO1")
+LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO2")
+LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO3")
+LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO4")
 PerformanceLabel = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer/PerfLabel")
-CustomADSR1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2/ADSR_Envelope")
-CustomADSR2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2/ADSR_Envelope2")
-CustomADSR3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2/ADSR_Envelope3")
-ADSREnvelope = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer/ADSR_Envelope")
 AudioOutputNode = NodePath("AudioOutputNode")
 AdsrVisualizer = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/ADSR_Envelope")
 metadata/_edit_vertical_guides_ = [-573.0]
@@ -71,7 +66,7 @@ mouse_filter = 1
 theme = ExtResource("3_fpync")
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer/Control"]
-modulate = Color(0.0426565, 0.0730257, 0.0958136, 1)
+modulate = Color(0.0965384, 0.143352, 0.178491, 1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -224,43 +219,25 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/separation = 30
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer"]
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_vertical = 0
-theme_override_constants/separation = 20
+columns = 2
 
-[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 size_flags_vertical = 4
 
-[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
+[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 size_flags_vertical = 4
 
-[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
-visible = false
+[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 size_flags_vertical = 4
 
-[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer" instance=ExtResource("6_4sevq")]
-visible = false
+[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
 layout_mode = 2
 size_flags_vertical = 4
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 90
-
-[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("4_lv3dd")]
-layout_mode = 2
-
-[node name="ADSR_Envelope2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("4_lv3dd")]
-visible = false
-layout_mode = 2
-
-[node name="ADSR_Envelope3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/HBoxContainer2" instance=ExtResource("4_lv3dd")]
-visible = false
-layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
 layout_mode = 2
@@ -277,9 +254,6 @@ layout_mode = 2
 layout_mode = 2
 text = "Amplitude Envelope
 "
-
-[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer" instance=ExtResource("4_lv3dd")]
-layout_mode = 2
 
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
 [connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]

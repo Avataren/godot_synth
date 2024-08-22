@@ -12,11 +12,9 @@ namespace Synth
         private readonly Dictionary<AudioNode, Dictionary<AudioParam, bool>> _nodeHasRemainingEvents = new();
         private readonly Dictionary<AudioNode, Dictionary<AudioParam, double>> _nodeLastScheduledValues = new();
         private double _currentTimeInSeconds = 0.0;
-        private int _processedEventCount = 0;  // Counter for processed events
+        private int _processedEventCount = 0;
 
         public double CurrentTimeInSeconds => _currentTimeInSeconds;
-
-        // Property to access the processed event count
         public int ProcessedEventCount => _processedEventCount;
 
         public ParameterScheduler(int bufferSize, int sampleRate)
@@ -50,12 +48,8 @@ namespace Synth
         {
             lock (_lock)
             {
-                // if (timeInSeconds < _currentTimeInSeconds)
-                // {
-                //     timeInSeconds = _currentTimeInSeconds;
-                // }
                 var events = _nodeEventDictionary[node][param];
-                int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+                int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue));
                 if (index < 0) index = ~index;
                 events.Insert(index, new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue));
                 _nodeHasRemainingEvents[node][param] = true;
@@ -67,7 +61,7 @@ namespace Synth
             lock (_lock)
             {
                 var events = _nodeEventDictionary[node][param];
-                int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+                int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
                 if (index < 0) index = ~index;
                 events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
                 _nodeHasRemainingEvents[node][param] = true;
@@ -78,70 +72,60 @@ namespace Synth
         {
             lock (_lock)
             {
-                _currentTimeInSeconds += increment * _bufferSize;
 
                 foreach (var node in _nodeEventDictionary.Keys)
                 {
                     foreach (var param in _nodeEventDictionary[node].Keys)
                     {
+                        var buffer = _nodeParameterBuffers[node][param];
+                        // Skip processing if no events are remaining
                         if (!_nodeHasRemainingEvents[node][param])
                         {
+                            Array.Fill(buffer, _nodeLastScheduledValues[node][param]);
                             continue;
                         }
 
-                        var buffer = _nodeParameterBuffers[node][param];
                         var events = _nodeEventDictionary[node][param];
                         double lastScheduledValue = _nodeLastScheduledValues[node][param];
-                        bool eventsProcessed = false;
-                        bool eventCounted = false;
 
                         for (int i = 0; i < _bufferSize; i++)
                         {
                             double timeAtSample = _currentTimeInSeconds + (i * increment);
-                            double newValue = lastScheduledValue;
 
-                            foreach (var evt in events)
+                            if (events.Count > 0)
                             {
+                                var evt = events[0];
+
                                 if (timeAtSample >= evt.Time)
                                 {
-                                    if (i == 0 && evt.InitialValue.HasValue)
+                                    if (evt.InitialValue.HasValue)
                                     {
-                                        newValue = evt.InitialValue.Value;
+                                        lastScheduledValue = evt.InitialValue.Value;
+                                        evt.InitialValue = null;  // Ensure the initial value is only applied once
                                     }
                                     else
                                     {
-                                        newValue = evt.Value;
-                                    }
-                                    lastScheduledValue = newValue;
-                                    eventsProcessed = true;
-
-                                    if (!eventCounted)
-                                    {
+                                        lastScheduledValue = evt.Value;
+                                        events.RemoveAt(0);  // Remove the event once processed
                                         _processedEventCount++;
-                                        eventCounted = true;
                                     }
                                 }
-                                else
-                                {
-                                    break;
-                                }
                             }
 
-                            buffer[i] = newValue;
-
-                            if (!eventsProcessed && events.Count == 0)
-                            {
-                                FillRemainingBuffer(buffer, i, lastScheduledValue);
-                                break;
-                            }
+                            buffer[i] = lastScheduledValue;  // Always use the lastScheduledValue to fill the buffer
                         }
-
+                        // Update the last scheduled value for future use
                         _nodeLastScheduledValues[node][param] = lastScheduledValue;
-                        events.RemoveAll(evt => evt.Time <= _currentTimeInSeconds);
+
+                        // Determine if more events remain to be processed
+                        _nodeHasRemainingEvents[node][param] = events.Count > 0;
                     }
                 }
+                _currentTimeInSeconds += increment * _bufferSize;
             }
         }
+
+
 
         private void FillRemainingBuffer(double[] buffer, int startIndex, double value)
         {
@@ -186,7 +170,7 @@ namespace Synth
         public double Value { get; }
         public double? EndTime { get; }
         public double TargetValue { get; }
-        public double? InitialValue { get; }
+        public double? InitialValue { get; set; }
 
         public ScheduleEvent(double time, double value, double? endTime = null, double targetValue = 0.0, double? initialValue = null)
         {

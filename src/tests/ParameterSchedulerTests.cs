@@ -24,7 +24,6 @@
 //             // Act
 //             scheduler.Process(increment); // Process with the increment corresponding to one sample
 //             Assert.That(scheduler.ProcessedEventCount, Is.EqualTo(1), "Should have 1 processed events");
-
 //             // Assert
 //             var buffer = new double[bufferSize];
 //             for (int i = 0; i < bufferSize; i++)

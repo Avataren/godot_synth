@@ -12,7 +12,12 @@ namespace Synth
         private readonly Dictionary<AudioNode, Dictionary<AudioParam, bool>> _nodeHasRemainingEvents = new();
         private readonly Dictionary<AudioNode, Dictionary<AudioParam, double>> _nodeLastScheduledValues = new();
         private double _currentTimeInSeconds = 0.0;
+        private int _processedEventCount = 0;  // Counter for processed events
+
         public double CurrentTimeInSeconds => _currentTimeInSeconds;
+
+        // Property to access the processed event count
+        public int ProcessedEventCount => _processedEventCount;
 
         public ParameterScheduler(int bufferSize, int sampleRate)
         {
@@ -23,7 +28,6 @@ namespace Synth
         {
             lock (_lock)
             {
-
                 if (!_nodeParameterBuffers.ContainsKey(node))
                 {
                     _nodeParameterBuffers[node] = new Dictionary<AudioParam, double[]>();
@@ -42,28 +46,26 @@ namespace Synth
             }
         }
 
-        public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
+        public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds, double? initialValue = null)
         {
             lock (_lock)
             {
-
                 var events = _nodeEventDictionary[node][param];
-                int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+                int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
                 if (index < 0) index = ~index;
-                events.Insert(index, new ScheduleEvent(timeInSeconds, value));
+                events.Insert(index, new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue));
                 _nodeHasRemainingEvents[node][param] = true;
             }
         }
 
-        public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds)
+        public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds, double? initialValue = null)
         {
             lock (_lock)
             {
-
                 var events = _nodeEventDictionary[node][param];
-                int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+                int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
                 if (index < 0) index = ~index;
-                events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds));
+                events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
                 _nodeHasRemainingEvents[node][param] = true;
             }
         }
@@ -72,7 +74,6 @@ namespace Synth
         {
             lock (_lock)
             {
-
                 _currentTimeInSeconds += increment * _bufferSize;
 
                 foreach (var node in _nodeEventDictionary.Keys)
@@ -88,19 +89,42 @@ namespace Synth
                         var events = _nodeEventDictionary[node][param];
                         double lastScheduledValue = _nodeLastScheduledValues[node][param];
                         bool eventsProcessed = false;
+                        bool eventCounted = false; // Flag to count the event only once
 
                         for (int i = 0; i < _bufferSize; i++)
                         {
                             double timeAtSample = _currentTimeInSeconds + (i * increment);
-                            double newValue = GetScheduledValueAtTime(events, timeAtSample, ref lastScheduledValue);
+                            double newValue = lastScheduledValue;
 
-                            if (newValue != lastScheduledValue)
+                            foreach (var evt in events)
                             {
-                                eventsProcessed = true;
+                                if (timeAtSample >= evt.Time)
+                                {
+                                    if (i == 0 && evt.InitialValue.HasValue)
+                                    {
+                                        newValue = evt.InitialValue.Value;
+                                    }
+                                    else
+                                    {
+                                        newValue = evt.Value;
+                                    }
+                                    lastScheduledValue = newValue;
+                                    eventsProcessed = true;
+
+                                    // Count the event only once
+                                    if (!eventCounted)
+                                    {
+                                        _processedEventCount++;
+                                        eventCounted = true;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
                             }
 
                             buffer[i] = newValue;
-                            lastScheduledValue = newValue;
 
                             if (!eventsProcessed && events.Count == 0)
                             {
@@ -111,28 +135,13 @@ namespace Synth
 
                         _nodeLastScheduledValues[node][param] = lastScheduledValue;
 
+                        // Remove events that have been processed
                         events.RemoveAll(evt => evt.Time <= _currentTimeInSeconds);
                     }
                 }
             }
         }
 
-        private double GetScheduledValueAtTime(List<ScheduleEvent> events, double timeInSeconds, ref double lastScheduledValue)
-        {
-            foreach (var evt in events)
-            {
-                if (timeInSeconds >= evt.Time)
-                {
-                    lastScheduledValue = evt.Value;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            return lastScheduledValue;
-        }
 
         private void FillRemainingBuffer(double[] buffer, int startIndex, double value)
         {
@@ -155,7 +164,6 @@ namespace Synth
         {
             lock (_lock)
             {
-
                 foreach (var node in _nodeParameterBuffers.Keys)
                 {
                     foreach (var param in _nodeParameterBuffers[node].Keys)
@@ -166,6 +174,8 @@ namespace Synth
                         _nodeLastScheduledValues[node][param] = 0.0;
                     }
                 }
+
+                _processedEventCount = 0;  // Reset the counter when clearing
             }
         }
     }
@@ -176,13 +186,15 @@ namespace Synth
         public double Value { get; }
         public double? EndTime { get; }
         public double TargetValue { get; }
+        public double? InitialValue { get; }
 
-        public ScheduleEvent(double time, double value, double? endTime = null, double targetValue = 0.0)
+        public ScheduleEvent(double time, double value, double? endTime = null, double targetValue = 0.0, double? initialValue = null)
         {
             Time = time;
             Value = value;
             EndTime = endTime;
             TargetValue = targetValue;
+            InitialValue = initialValue;
         }
 
         public int CompareTo(ScheduleEvent other)

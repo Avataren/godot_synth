@@ -580,8 +580,7 @@ public class SynthPatch
 
             foreach (var env in envelopes)
             {
-                //env.OpenGate();
-                env.ScheduleGateOpen(0);
+                env.ScheduleGateOpen(0, true);
             }
 
 
@@ -606,21 +605,8 @@ public class SynthPatch
         {
             foreach (var env in envelopes)
             {
-                //env.CloseGate();
                 env.ScheduleGateClose(0);
             }
-            //LFO_Manager.CloseGate();
-            //ampEnvelope.CloseGate();
-            // Stop the envelope
-            // for (int idx = 0; idx < oscillators.Count; idx++)
-            // {
-            //     envelopes[idx].CloseGate();
-            // }
-
-            // for (int idx = 0; idx < MaxEnvelopes; idx++)
-            // {
-            //     CustomEnvelopes[idx].CloseGate();
-            // }
         }
     }
 

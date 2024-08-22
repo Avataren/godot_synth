@@ -110,7 +110,7 @@ namespace Synth
                 _expBaseRelease = Math.Pow(2.0, value) - 1.0;
             }
         }
-        
+
         public EnvelopeNode() : base()
         {
             _scheduler.RegisterNode(this, [AudioParam.Gate]);
@@ -135,7 +135,7 @@ namespace Synth
 
         public override void OpenGate()
         {
-            //   GD.Print("Opening gate");
+            GD.Print("Opening gate");
             _isGateOpen = true;
             _envelopePosition = 0.0;
             //StartTransition(0.0);
@@ -143,7 +143,7 @@ namespace Synth
 
         public override void CloseGate()
         {
-            //GD.Print("Closing gate");
+            GD.Print("Closing gate");
             _releaseStartPosition = _envelopePosition;
             _releaseStartAmplitude = _currentAmplitude;
             _isGateOpen = false;
@@ -187,36 +187,6 @@ namespace Synth
             }
         }
 
-
-        // private double CalculateTargetAmplitude(double position)
-        // {
-        //     if (_isGateOpen)
-        //     {
-        //         if (position < AttackTime)
-        //         {
-        //             return ExponentialCurve(position / AttackTime, AttackCtrl, _expBaseAttack);
-        //         }
-        //         else if (position < AttackTime + DecayTime)
-        //         {
-        //             double decayPosition = (position - AttackTime) / DecayTime;
-        //             return 1.0 - ExponentialCurve(decayPosition, DecayCtrl, _expBaseDecay) * (1.0 - SustainLevel);
-        //         }
-        //         else
-        //         {
-        //             return SustainLevel;
-        //         }
-        //     }
-        //     else
-        //     {
-        //         double releasePosition = (position - _releaseStartPosition) / ReleaseTime;
-        //         if (releasePosition < 1.0)
-        //         {
-        //             return _releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, ReleaseCtrl, _expBaseRelease));
-        //         }
-        //         return 0.0;
-        //     }
-        // }
-
         private double GetEnvelopeValue(double position)
         {
             double targetAmplitude = CalculateTargetAmplitude(position);
@@ -225,97 +195,27 @@ namespace Synth
 
         public override void Process(double increment)
         {
-            //_gateScheduler.Process(increment);
-
-            //double newPosition = _envelopePosition;
             float[] bufferRef = buffer; // Cache the buffer reference
 
             for (int i = 0; i < NumSamples; i++)
             {
                 double gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
 
-                // Check for transition from closed (<= 0.5) to open (> 0.5)
                 if (!_isGateOpen && gateValue > 0.5)
                 {
                     OpenGate();
-                    //newPosition = 0.0;
                 }
-                // Check for transition from open (> 0.5) to closed (<= 0.5)
                 else if (_isGateOpen && gateValue <= 0.5)
                 {
                     CloseGate();
-                    //newPosition = _envelopePosition;
                 }
 
-                // Update the gate state for the next iteration
-
-                // if (_isInTransition && false)
-                // {
-                //     double transitionProgress = (newPosition - _envelopePosition) / _transitionEndTime;
-                //     if (transitionProgress >= 1.0)
-                //     {
-                //         transitionProgress = 1.0;
-                //         _isInTransition = false;
-                //     }
-                //     _currentAmplitude = _transitionStartAmplitude + (_transitionTargetAmplitude - _transitionStartAmplitude) * transitionProgress;
-                // }
-                // else
-                {
-                    _currentAmplitude = GetEnvelopeValue(_envelopePosition);
-                }
+                _currentAmplitude = GetEnvelopeValue(_envelopePosition);
 
                 bufferRef[i] = (float)_currentAmplitude;
                 _envelopePosition += increment;
             }
-
-            //_envelopePosition = newPosition;
         }
-
-
-        // public override void Process(double increment)
-        // {
-        //     _gateScheduler.Process(increment);
-
-        //     double newPosition = _envelopePosition;
-        //     float[] bufferRef = buffer; // Cache the buffer reference
-        //     for (int i = 0; i < NumSamples; i++)
-        //     {
-        //         double gateValue = _gateScheduler.GetValueAtSample(i);
-        //         // Check for transition from closed (<= 0.5) to open (> 0.5)
-        //         if (!_isGateOpen && gateValue > 0.5)
-        //         {
-        //             OpenGate();
-        //         }
-        //         // Check for transition from open (> 0.5) to closed (<= 0.5)
-        //         else if (_isGateOpen && gateValue <= 0.5)
-        //         {
-        //             CloseGate();
-        //         }
-
-        //         // Update the previous gate value for the next iteration
-
-        //         if (_isInTransition)
-        //         {
-        //             double transitionProgress = (newPosition - _envelopePosition) / _transitionEndTime;
-        //             if (transitionProgress >= 1.0)
-        //             {
-        //                 transitionProgress = 1.0;
-        //                 _isInTransition = false;
-        //             }
-        //             _currentAmplitude = _transitionStartAmplitude + (_transitionTargetAmplitude - _transitionStartAmplitude) * transitionProgress;
-        //         }
-        //         else
-        //         {
-        //             _currentAmplitude = GetEnvelopeValue(newPosition);
-        //         }
-
-        //         bufferRef[i] = (float)_currentAmplitude;
-
-        //         newPosition += increment;
-        //     }
-
-        //     _envelopePosition = newPosition;
-        // }
 
         public double GetEnvelopeBufferPosition(double visualizationDuration = 3.0)
         {
@@ -386,9 +286,17 @@ namespace Synth
             return visualBuffer;
         }
 
-        public void ScheduleGateOpen(double time)
+        public void ScheduleGateOpen(double time, bool forceCloseFirst)
         {
-            _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time); // Gate opens at this time
+            GD.Print("Scheduling gate close, then open");
+            if (forceCloseFirst)
+            {
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time, 0.0); // Gate opens at this time
+            }
+            else
+            {
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time); // Gate opens at this time
+            }
         }
 
         public void ScheduleGateClose(double time)

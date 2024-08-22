@@ -129,21 +129,21 @@ namespace Synth
         public static WaveTableMemory SinOsc()
         {
             int tableLen = 2048;  // to give full bandwidth from 20 Hz
-            int idx;
             double[] freqWaveRe = new double[tableLen];
             double[] freqWaveIm = new double[tableLen];
 
-            // make a sine wave
-            // DC and Nyquist are zero for sine
-            for (idx = 0; idx < tableLen; idx++)
+            // Make a sine wave in frequency domain
+            // Set the real part to zero and the imaginary part to non-zero at the first harmonic
+            // To start at zero crossing, we set freqWaveRe[1] to a value and leave freqWaveIm[1] as zero
+            for (int idx = 0; idx < tableLen; idx++)
             {
                 freqWaveIm[idx] = freqWaveRe[idx] = 0.0;
             }
-            freqWaveIm[1] = 1;
+            freqWaveRe[1] = -0.5 * tableLen; // Setting this creates a sine wave that starts at zero crossing
 
-            // build a wavetable oscillator
+            // Build a wavetable oscillator
             var osc = new WaveTableMemory();
-            WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen, 0.5, true);
+            WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
             return osc;
         }
 

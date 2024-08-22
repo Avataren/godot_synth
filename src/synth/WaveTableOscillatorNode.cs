@@ -72,22 +72,69 @@ namespace Synth
 
 		public void UpdateSampleFunction()
 		{
-			GetSampleFunction = IsPWM ? GetSamplePWM : GetSample;
+			GetSampleFunction = GetSamplePWM;// IsPWM ? GetSamplePWM : GetSample;
 		}
+
+
+		// protected float GetSamplePWM(WaveTable currentWaveTable, double phase)
+		// {
+		// 	double position = phase * currentWaveTable.WaveTableData.Length;
+		// 	double offsetPhase = Mathf.PosMod((float)(phase + (PWMDutyCycle + PWMAdd) * PWMMultiply), 1.0f);
+		// 	double offsetPosition = offsetPhase * currentWaveTable.WaveTableData.Length;
+
+		// 	return GetCubicInterpolatedSample(currentWaveTable, (float)position) - GetCubicInterpolatedSample(currentWaveTable, (float)offsetPosition);
+		// }
 
 		protected float GetSamplePWM(WaveTable currentWaveTable, double phase)
 		{
-			double position = phase * currentWaveTable.WaveTableData.Length;
-			double offsetPhase = Mathf.PosMod((float)(phase + (PWMDutyCycle + PWMAdd) * PWMMultiply), 1.0f);
-			double offsetPosition = offsetPhase * currentWaveTable.WaveTableData.Length;
+			int length = currentWaveTable.WaveTableData.Length;
 
-			return GetCubicInterpolatedSample(currentWaveTable, (float)position) - GetCubicInterpolatedSample(currentWaveTable, (float)offsetPosition);
+			// Ensure the PWM duty cycle is within valid bounds
+			PWMDutyCycle = Math.Clamp(PWMDutyCycle, 0f, 1f);
+
+			double adjustedPhase;
+
+			if (phase < PWMDutyCycle)
+			{
+				// Compress the first half
+				adjustedPhase = phase / PWMDutyCycle * 0.5;
+			}
+			else
+			{
+				// Expand the second half
+				adjustedPhase = 0.5 + (phase - PWMDutyCycle) / (1.0 - PWMDutyCycle) * 0.5;
+			}
+
+			// Convert the adjusted phase to the wavetable index
+			double phaseIndex = adjustedPhase * length;
+
+			// Retrieve the sample using linear interpolation
+			return GetCubicInterpolatedSample(currentWaveTable, (float)phaseIndex);
 		}
 
 		protected float GetSample(WaveTable currentWaveTable, double phase)
 		{
 			double position = phase * currentWaveTable.WaveTableData.Length;
 			return GetCubicInterpolatedSample(currentWaveTable, (float)position);
+		}
+
+		private float GetLinearlyInterpolatedSample(WaveTable currentWaveTable, float phaseIndex)
+		{
+			int length = currentWaveTable.WaveTableData.Length;
+
+			// Get the integer part and fractional part of the phase index
+			int index = (int)phaseIndex;
+			float frac = phaseIndex - index;
+
+			// Get the indices of the current and next sample
+			int nextIndex = (index + 1) % length;
+
+			// Retrieve the sample values from the wavetable
+			float sample1 = currentWaveTable.WaveTableData[index];
+			float sample2 = currentWaveTable.WaveTableData[nextIndex];
+
+			// Linear interpolation
+			return sample1 + frac * (sample2 - sample1);
 		}
 
 		private float GetCubicInterpolatedSample(WaveTable table, float position)
@@ -101,22 +148,22 @@ namespace Synth
 			float frac = position - baseIndex;
 
 			// Ensure the indices wrap around correctly
-			int p0 = (baseIndex - 1 + length) % length;
-			int p1 = baseIndex;
-			int p2 = (baseIndex + 1) % length;
-			int p3 = (baseIndex + 2) % length;
+			int i0 = (baseIndex - 1 + length) % length;
+			int i1 = baseIndex;
+			int i2 = (baseIndex + 1) % length;
+			int i3 = (baseIndex + 2) % length;
 
-			// Fetch samples from wrapped indices
-			float s0 = table.WaveTableData[p0];
-			float s1 = table.WaveTableData[p1];
-			float s2 = table.WaveTableData[p2];
-			float s3 = table.WaveTableData[p3];
+			// Retrieve the sample values from the wavetable
+			float sample0 = table.WaveTableData[i0];
+			float sample1 = table.WaveTableData[i1];
+			float sample2 = table.WaveTableData[i2];
+			float sample3 = table.WaveTableData[i3];
 
-			// Perform cubic interpolation
-			float a = -0.5f * s0 + 1.5f * s1 - 1.5f * s2 + 0.5f * s3;
-			float b = s0 - 2.5f * s1 + 2.0f * s2 - 0.5f * s3;
-			float c = -0.5f * s0 + 0.5f * s2;
-			float d = s1;
+			// Cubic interpolation formula
+			float a = sample3 - sample2 - sample0 + sample1;
+			float b = sample0 - sample1 - a;
+			float c = sample2 - sample0;
+			float d = sample1;
 
 			return a * frac * frac * frac + b * frac * frac + c * frac + d;
 		}

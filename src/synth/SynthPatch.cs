@@ -57,13 +57,13 @@ public class SynthPatch
             }
         }
 
-#if true
+#if false
         freq.Value = 440.0f;
 
         for (int i = 0; i < 1000; i++)
         {
             envelopes[0].ScheduleGateOpen(i * 0.5);
-            envelopes[0].ScheduleGateClose(i * 0.5 + 0.25);
+            envelopes[0].ScheduleGateClose(i * 0.5 + 0.3);
         }
 #endif
 

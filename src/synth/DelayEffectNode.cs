@@ -7,12 +7,12 @@ namespace Synth
         private DelayLine leftDelayLine;
         private DelayLine rightDelayLine;
 
-        public DelayEffectNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
+        public DelayEffectNode() : base()
         {
-            leftDelayLine = new DelayLine(300, (int)sampleFrequency);
-            rightDelayLine = new DelayLine(300, (int)sampleFrequency);
-            LeftBuffer = new float[numSamples];
-            RightBuffer = new float[numSamples];
+            leftDelayLine = new DelayLine(300, (int)SampleRate);
+            rightDelayLine = new DelayLine(300, (int)SampleRate);
+            LeftBuffer = new float[NumSamples];
+            RightBuffer = new float[NumSamples];
         }
 
         public override void Process(double increment)
@@ -47,8 +47,8 @@ namespace Synth
         {
             set
             {
-                leftDelayLine.SetDelayTime(value, (int)SampleFrequency);
-                rightDelayLine.SetDelayTime(value, (int)SampleFrequency);
+                leftDelayLine.SetDelayTime(value, (int)SampleRate);
+                rightDelayLine.SetDelayTime(value, (int)SampleRate);
             }
         }
 

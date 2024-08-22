@@ -19,11 +19,13 @@ namespace Synth
 
 
         // Factory method to create and register nodes
-        public T CreateNode<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(string name, int bufferSize, float sampleRate = 44100) where T : AudioNode
+        //public T CreateNode<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(string name, int bufferSize, float sampleRate = 44100) where T : AudioNode
+        public T CreateNode<T>(string name) where T : AudioNode, new()
         {
-            var constructorInfo = typeof(T).GetConstructor(new Type[] { typeof(int), typeof(float) }) ?? throw new InvalidOperationException($"Type {typeof(T)} does not have a constructor with parameters (int, float).");
+            //var constructorInfo = typeof(T).GetConstructor(new Type[] { typeof(int), typeof(float) }) ?? throw new InvalidOperationException($"Type {typeof(T)} does not have a constructor with parameters (int, float).");
 
-            T node = (T)constructorInfo.Invoke(new object[] { bufferSize, sampleRate });
+            //T node = (T)constructorInfo.Invoke(new object[] { bufferSize, sampleRate });
+            T node = (T)Activator.CreateInstance(typeof(T));
             node.Name = name;
 
             RegisterNode(node);

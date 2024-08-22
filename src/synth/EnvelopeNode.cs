@@ -110,11 +110,10 @@ namespace Synth
                 _expBaseRelease = Math.Pow(2.0, value) - 1.0;
             }
         }
-        private ParameterScheduler _gateScheduler;
-        public EnvelopeNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples)
+        
+        public EnvelopeNode() : base()
         {
-            _gateScheduler = new ParameterScheduler(numSamples, (int)sampleFrequency);
-            SampleFrequency = sampleFrequency;
+            _scheduler.RegisterNode(this, [AudioParam.Gate]);
             UpdateExponentialCurves();
         }
 
@@ -226,14 +225,14 @@ namespace Synth
 
         public override void Process(double increment)
         {
-            _gateScheduler.Process(increment);
+            //_gateScheduler.Process(increment);
 
             //double newPosition = _envelopePosition;
             float[] bufferRef = buffer; // Cache the buffer reference
 
             for (int i = 0; i < NumSamples; i++)
             {
-                double gateValue = _gateScheduler.GetValueAtSample(AudioParam.Gate, i);
+                double gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
 
                 // Check for transition from closed (<= 0.5) to open (> 0.5)
                 if (!_isGateOpen && gateValue > 0.5)
@@ -389,12 +388,12 @@ namespace Synth
 
         public void ScheduleGateOpen(double time)
         {
-            _gateScheduler.ScheduleValueAtTime(AudioParam.Gate, 1.0, time); // Gate opens at this time
+            _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time); // Gate opens at this time
         }
 
         public void ScheduleGateClose(double time)
         {
-            _gateScheduler.ScheduleValueAtTime(AudioParam.Gate, 0.0, time); // Gate closes at this time
+            _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time); // Gate closes at this time
         }
     }
 }

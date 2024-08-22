@@ -6,12 +6,12 @@ namespace Synth
     {
         private MoogFilter leftFilter;
         private MoogFilter rightFilter;
-        public MoogFilterNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
+        public MoogFilterNode() : base()
         {
-            leftFilter = new MoogFilter(sampleFrequency);
-            rightFilter = new MoogFilter(sampleFrequency);
-            LeftBuffer = new float[numSamples];
-            RightBuffer = new float[numSamples];
+            leftFilter = new MoogFilter(SampleRate);
+            rightFilter = new MoogFilter(SampleRate);
+            LeftBuffer = new float[NumSamples];
+            RightBuffer = new float[NumSamples];
         }
 
         public override void Process(double increment)

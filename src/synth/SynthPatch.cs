@@ -8,9 +8,7 @@ public class SynthPatch
     public const int MaxOscillators = 5;
     public const int MaxLFOs = 4;
     public const int MaxEnvelopes = 5;
-    public static int Oversampling = 4;
-    static int BufferSize = 512 * Oversampling;
-    float SampleRate = 44100 * Oversampling;
+    
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
@@ -28,19 +26,21 @@ public class SynthPatch
 
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
-        BufferSize = bufferSize * Oversampling;
-        SampleRate = sampleRate;
-        freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
+        
+//        BufferSize = bufferSize * Oversampling;
+        
+        //SampleRate = sampleRate;
+        freq = graph.CreateNode<ConstantNode>("Freq");
         //freq.Value = 440.0f;
 
-        var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
-        moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
-        delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect", BufferSize, SampleRate);
-        reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect", BufferSize, SampleRate);
-        speakerNode = graph.CreateNode<PassThroughNode>("Speaker", BufferSize, SampleRate);
+        var mix1 = graph.CreateNode<MixerNode>("Mix1");
+        moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter");
+        delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
+        reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
+        speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
         for (int i = 0; i < MaxOscillators; i++)
         {
-            var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i, BufferSize, SampleRate);
+            var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
             oscillators.Add(osc);
             graph.Connect(osc, mix1, AudioParam.Input, ModulationType.Add);
             graph.Connect(freq, osc, AudioParam.Pitch, ModulationType.Add);
@@ -49,7 +49,7 @@ public class SynthPatch
         for (int i = 0; i < MaxEnvelopes; i++)
         {
             //CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
-            var env = graph.CreateNode<EnvelopeNode>("Envelope" + (i + 1), BufferSize, SampleRate);
+            var env = graph.CreateNode<EnvelopeNode>("Envelope" + (i + 1));
             envelopes.Add(env);
             if (i == 0)
             {
@@ -57,10 +57,10 @@ public class SynthPatch
             }
         }
 
-#if false
+#if true
         freq.Value = 440.0f;
 
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 100; i++)
         {
             envelopes[0].ScheduleGateOpen(i * 0.5);
             envelopes[0].ScheduleGateClose(i * 0.5 + 0.3);
@@ -74,7 +74,7 @@ public class SynthPatch
 
         for (int i = 0; i < MaxLFOs; i++)
         {
-            LFOs.Add(graph.CreateNode<LFONode>("LFO" + i, BufferSize, SampleRate));
+            LFOs.Add(graph.CreateNode<LFONode>("LFO" + i));
         }
         //ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
 

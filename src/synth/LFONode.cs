@@ -17,8 +17,7 @@ namespace Synth
         public LFOWaveform CurrentWaveform { get; set; }
         public bool UseAbsoluteValue { get; set; }
 
-        public LFONode(int numSamples, float sampleFrequency)
-            : base(numSamples, sampleFrequency)
+        public LFONode() : base()
         {
             Frequency = 4.0f;
             Amplitude = 1.0f;
@@ -29,7 +28,7 @@ namespace Synth
 
         private float GetNextSample(double increment)
         {
-            float phaseIncrement = Frequency * 2.0f * Mathf.Pi / SampleFrequency;
+            float phaseIncrement = Frequency * 2.0f * Mathf.Pi / SampleRate;
 
             // Normalize phase to [0, 1] for the waveform methods
             float normalizedPhase = phase / (2.0f * Mathf.Pi);

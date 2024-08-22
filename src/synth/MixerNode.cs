@@ -6,17 +6,10 @@ namespace Synth
 
     public class MixerNode : AudioNode
     {
-        public MixerNode(int numSamples) : base(numSamples)
+        public MixerNode() 
         {
-            RightBuffer = new float[numSamples];
-            LeftBuffer = new float[numSamples];
-        }
-
-        public MixerNode(int numSamples, float sampleFrequency) : base(numSamples)
-        {
-            SampleFrequency = sampleFrequency;
-            RightBuffer = new float[numSamples];
-            LeftBuffer = new float[numSamples];
+            RightBuffer = new float[NumSamples];
+            LeftBuffer = new float[NumSamples];
         }
 
         public override void Process(double increment)

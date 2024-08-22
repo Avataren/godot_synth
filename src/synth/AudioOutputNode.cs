@@ -37,7 +37,9 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			try
 			{
 				GD.Print("Initializing AudioOutputNode at " + generator.MixRate + " Hz");
-				SampleRate = generator.MixRate * SynthPatch.Oversampling;
+				AudioContext.SampleRate = (int)generator.MixRate;
+				AudioContext.BufferSize = num_samples;
+				SampleRate = generator.MixRate * AudioContext.Oversampling;
 				waveTableBank = new WaveTableBank();
 				CurrentPatch = new SynthPatch(waveTableBank, num_samples, SampleRate);
 			}
@@ -199,25 +201,25 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	{
 		double increment = 1.0 / SampleRate;
 
-
+		var audioctx = AudioContext.Instance;
 		while (run_sound_thread)
 		{
 			var timestamp_now = Time.GetTicksUsec();
-
+			audioctx.Process(increment);
 			var mix = CurrentPatch.Process(increment);
 
 			// Pre-calculate length to avoid repetitive property access
 			int leftRightBufferLength = mix.LeftBuffer.Length;
-			float repr = 1.0f / SynthPatch.Oversampling;
+			float repr = 1.0f / AudioContext.Oversampling;
 			// Optimize loop by using a single loop instead of nested loops
 			for (int i = 0; i < num_samples; i++)
 			{
-				int baseIndex = i * SynthPatch.Oversampling;
+				int baseIndex = i * AudioContext.Oversampling;
 				float left = 0.0f;
 				float right = 0.0f;
 
 				// Sum the oversampled data in one loop
-				for (int j = 0; j < SynthPatch.Oversampling; j++)
+				for (int j = 0; j < AudioContext.Oversampling; j++)
 				{
 					int sampleIndex = baseIndex + j;
 					//if (sampleIndex < leftRightBufferLength) // Boundary check

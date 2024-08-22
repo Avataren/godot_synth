@@ -9,12 +9,12 @@ namespace Synth
         ReverbModel reverbModel;
         public float[] LeftBufferTmp;
         public float[] RightBufferTmp;
-        public ReverbEffectNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
+        public ReverbEffectNode() : base()
         {
-            LeftBuffer = new float[numSamples];
-            RightBuffer = new float[numSamples];
-            LeftBufferTmp = new float[numSamples];
-            RightBufferTmp = new float[numSamples];
+            LeftBuffer = new float[NumSamples];
+            RightBuffer = new float[NumSamples];
+            LeftBufferTmp = new float[NumSamples];
+            RightBufferTmp = new float[NumSamples];
             reverbModel = new ReverbModel();
         }
 

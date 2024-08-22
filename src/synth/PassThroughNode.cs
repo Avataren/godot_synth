@@ -4,10 +4,10 @@ namespace Synth
 {
     public class PassThroughNode : AudioNode
     {
-        public PassThroughNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples, sampleFrequency)
+        public PassThroughNode()
         {
-            LeftBuffer = new float[numSamples];
-            RightBuffer = new float[numSamples];
+            LeftBuffer = new float[NumSamples];
+            RightBuffer = new float[NumSamples];
         }
 
         public override void Process(double increment)

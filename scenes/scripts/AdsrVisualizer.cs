@@ -8,7 +8,7 @@ public partial class AdsrVisualizer : PanelContainer
 	private ButtonGroup button_group;
 	[Export]
 	private ColorRect ShaderRect;
-	EnvelopeNode currentEnvelopeNode = new EnvelopeNode(512, 44100);
+	EnvelopeNode currentEnvelopeNode = new EnvelopeNode();
 	const int MaxEnvelopes = 5;
 	EnvelopeNode[] envelopeNodes = new EnvelopeNode[MaxEnvelopes];
 	float[] visualBuffer = new float[512];

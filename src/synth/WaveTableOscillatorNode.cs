@@ -53,7 +53,7 @@ namespace Synth
 			}
 		}
 
-		public WaveTableOscillatorNode(int numSamples, float sampleFrequency) : base(numSamples, sampleFrequency)
+		public WaveTableOscillatorNode() : base()
 		{
 			WaveTableMemory = WaveTableRepository.SinOsc();
 			Enabled = false;
@@ -213,7 +213,7 @@ namespace Synth
 
 		private void UpdateWaveTableFrequency(float freq)
 		{
-			float topFreq = freq / SampleFrequency;
+			float topFreq = freq / SampleRate;
 			_currentWaveTableIndex = 0;
 
 			for (int i = 0; i < _waveTableMemory.NumWaveTables; i++)

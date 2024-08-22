@@ -4,9 +4,9 @@ namespace Synth
     {
         public float Value { get; set; }
 
-        public ConstantNode(int numSamples, float value) : base(numSamples)
+        public ConstantNode() : base()
         {
-            Value = value;
+            Value = 0.0f;
         }
 
         public override void Process(double increment)

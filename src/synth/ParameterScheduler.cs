@@ -5,92 +5,120 @@ namespace Synth
 {
     public class ParameterScheduler
     {
+        private readonly object _lock = new object();
         private readonly int _bufferSize;
-        private readonly Dictionary<AudioParam, double[]> _parameterBuffers = new();
-        private readonly Dictionary<AudioParam, List<ScheduleEvent>> _eventDictionary = new();
-        private readonly Dictionary<AudioParam, bool> _hasRemainingEvents = new();
-        private readonly Dictionary<AudioParam, double> _lastScheduledValues = new();
+        private readonly Dictionary<AudioNode, Dictionary<AudioParam, double[]>> _nodeParameterBuffers = new();
+        private readonly Dictionary<AudioNode, Dictionary<AudioParam, List<ScheduleEvent>>> _nodeEventDictionary = new();
+        private readonly Dictionary<AudioNode, Dictionary<AudioParam, bool>> _nodeHasRemainingEvents = new();
+        private readonly Dictionary<AudioNode, Dictionary<AudioParam, double>> _nodeLastScheduledValues = new();
         private double _currentTimeInSeconds = 0.0;
+        public double CurrentTimeInSeconds => _currentTimeInSeconds;
 
         public ParameterScheduler(int bufferSize, int sampleRate)
         {
             _bufferSize = bufferSize;
+        }
 
-            foreach (AudioParam param in Enum.GetValues(typeof(AudioParam)))
+        public void RegisterNode(AudioNode node, List<AudioParam> parameters)
+        {
+            lock (_lock)
             {
-                _parameterBuffers[param] = new double[bufferSize];
-                _eventDictionary[param] = new List<ScheduleEvent>();
-                _hasRemainingEvents[param] = true;
-                _lastScheduledValues[param] = 0.0;
+
+                if (!_nodeParameterBuffers.ContainsKey(node))
+                {
+                    _nodeParameterBuffers[node] = new Dictionary<AudioParam, double[]>();
+                    _nodeEventDictionary[node] = new Dictionary<AudioParam, List<ScheduleEvent>>();
+                    _nodeHasRemainingEvents[node] = new Dictionary<AudioParam, bool>();
+                    _nodeLastScheduledValues[node] = new Dictionary<AudioParam, double>();
+
+                    foreach (var param in parameters)
+                    {
+                        _nodeParameterBuffers[node][param] = new double[_bufferSize];
+                        _nodeEventDictionary[node][param] = new List<ScheduleEvent>();
+                        _nodeHasRemainingEvents[node][param] = true;
+                        _nodeLastScheduledValues[node][param] = 0.0;
+                    }
+                }
             }
         }
 
-        public void ScheduleValueAtTime(AudioParam param, double value, double timeInSeconds)
+        public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
         {
-            var events = _eventDictionary[param];
-            int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
-            if (index < 0) index = ~index;
-            events.Insert(index, new ScheduleEvent(timeInSeconds, value));
-            _hasRemainingEvents[param] = true;
+            lock (_lock)
+            {
+
+                var events = _nodeEventDictionary[node][param];
+                int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+                if (index < 0) index = ~index;
+                events.Insert(index, new ScheduleEvent(timeInSeconds, value));
+                _nodeHasRemainingEvents[node][param] = true;
+            }
         }
 
-        public void LinearRampToValueAtTime(AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds)
+        public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds)
         {
-            var events = _eventDictionary[param];
-            int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
-            if (index < 0) index = ~index;
-            events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds));
-            _hasRemainingEvents[param] = true;
+            lock (_lock)
+            {
+
+                var events = _nodeEventDictionary[node][param];
+                int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+                if (index < 0) index = ~index;
+                events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds));
+                _nodeHasRemainingEvents[node][param] = true;
+            }
         }
 
         public void Process(double increment)
         {
-            _currentTimeInSeconds += increment * _bufferSize;
-
-            foreach (var param in _eventDictionary.Keys)
+            lock (_lock)
             {
-                if (!_hasRemainingEvents[param])
+
+                _currentTimeInSeconds += increment * _bufferSize;
+
+                foreach (var node in _nodeEventDictionary.Keys)
                 {
-                    continue;
-                }
-
-                var buffer = _parameterBuffers[param];
-                var events = _eventDictionary[param];
-                double lastScheduledValue = _lastScheduledValues[param];
-                bool eventsProcessed = false;
-
-                for (int i = 0; i < _bufferSize; i++)
-                {
-                    double timeAtSample = _currentTimeInSeconds + (i * increment);
-                    double newValue = GetScheduledValueAtTime(param, timeAtSample, ref lastScheduledValue);
-
-                    if (newValue != lastScheduledValue)
+                    foreach (var param in _nodeEventDictionary[node].Keys)
                     {
-                        eventsProcessed = true;
-                    }
+                        if (!_nodeHasRemainingEvents[node][param])
+                        {
+                            continue;
+                        }
 
-                    buffer[i] = newValue;
-                    lastScheduledValue = newValue; // Update the last value after setting it
+                        var buffer = _nodeParameterBuffers[node][param];
+                        var events = _nodeEventDictionary[node][param];
+                        double lastScheduledValue = _nodeLastScheduledValues[node][param];
+                        bool eventsProcessed = false;
 
-                    if (!eventsProcessed && events.Count == 0)
-                    {
-                        // If we processed all events, fill the rest of the buffer with the last known value
-                        FillRemainingBuffer(buffer, i, lastScheduledValue);
-                        break; // No need to continue processing, exit early
+                        for (int i = 0; i < _bufferSize; i++)
+                        {
+                            double timeAtSample = _currentTimeInSeconds + (i * increment);
+                            double newValue = GetScheduledValueAtTime(events, timeAtSample, ref lastScheduledValue);
+
+                            if (newValue != lastScheduledValue)
+                            {
+                                eventsProcessed = true;
+                            }
+
+                            buffer[i] = newValue;
+                            lastScheduledValue = newValue;
+
+                            if (!eventsProcessed && events.Count == 0)
+                            {
+                                FillRemainingBuffer(buffer, i, lastScheduledValue);
+                                break;
+                            }
+                        }
+
+                        _nodeLastScheduledValues[node][param] = lastScheduledValue;
+
+                        events.RemoveAll(evt => evt.Time <= _currentTimeInSeconds);
                     }
                 }
-
-                _lastScheduledValues[param] = lastScheduledValue; // Update the last scheduled value
-
-                // Remove processed events and skip further processing if no future events are within the current buffer
-                events.RemoveAll(evt => evt.Time <= _currentTimeInSeconds);
             }
         }
 
-        private double GetScheduledValueAtTime(AudioParam param, double timeInSeconds, ref double lastScheduledValue)
+        private double GetScheduledValueAtTime(List<ScheduleEvent> events, double timeInSeconds, ref double lastScheduledValue)
         {
-            var events = _eventDictionary[param];
-
             foreach (var evt in events)
             {
                 if (timeInSeconds >= evt.Time)
@@ -99,7 +127,7 @@ namespace Synth
                 }
                 else
                 {
-                    break; // Early exit if event time is beyond the current sample time
+                    break;
                 }
             }
 
@@ -114,23 +142,30 @@ namespace Synth
             }
         }
 
-        public double GetValueAtSample(AudioParam param, int sampleIndex)
+        public double GetValueAtSample(AudioNode node, AudioParam param, int sampleIndex)
         {
             if (sampleIndex < _bufferSize)
             {
-                return _parameterBuffers[param][sampleIndex];
+                return _nodeParameterBuffers[node][param][sampleIndex];
             }
             return 0.0;
         }
 
         public void Clear()
         {
-            foreach (var param in _parameterBuffers.Keys)
+            lock (_lock)
             {
-                Array.Clear(_parameterBuffers[param], 0, _bufferSize);
-                _eventDictionary[param].Clear();
-                _hasRemainingEvents[param] = false;
-                _lastScheduledValues[param] = 0.0;
+
+                foreach (var node in _nodeParameterBuffers.Keys)
+                {
+                    foreach (var param in _nodeParameterBuffers[node].Keys)
+                    {
+                        Array.Clear(_nodeParameterBuffers[node][param], 0, _bufferSize);
+                        _nodeEventDictionary[node][param].Clear();
+                        _nodeHasRemainingEvents[node][param] = false;
+                        _nodeLastScheduledValues[node][param] = 0.0;
+                    }
+                }
             }
         }
     }

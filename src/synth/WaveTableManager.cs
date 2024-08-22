@@ -4,7 +4,7 @@ namespace Synth
 {
     public class WaveTableManager
     {
-        public static int FillTables(WaveTableMemory mem, double[] freqWaveRe, double[] freqWaveIm, int numSamples)
+        public static int FillTables(WaveTableMemory mem, double[] freqWaveRe, double[] freqWaveIm, int numSamples, double phase = 0.0, bool invert = false)
         {
             int idx;
             // Zero DC offset and Nyquist
@@ -46,7 +46,7 @@ namespace Synth
                 }
 
                 // Make the wave table
-                scale = MakeWaveTable(mem, numSamples, ar, ai, scale, topFreq);
+                scale = MakeWaveTable(mem, numSamples, ar, ai, scale, topFreq, phase, invert);
                 numTables++;
 
                 // Prepare for the next table
@@ -56,7 +56,8 @@ namespace Synth
             return numTables;
         }
 
-        public static float MakeWaveTable(WaveTableMemory mem, int len, double[] ar, double[] ai, double scale, double topFreq)
+
+        public static float MakeWaveTable(WaveTableMemory mem, int len, double[] ar, double[] ai, double scale, double topFreq, double phase = 0.0, bool invert = false)
         {
             // Apply FFT on the array
             FFT.fft(len, ar, ai);
@@ -79,6 +80,28 @@ namespace Synth
             for (int idx = 0; idx < len; idx++)
             {
                 wave[idx] = (float)(ai[idx] * scale);
+            }
+
+            if (phase > 0.0)
+            {
+                phase *= 0.5;
+                phase = (phase + 1.0) % 1.0;
+                Godot.GD.Print("Adjusting phase: " + phase);
+                int offset = (int)(phase * len);
+                float[] temp = new float[len];
+                for (int idx = 0; idx < len; idx++)
+                {
+                    temp[idx] = wave[(idx + offset) % len];
+                }
+                Array.Copy(temp, wave, len);
+            }
+
+            if (invert)
+            {
+                for (int idx = 0; idx < len; idx++)
+                {
+                    wave[idx] *= -1.0f;
+                }
             }
 
             // Add wave table to memory, reset scale if successful

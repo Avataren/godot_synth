@@ -114,6 +114,7 @@ namespace Synth
                 freqWaveIm[idx] = random.NextDouble() * 2.0 - 1.0; // Random value between -1 and 1
             }
 
+
             // DC component (idx = 0) and Nyquist frequency (idx = tableLen / 2) should be zero
             freqWaveRe[0] = freqWaveIm[0] = 0.0;
             freqWaveRe[tableLen / 2] = freqWaveIm[tableLen / 2] = 0.0;
@@ -142,7 +143,7 @@ namespace Synth
 
             // build a wavetable oscillator
             var osc = new WaveTableMemory();
-            WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
+            WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen, 0.5, true);
             return osc;
         }
 

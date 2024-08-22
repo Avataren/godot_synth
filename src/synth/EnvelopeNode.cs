@@ -27,15 +27,12 @@ namespace Synth
 
         private double _currentAmplitude = 0.0;
         private double _releaseStartAmplitude = 0.0;
-        private bool _isInTransition = false;
-        private double _transitionStartAmplitude = 0.0;
-        private double _transitionTargetAmplitude = 0.0;
 
         private double _attackCtrl = 2.0;
         private double _decayCtrl = -3.0;
         private double _releaseCtrl = -3.5;
         private double _timeScale = 1.0;
-
+        private double _attackStartAmplitude = 0.0;
         public double TimeScale
         {
             get => _timeScale;
@@ -119,31 +116,20 @@ namespace Synth
 
         private void UpdateExponentialCurves()
         {
-            //GD.Print("UpdateExponentialCurves");
             _expBaseAttack = Math.Pow(2.0, _attackCtrl) - 1.0;
             _expBaseDecay = Math.Pow(2.0, _decayCtrl) - 1.0;
             _expBaseRelease = Math.Pow(2.0, _releaseCtrl) - 1.0;
         }
 
 
-        private void StartTransition(double targetAmplitude)
-        {
-            _isInTransition = true;
-            _transitionStartAmplitude = _currentAmplitude;
-            _transitionTargetAmplitude = targetAmplitude;
-        }
-
         public override void OpenGate()
         {
-            GD.Print("Opening gate");
             _isGateOpen = true;
             _envelopePosition = 0.0;
-            //StartTransition(0.0);
+            _attackStartAmplitude = _currentAmplitude;  // Capture the current amplitude
         }
-
         public override void CloseGate()
         {
-            GD.Print("Closing gate");
             _releaseStartPosition = _envelopePosition;
             _releaseStartAmplitude = _currentAmplitude;
             _isGateOpen = false;
@@ -160,8 +146,11 @@ namespace Synth
             {
                 if (position < AttackTime)
                 {
-                    // Attack phase: Move from 0.0 to 1.0 over the attack duration.
-                    return ExponentialCurve(position / AttackTime, AttackCtrl, _expBaseAttack);
+                    // Attack phase: Move from _attackStartAmplitude to 1.0 over the attack duration.
+                    double normalizedPosition = position / AttackTime;
+                    double targetAmplitude = _attackStartAmplitude +
+                        (ExponentialCurve(normalizedPosition, AttackCtrl, _expBaseAttack) * (1.0 - _attackStartAmplitude));
+                    return targetAmplitude;
                 }
                 else if (position < AttackTime + DecayTime)
                 {
@@ -288,20 +277,19 @@ namespace Synth
 
         public void ScheduleGateOpen(double time, bool forceCloseFirst = false)
         {
-            GD.Print("Scheduling gate close, then open");
             if (forceCloseFirst)
             {
-                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time, 0.0); // Gate opens at this time
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time, 0.0);
             }
             else
             {
-                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time); // Gate opens at this time
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time);
             }
         }
 
         public void ScheduleGateClose(double time)
         {
-            _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time); // Gate closes at this time
+            _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time);
         }
     }
 }

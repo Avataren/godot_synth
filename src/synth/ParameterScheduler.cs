@@ -50,6 +50,10 @@ namespace Synth
         {
             lock (_lock)
             {
+                // if (timeInSeconds < _currentTimeInSeconds)
+                // {
+                //     timeInSeconds = _currentTimeInSeconds;
+                // }
                 var events = _nodeEventDictionary[node][param];
                 int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
                 if (index < 0) index = ~index;
@@ -89,7 +93,7 @@ namespace Synth
                         var events = _nodeEventDictionary[node][param];
                         double lastScheduledValue = _nodeLastScheduledValues[node][param];
                         bool eventsProcessed = false;
-                        bool eventCounted = false; // Flag to count the event only once
+                        bool eventCounted = false;
 
                         for (int i = 0; i < _bufferSize; i++)
                         {
@@ -111,7 +115,6 @@ namespace Synth
                                     lastScheduledValue = newValue;
                                     eventsProcessed = true;
 
-                                    // Count the event only once
                                     if (!eventCounted)
                                     {
                                         _processedEventCount++;
@@ -134,14 +137,11 @@ namespace Synth
                         }
 
                         _nodeLastScheduledValues[node][param] = lastScheduledValue;
-
-                        // Remove events that have been processed
                         events.RemoveAll(evt => evt.Time <= _currentTimeInSeconds);
                     }
                 }
             }
         }
-
 
         private void FillRemainingBuffer(double[] buffer, int startIndex, double value)
         {
@@ -175,7 +175,7 @@ namespace Synth
                     }
                 }
 
-                _processedEventCount = 0;  // Reset the counter when clearing
+                _processedEventCount = 0;
             }
         }
     }

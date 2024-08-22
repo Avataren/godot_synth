@@ -55,8 +55,8 @@ public class SynthPatch
             }
         }
 
-#if true
-        float speed = 0.25f;
+#if false
+        float speed = 0.35f;
         for (int i = 0; i < 10000; i++)
         {
             // Rhythm pattern for the bassline
@@ -65,20 +65,20 @@ public class SynthPatch
 
             // Define a chord progression or root note changes
             int[] rootNotes = { 36, 38, 41, 43 }; // C1, D1, F1, G1 (MIDI notes)
-            int rootNote = rootNotes[(i / 16) % rootNotes.Length];  // Change root note every 16 steps (4 bars)
+            int rootNote = rootNotes[(i / 8) % rootNotes.Length];  // Change root note every 16 steps (4 bars)
 
             // Low-low-high-high bass pattern with octave shifts, relative to the root note
             int[] bassPattern = { rootNote, rootNote, rootNote + 12, rootNote + 12 };  // Adjusted to the current root note
             int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
 
             // Set the frequency based on the note
-            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) / 2.0, i * timeOffset);
+            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) / 1.5, i * timeOffset);
 
             // Schedule the gate open and close for each step
             for (int j = 0; j < MaxEnvelopes; j++)
             {
-                envelopes[j].ScheduleGateOpen(i * timeOffset, false);
-                envelopes[j].ScheduleGateClose(i * timeOffset + gateLength);
+                envelopes[j].ScheduleGateOpen(i * timeOffset, true);
+                //envelopes[j].ScheduleGateClose(i * timeOffset + gateLength);
             }
         }
 #endif
@@ -600,19 +600,6 @@ public class SynthPatch
                 env.ScheduleGateOpen(0, true);
             }
 
-
-            for (int idx = 0; idx < oscillators.Count; idx++)
-            {
-                var osc = oscillators[idx];
-                if (!osc.Enabled)
-                {
-                    continue;
-                }
-                if (osc.HardSync)
-                {
-                    osc.ResetPhase();
-                }
-            }
         }
     }
 

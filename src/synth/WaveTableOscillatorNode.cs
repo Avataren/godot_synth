@@ -162,29 +162,35 @@ namespace Synth
 		{
 			var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 			UpdateDetuneFactor();
-			double phaseIncrement = _lastFrequency * increment;
-			double initialPhase = Phase;
+			double phase = Phase;  // Use a local phase variable to accumulate the phase.
 
 			for (int i = 0; i < NumSamples; i++)
 			{
 				UpdateParameters(i);
 
+				// Update the phase increment based on the latest frequency
+				double phaseIncrement = _lastFrequency * increment;
+
 				if (HasFrequencyChanged(_lastFrequency))
 				{
 					UpdateWaveTableFrequency(_lastFrequency);
 					currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
-					phaseIncrement = _lastFrequency * increment;
 				}
 
-				double basePhase = initialPhase + i * phaseIncrement;
-				double modulatedPhase = CalculateModulatedPhase(basePhase, i);
+				double modulatedPhase = CalculateModulatedPhase(phase, i);
 
 				_previousSample = GetSamplePWM(currentWaveTable, modulatedPhase);
 				buffer[i] = _previousSample * Amplitude * Gain;
+
+				// Accumulate phase for the next sample
+				phase += phaseIncrement;
 			}
 
-			Phase = ModuloOne(initialPhase + NumSamples * phaseIncrement);
+			// Wrap the phase back to the range [0, 1) if necessary
+			Phase = ModuloOne(phase);
 		}
+
+
 
 		private void UpdateParameters(int sampleIndex)
 		{

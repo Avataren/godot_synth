@@ -56,37 +56,32 @@ namespace Synth
             return numTables;
         }
 
-
         public static float MakeWaveTable(WaveTableMemory mem, int len, double[] ar, double[] ai, double scale, double topFreq, double phase = 0.0, bool invert = false)
         {
-            // Apply FFT on the array
-            FFT.fft(len, ar, ai);
+            FFT.fft(len, ar, ai); // Apply FFT (now ar is cosine, ai is sine)
 
-            // Calculate normalization scale if not provided
             if (scale == 0.0)
             {
                 double max = 0;
                 for (int idx = 0; idx < len; idx++)
                 {
-                    double temp = Math.Abs(ai[idx]);
+                    double temp = Math.Sqrt(ar[idx] * ar[idx] + ai[idx] * ai[idx]); // Magnitude calculation
                     if (max < temp)
                         max = temp;
                 }
                 scale = 1.0 / max * 0.999;
             }
 
-            // Normalize and convert to float
             float[] wave = new float[len];
             for (int idx = 0; idx < len; idx++)
             {
-                wave[idx] = (float)(ai[idx] * scale);
+                wave[idx] = (float)(ar[idx] * scale); // Output real part (cosine component)
             }
 
             if (phase > 0.0)
             {
                 phase *= 0.5;
                 phase = (phase + 1.0) % 1.0;
-                Godot.GD.Print("Adjusting phase: " + phase);
                 int offset = (int)(phase * len);
                 float[] temp = new float[len];
                 for (int idx = 0; idx < len; idx++)
@@ -104,17 +99,73 @@ namespace Synth
                 }
             }
 
-            // Add wave table to memory, reset scale if successful
             if (mem.AddWaveTable(len, wave, topFreq) > 0)
             {
                 scale = 0.0;
             }
-            else
-            {
-                Godot.GD.Print("Failed to add wave table: " + topFreq);
-            }
 
             return (float)scale;
         }
+
+
+        // public static float MakeWaveTable(WaveTableMemory mem, int len, double[] ar, double[] ai, double scale, double topFreq, double phase = 0.0, bool invert = false)
+        // {
+        //     // Apply FFT on the array
+        //     FFT.fft(len, ar, ai);
+
+        //     // Calculate normalization scale if not provided
+        //     if (scale == 0.0)
+        //     {
+        //         double max = 0;
+        //         for (int idx = 0; idx < len; idx++)
+        //         {
+        //             double temp = Math.Abs(ai[idx]);
+        //             if (max < temp)
+        //                 max = temp;
+        //         }
+        //         scale = 1.0 / max * 0.999;
+        //     }
+
+        //     // Normalize and convert to float
+        //     float[] wave = new float[len];
+        //     for (int idx = 0; idx < len; idx++)
+        //     {
+        //         wave[idx] = (float)(ai[idx] * scale);
+        //     }
+
+        //     if (phase > 0.0)
+        //     {
+        //         phase *= 0.5;
+        //         phase = (phase + 1.0) % 1.0;
+        //         Godot.GD.Print("Adjusting phase: " + phase);
+        //         int offset = (int)(phase * len);
+        //         float[] temp = new float[len];
+        //         for (int idx = 0; idx < len; idx++)
+        //         {
+        //             temp[idx] = wave[(idx + offset) % len];
+        //         }
+        //         Array.Copy(temp, wave, len);
+        //     }
+
+        //     if (invert)
+        //     {
+        //         for (int idx = 0; idx < len; idx++)
+        //         {
+        //             wave[idx] *= -1.0f;
+        //         }
+        //     }
+
+        //     // Add wave table to memory, reset scale if successful
+        //     if (mem.AddWaveTable(len, wave, topFreq) > 0)
+        //     {
+        //         scale = 0.0;
+        //     }
+        //     else
+        //     {
+        //         Godot.GD.Print("Failed to add wave table: " + topFreq);
+        //     }
+
+        //     return (float)scale;
+        // }
     }
 }

@@ -31,6 +31,8 @@ public class SynthPatch
         BufferSize = bufferSize * Oversampling;
         SampleRate = sampleRate;
         freq = graph.CreateNode<ConstantNode>("Freq", BufferSize, SampleRate);
+        //freq.Value = 440.0f;
+
         var mix1 = graph.CreateNode<MixerNode>("Mix1", BufferSize, SampleRate);
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter", BufferSize, SampleRate);
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect", BufferSize, SampleRate);
@@ -54,6 +56,16 @@ public class SynthPatch
                 graph.Connect(env, mix1, AudioParam.Gain, ModulationType.Multiply);
             }
         }
+
+#if true
+        freq.Value = 440.0f;
+
+        for (int i = 0; i < 1000; i++)
+        {
+            envelopes[0].ScheduleGateOpen(i * 0.5);
+            envelopes[0].ScheduleGateClose(i * 0.5 + 0.25);
+        }
+#endif
 
         // for (int i = 0; i < MaxEnvelopes; i++)
         // {
@@ -569,7 +581,8 @@ public class SynthPatch
 
             foreach (var env in envelopes)
             {
-                env.OpenGate();
+                //env.OpenGate();
+                env.ScheduleGateOpen(0);
             }
 
 
@@ -594,7 +607,8 @@ public class SynthPatch
         {
             foreach (var env in envelopes)
             {
-                env.CloseGate();
+                //env.CloseGate();
+                env.ScheduleGateClose(0);
             }
             //LFO_Manager.CloseGate();
             //ampEnvelope.CloseGate();

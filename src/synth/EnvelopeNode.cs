@@ -31,9 +31,9 @@ namespace Synth
         private double _transitionStartAmplitude = 0.0;
         private double _transitionTargetAmplitude = 0.0;
 
-        private double _attackCtrl = 2.0;//-0.45;
-        private double _decayCtrl = -3.0;//-0.48;
-        private double _releaseCtrl = -3.5;//-0.5;
+        private double _attackCtrl = 2.0;
+        private double _decayCtrl = -3.0;
+        private double _releaseCtrl = -3.5;
         private double _timeScale = 1.0;
 
         public double TimeScale
@@ -110,26 +110,22 @@ namespace Synth
                 _expBaseRelease = Math.Pow(2.0, value) - 1.0;
             }
         }
-
+        private ParameterScheduler _gateScheduler;
         public EnvelopeNode(int numSamples, float sampleFrequency = 44100.0f) : base(numSamples)
         {
+            _gateScheduler = new ParameterScheduler(numSamples, (int)sampleFrequency);
             SampleFrequency = sampleFrequency;
             UpdateExponentialCurves();
         }
 
         private void UpdateExponentialCurves()
         {
+            //GD.Print("UpdateExponentialCurves");
             _expBaseAttack = Math.Pow(2.0, _attackCtrl) - 1.0;
             _expBaseDecay = Math.Pow(2.0, _decayCtrl) - 1.0;
             _expBaseRelease = Math.Pow(2.0, _releaseCtrl) - 1.0;
         }
 
-        public override void OpenGate()
-        {
-            _isGateOpen = true;
-            _envelopePosition = 0.0;
-            StartTransition(0.0);
-        }
 
         private void StartTransition(double targetAmplitude)
         {
@@ -138,8 +134,17 @@ namespace Synth
             _transitionTargetAmplitude = targetAmplitude;
         }
 
+        public override void OpenGate()
+        {
+            //GD.Print("Opening gate");
+            _isGateOpen = true;
+            _envelopePosition = 0.0;
+            //StartTransition(0.0);
+        }
+
         public override void CloseGate()
         {
+            GD.Print("Closing gate");
             _releaseStartPosition = _envelopePosition;
             _releaseStartAmplitude = _currentAmplitude;
             _isGateOpen = false;
@@ -156,20 +161,24 @@ namespace Synth
             {
                 if (position < AttackTime)
                 {
+                    // Attack phase: Move from 0.0 to 1.0 over the attack duration.
                     return ExponentialCurve(position / AttackTime, AttackCtrl, _expBaseAttack);
                 }
                 else if (position < AttackTime + DecayTime)
                 {
+                    // Decay phase: Move from 1.0 to the sustain level over the decay duration.
                     double decayPosition = (position - AttackTime) / DecayTime;
                     return 1.0 - ExponentialCurve(decayPosition, DecayCtrl, _expBaseDecay) * (1.0 - SustainLevel);
                 }
                 else
                 {
+                    // Sustain phase: Maintain the sustain level.
                     return SustainLevel;
                 }
             }
             else
             {
+                // Release phase: Move from the current amplitude to 0.0 over the release duration.
                 double releasePosition = (position - _releaseStartPosition) / ReleaseTime;
                 if (releasePosition < 1.0)
                 {
@@ -179,6 +188,36 @@ namespace Synth
             }
         }
 
+
+        // private double CalculateTargetAmplitude(double position)
+        // {
+        //     if (_isGateOpen)
+        //     {
+        //         if (position < AttackTime)
+        //         {
+        //             return ExponentialCurve(position / AttackTime, AttackCtrl, _expBaseAttack);
+        //         }
+        //         else if (position < AttackTime + DecayTime)
+        //         {
+        //             double decayPosition = (position - AttackTime) / DecayTime;
+        //             return 1.0 - ExponentialCurve(decayPosition, DecayCtrl, _expBaseDecay) * (1.0 - SustainLevel);
+        //         }
+        //         else
+        //         {
+        //             return SustainLevel;
+        //         }
+        //     }
+        //     else
+        //     {
+        //         double releasePosition = (position - _releaseStartPosition) / ReleaseTime;
+        //         if (releasePosition < 1.0)
+        //         {
+        //             return _releaseStartAmplitude * (1.0 - ExponentialCurve(releasePosition, ReleaseCtrl, _expBaseRelease));
+        //         }
+        //         return 0.0;
+        //     }
+        // }
+
         private double GetEnvelopeValue(double position)
         {
             double targetAmplitude = CalculateTargetAmplitude(position);
@@ -187,33 +226,97 @@ namespace Synth
 
         public override void Process(double increment)
         {
-            double newPosition = _envelopePosition;
+            _gateScheduler.Process(increment);
+
+            //double newPosition = _envelopePosition;
             float[] bufferRef = buffer; // Cache the buffer reference
 
             for (int i = 0; i < NumSamples; i++)
             {
-                if (_isInTransition)
+                double gateValue = _gateScheduler.GetValueAtSample(i);
+
+                // Check for transition from closed (<= 0.5) to open (> 0.5)
+                if (!_isGateOpen && gateValue > 0.5)
                 {
-                    double transitionProgress = (newPosition - _envelopePosition) / _transitionEndTime;
-                    if (transitionProgress >= 1.0)
-                    {
-                        transitionProgress = 1.0;
-                        _isInTransition = false;
-                    }
-                    _currentAmplitude = _transitionStartAmplitude + (_transitionTargetAmplitude - _transitionStartAmplitude) * transitionProgress;
+                    OpenGate();
+                    //newPosition = 0.0;
                 }
-                else
+                // Check for transition from open (> 0.5) to closed (<= 0.5)
+                else if (_isGateOpen && gateValue <= 0.5)
                 {
-                    _currentAmplitude = GetEnvelopeValue(newPosition);
+                    CloseGate();
+                    //newPosition = _envelopePosition;
+                }
+
+                // Update the gate state for the next iteration
+
+                // if (_isInTransition && false)
+                // {
+                //     double transitionProgress = (newPosition - _envelopePosition) / _transitionEndTime;
+                //     if (transitionProgress >= 1.0)
+                //     {
+                //         transitionProgress = 1.0;
+                //         _isInTransition = false;
+                //     }
+                //     _currentAmplitude = _transitionStartAmplitude + (_transitionTargetAmplitude - _transitionStartAmplitude) * transitionProgress;
+                // }
+                // else
+                {
+                    _currentAmplitude = GetEnvelopeValue(_envelopePosition);
                 }
 
                 bufferRef[i] = (float)_currentAmplitude;
-
-                newPosition += increment;
+                _envelopePosition += increment;
             }
 
-            _envelopePosition = newPosition;
+            //_envelopePosition = newPosition;
         }
+
+
+        // public override void Process(double increment)
+        // {
+        //     _gateScheduler.Process(increment);
+
+        //     double newPosition = _envelopePosition;
+        //     float[] bufferRef = buffer; // Cache the buffer reference
+        //     for (int i = 0; i < NumSamples; i++)
+        //     {
+        //         double gateValue = _gateScheduler.GetValueAtSample(i);
+        //         // Check for transition from closed (<= 0.5) to open (> 0.5)
+        //         if (!_isGateOpen && gateValue > 0.5)
+        //         {
+        //             OpenGate();
+        //         }
+        //         // Check for transition from open (> 0.5) to closed (<= 0.5)
+        //         else if (_isGateOpen && gateValue <= 0.5)
+        //         {
+        //             CloseGate();
+        //         }
+
+        //         // Update the previous gate value for the next iteration
+
+        //         if (_isInTransition)
+        //         {
+        //             double transitionProgress = (newPosition - _envelopePosition) / _transitionEndTime;
+        //             if (transitionProgress >= 1.0)
+        //             {
+        //                 transitionProgress = 1.0;
+        //                 _isInTransition = false;
+        //             }
+        //             _currentAmplitude = _transitionStartAmplitude + (_transitionTargetAmplitude - _transitionStartAmplitude) * transitionProgress;
+        //         }
+        //         else
+        //         {
+        //             _currentAmplitude = GetEnvelopeValue(newPosition);
+        //         }
+
+        //         bufferRef[i] = (float)_currentAmplitude;
+
+        //         newPosition += increment;
+        //     }
+
+        //     _envelopePosition = newPosition;
+        // }
 
         public double GetEnvelopeBufferPosition(double visualizationDuration = 3.0)
         {
@@ -282,6 +385,16 @@ namespace Synth
             }
 
             return visualBuffer;
+        }
+
+        public void ScheduleGateOpen(double time)
+        {
+            _gateScheduler.ScheduleValueAtTime(1.0, time); // Gate opens at this time
+        }
+
+        public void ScheduleGateClose(double time)
+        {
+            _gateScheduler.ScheduleValueAtTime(0.0, time); // Gate closes at this time
         }
     }
 }

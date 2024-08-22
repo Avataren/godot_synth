@@ -6,88 +6,136 @@ namespace Synth
     public class ParameterScheduler
     {
         private readonly int _bufferSize;
-        private readonly double[] _parameterBuffer;
+        private readonly Dictionary<AudioParam, double[]> _parameterBuffers = new();
+        private readonly Dictionary<AudioParam, List<ScheduleEvent>> _eventDictionary = new();
+        private readonly Dictionary<AudioParam, bool> _hasRemainingEvents = new();
+        private readonly Dictionary<AudioParam, double> _lastScheduledValues = new();
         private double _currentTimeInSeconds = 0.0;
-        private int _currentSampleIndex = 0;
-        private readonly int _sampleRate;
-
-        private readonly List<ScheduleEvent> _events = new();
-        private double _lastScheduledValue = 0.0; // Track the last scheduled value
 
         public ParameterScheduler(int bufferSize, int sampleRate)
         {
             _bufferSize = bufferSize;
-            _parameterBuffer = new double[bufferSize];
-            _sampleRate = sampleRate;
+
+            foreach (AudioParam param in Enum.GetValues(typeof(AudioParam)))
+            {
+                _parameterBuffers[param] = new double[bufferSize];
+                _eventDictionary[param] = new List<ScheduleEvent>();
+                _hasRemainingEvents[param] = true;
+                _lastScheduledValues[param] = 0.0;
+            }
         }
 
-        public void ScheduleValueAtTime(double value, double timeInSeconds)
+        public void ScheduleValueAtTime(AudioParam param, double value, double timeInSeconds)
         {
-            _events.Add(new ScheduleEvent(timeInSeconds, value));
-            _events.Sort((a, b) => a.Time.CompareTo(b.Time)); // Ensure events are sorted by time
+            var events = _eventDictionary[param];
+            int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+            if (index < 0) index = ~index;
+            events.Insert(index, new ScheduleEvent(timeInSeconds, value));
+            _hasRemainingEvents[param] = true;
         }
 
-        public void LinearRampToValueAtTime(double targetValue, double startTimeInSeconds, double endTimeInSeconds)
+        public void LinearRampToValueAtTime(AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds)
         {
-            _events.Add(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds));
-            _events.Sort((a, b) => a.Time.CompareTo(b.Time)); // Ensure events are sorted by time
+            var events = _eventDictionary[param];
+            int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds), Comparer<ScheduleEvent>.Create((a, b) => a.Time.CompareTo(b.Time)));
+            if (index < 0) index = ~index;
+            events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds));
+            _hasRemainingEvents[param] = true;
         }
 
         public void Process(double increment)
         {
             _currentTimeInSeconds += increment * _bufferSize;
-            _currentSampleIndex = 0;
 
-            // Refill the buffer based on the current time
-            for (int i = 0; i < _bufferSize; i++)
+            foreach (var param in _eventDictionary.Keys)
             {
-                double timeAtSample = _currentTimeInSeconds + (i * increment);
-                _parameterBuffer[i] = GetScheduledValueAtTime(timeAtSample);
-            }
+                if (!_hasRemainingEvents[param])
+                {
+                    continue;
+                }
 
-            // Remove events that have already been processed
-            _events.RemoveAll(evt => evt.EndTime.HasValue ? evt.EndTime.Value <= _currentTimeInSeconds : evt.Time <= _currentTimeInSeconds);
+                var buffer = _parameterBuffers[param];
+                var events = _eventDictionary[param];
+                double lastScheduledValue = _lastScheduledValues[param];
+                bool eventsProcessed = false;
+
+                for (int i = 0; i < _bufferSize; i++)
+                {
+                    double timeAtSample = _currentTimeInSeconds + (i * increment);
+                    double newValue = GetScheduledValueAtTime(param, timeAtSample, ref lastScheduledValue);
+
+                    if (newValue != lastScheduledValue)
+                    {
+                        eventsProcessed = true;
+                    }
+
+                    buffer[i] = newValue;
+                    lastScheduledValue = newValue; // Update the last value after setting it
+
+                    if (!eventsProcessed && events.Count == 0)
+                    {
+                        // If we processed all events, fill the rest of the buffer with the last known value
+                        FillRemainingBuffer(buffer, i, lastScheduledValue);
+                        break; // No need to continue processing, exit early
+                    }
+                }
+
+                _lastScheduledValues[param] = lastScheduledValue; // Update the last scheduled value
+
+                // Remove processed events and skip further processing if no future events are within the current buffer
+                events.RemoveAll(evt => evt.Time <= _currentTimeInSeconds);
+            }
         }
 
-        private double GetScheduledValueAtTime(double timeInSeconds)
+        private double GetScheduledValueAtTime(AudioParam param, double timeInSeconds, ref double lastScheduledValue)
         {
-            foreach (var evt in _events)
-            {
-                if (timeInSeconds < evt.Time)
-                    break;
+            var events = _eventDictionary[param];
 
-                if (evt.EndTime.HasValue && timeInSeconds >= evt.Time && timeInSeconds <= evt.EndTime.Value)
+            foreach (var evt in events)
+            {
+                if (timeInSeconds >= evt.Time)
                 {
-                    double progress = (timeInSeconds - evt.Time) / (evt.EndTime.Value - evt.Time);
-                    _lastScheduledValue = evt.Value + (evt.TargetValue - evt.Value) * progress;
+                    lastScheduledValue = evt.Value;
                 }
-                else if (!evt.EndTime.HasValue)
+                else
                 {
-                    _lastScheduledValue = evt.Value;
+                    break; // Early exit if event time is beyond the current sample time
                 }
             }
 
-            return _lastScheduledValue;
+            return lastScheduledValue;
         }
 
-        public double GetValueAtSample(int sampleIndex)
+        private void FillRemainingBuffer(double[] buffer, int startIndex, double value)
+        {
+            for (int i = startIndex; i < buffer.Length; i++)
+            {
+                buffer[i] = value;
+            }
+        }
+
+        public double GetValueAtSample(AudioParam param, int sampleIndex)
         {
             if (sampleIndex < _bufferSize)
             {
-                return _parameterBuffer[sampleIndex];
+                return _parameterBuffers[param][sampleIndex];
             }
-            return 0.0; // Default value if out of range
+            return 0.0;
         }
 
         public void Clear()
         {
-            Array.Clear(_parameterBuffer, 0, _bufferSize);
-            _events.Clear();
-            _lastScheduledValue = 0.0; // Reset the last value
+            foreach (var param in _parameterBuffers.Keys)
+            {
+                Array.Clear(_parameterBuffers[param], 0, _bufferSize);
+                _eventDictionary[param].Clear();
+                _hasRemainingEvents[param] = false;
+                _lastScheduledValues[param] = 0.0;
+            }
         }
     }
 
-    public class ScheduleEvent
+    public class ScheduleEvent : IComparable<ScheduleEvent>
     {
         public double Time { get; }
         public double Value { get; }
@@ -100,6 +148,11 @@ namespace Synth
             Value = value;
             EndTime = endTime;
             TargetValue = targetValue;
+        }
+
+        public int CompareTo(ScheduleEvent other)
+        {
+            return Time.CompareTo(other.Time);
         }
     }
 }

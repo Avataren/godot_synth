@@ -8,7 +8,6 @@ var previous_connections:Array
 func _on_apply_connections_button_pressed() -> void:
 	_remove_existing_connections();
 	_add_new_connections()
-
 			
 func _add_new_connections() ->  void:
 	for entry in %ModEntryVBoxContainer.get_children():

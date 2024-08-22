@@ -136,7 +136,7 @@ namespace Synth
 
         public override void OpenGate()
         {
-            //GD.Print("Opening gate");
+            //   GD.Print("Opening gate");
             _isGateOpen = true;
             _envelopePosition = 0.0;
             //StartTransition(0.0);
@@ -144,7 +144,7 @@ namespace Synth
 
         public override void CloseGate()
         {
-            GD.Print("Closing gate");
+            //GD.Print("Closing gate");
             _releaseStartPosition = _envelopePosition;
             _releaseStartAmplitude = _currentAmplitude;
             _isGateOpen = false;
@@ -233,7 +233,7 @@ namespace Synth
 
             for (int i = 0; i < NumSamples; i++)
             {
-                double gateValue = _gateScheduler.GetValueAtSample(i);
+                double gateValue = _gateScheduler.GetValueAtSample(AudioParam.Gate, i);
 
                 // Check for transition from closed (<= 0.5) to open (> 0.5)
                 if (!_isGateOpen && gateValue > 0.5)
@@ -389,12 +389,12 @@ namespace Synth
 
         public void ScheduleGateOpen(double time)
         {
-            _gateScheduler.ScheduleValueAtTime(1.0, time); // Gate opens at this time
+            _gateScheduler.ScheduleValueAtTime(AudioParam.Gate, 1.0, time); // Gate opens at this time
         }
 
         public void ScheduleGateClose(double time)
         {
-            _gateScheduler.ScheduleValueAtTime(0.0, time); // Gate closes at this time
+            _gateScheduler.ScheduleValueAtTime(AudioParam.Gate, 0.0, time); // Gate closes at this time
         }
     }
 }

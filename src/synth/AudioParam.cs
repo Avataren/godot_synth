@@ -19,7 +19,8 @@ namespace Synth
         Phase,
         PMod, // phase modulation strength
         PhaseModStrength,
-        CutOffMod
+        CutOffMod,
+        Gate,
     }
 
 }

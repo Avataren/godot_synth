@@ -6,14 +6,17 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <PublishAot>true</PublishAot>
   </PropertyGroup>
+
   <ItemGroup>
     <!-- Root the assemblies to avoid trimming. -->
     <TrimmerRootAssembly Include="GodotSharp" />
     <TrimmerRootAssembly Include="$(TargetName)" />
   </ItemGroup>
-  <ItemGroup>
+
+  <!-- Conditionally include test packages only in Debug builds -->
+  <!-- <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageReference Include="NUnit" Version="4.2.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
-  </ItemGroup>
+  </ItemGroup> -->
 </Project>

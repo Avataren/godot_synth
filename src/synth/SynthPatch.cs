@@ -8,7 +8,7 @@ public class SynthPatch
     public const int MaxOscillators = 5;
     public const int MaxLFOs = 4;
     public const int MaxEnvelopes = 5;
-    
+
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
     List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
@@ -26,8 +26,8 @@ public class SynthPatch
 
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
-        
-//        BufferSize = bufferSize * Oversampling;
+
+        //        BufferSize = bufferSize * Oversampling;
         //SampleRate = sampleRate;
         freq = graph.CreateNode<ConstantNode>("Freq");
 
@@ -55,14 +55,31 @@ public class SynthPatch
             }
         }
 
-#if false
-        for (int i = 0; i < 100; i++)
+#if true
+        float speed = 0.25f;
+        for (int i = 0; i < 10000; i++)
         {
-            envelopes[0].ScheduleGateOpen(i * 0.5);
-            envelopes[0].ScheduleGateClose(i * 0.5 + 0.3);
-            int note = i % 12 + 60;
+            // Rhythm pattern for the bassline
+            double timeOffset = 0.5 * speed;  // Consistent rhythm, adjusted for speed
+            double gateLength = 0.4 * speed;  // Slightly longer gate for a sustained bass sound
 
-            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), i * 0.5);
+            // Define a chord progression or root note changes
+            int[] rootNotes = { 36, 38, 41, 43 }; // C1, D1, F1, G1 (MIDI notes)
+            int rootNote = rootNotes[(i / 16) % rootNotes.Length];  // Change root note every 16 steps (4 bars)
+
+            // Low-low-high-high bass pattern with octave shifts, relative to the root note
+            int[] bassPattern = { rootNote, rootNote, rootNote + 12, rootNote + 12 };  // Adjusted to the current root note
+            int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
+
+            // Set the frequency based on the note
+            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) / 2.0, i * timeOffset);
+
+            // Schedule the gate open and close for each step
+            for (int j = 0; j < MaxEnvelopes; j++)
+            {
+                envelopes[j].ScheduleGateOpen(i * timeOffset, false);
+                envelopes[j].ScheduleGateClose(i * timeOffset + gateLength);
+            }
         }
 #endif
 

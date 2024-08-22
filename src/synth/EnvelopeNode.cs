@@ -286,7 +286,7 @@ namespace Synth
             return visualBuffer;
         }
 
-        public void ScheduleGateOpen(double time, bool forceCloseFirst)
+        public void ScheduleGateOpen(double time, bool forceCloseFirst = false)
         {
             GD.Print("Scheduling gate close, then open");
             if (forceCloseFirst)

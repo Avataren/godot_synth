@@ -5,32 +5,28 @@ namespace Synth
 {
     public class WaveTableRepository
     {
+
         public static WaveTableMemory SquareOsc()
         {
             int tableLen = 2048;
-            double[] timeWave = new double[tableLen];
+            int idx;
             double[] freqWaveRe = new double[tableLen];
             double[] freqWaveIm = new double[tableLen];
 
-            // Generate a square wave directly in the time domain
-            for (int i = 0; i < tableLen; i++)
+            // Initialize arrays to zeros
+            for (idx = 0; idx < tableLen; idx++)
             {
-                timeWave[i] = i < tableLen / 2 ? 1.0 : -1.0; // Square waveform: first half 1.0, second half -1.0
+                freqWaveRe[idx] = 0.0;
+                freqWaveIm[idx] = 0.0;
             }
 
-            // Perform FFT to convert time-domain waveform to frequency domain
-            FFT.fft(tableLen, timeWave, freqWaveIm);
+            // Generate square wave using its Fourier expansion
+            for (idx = 1; idx <= (tableLen >> 1); idx += 2)
+            {
+                freqWaveIm[idx] = 1.0 / idx;
+                freqWaveIm[tableLen - idx] = -freqWaveIm[idx];  // mirror for negative frequencies
+            }
 
-            // Copy results to freqWaveRe (cosine components)
-            Array.Copy(timeWave, freqWaveRe, tableLen);
-
-            // Zero out the DC and Nyquist components for stability
-            freqWaveRe[0] = 0.0;
-            freqWaveIm[0] = 0.0;
-            freqWaveRe[tableLen >> 1] = 0.0;
-            freqWaveIm[tableLen >> 1] = 0.0;
-
-            // Build the wavetable oscillator
             var osc = new WaveTableMemory();
             WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
             return osc;
@@ -67,8 +63,6 @@ namespace Synth
             WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
             return osc;
         }
-
-
 
         public static WaveTableMemory CustomHarmonicWave(Func<int, double> amplitudeFunc)
         {
@@ -210,10 +204,11 @@ namespace Synth
                 freqWaveIm[idx] = 0.0;
             }
 
-            // Generate triangle wave using its Fourier expansion
+            // Generate inverted triangle wave using its Fourier expansion
             for (idx = 1; idx <= (tableLen >> 1); idx += 2)
             {
-                freqWaveIm[idx] = (idx % 4 == 1) ? (1.0 / (idx * idx)) : (-1.0 / (idx * idx));
+                // Inverting the phase of each harmonic
+                freqWaveIm[idx] = (idx % 4 == 1) ? -(1.0 / (idx * idx)) : (1.0 / (idx * idx));
                 freqWaveIm[tableLen - idx] = -freqWaveIm[idx];  // mirror for negative frequencies
             }
 
@@ -221,6 +216,8 @@ namespace Synth
             WaveTableManager.FillTables(osc, freqWaveRe, freqWaveIm, tableLen);
             return osc;
         }
+
+
 
         public static WaveTableMemory PeriodicWaveOsc(double[] Reals, double[] Imags)
         {

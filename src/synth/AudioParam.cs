@@ -21,6 +21,7 @@ namespace Synth
         PhaseModStrength,
         CutOffMod,
         Gate,
+        ConstValue
     }
 
 }

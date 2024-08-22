@@ -28,10 +28,8 @@ public class SynthPatch
     {
         
 //        BufferSize = bufferSize * Oversampling;
-        
         //SampleRate = sampleRate;
         freq = graph.CreateNode<ConstantNode>("Freq");
-        //freq.Value = 440.0f;
 
         var mix1 = graph.CreateNode<MixerNode>("Mix1");
         moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter");
@@ -57,13 +55,14 @@ public class SynthPatch
             }
         }
 
-#if true
-        freq.Value = 440.0f;
-
+#if false
         for (int i = 0; i < 100; i++)
         {
             envelopes[0].ScheduleGateOpen(i * 0.5);
             envelopes[0].ScheduleGateClose(i * 0.5 + 0.3);
+            int note = i % 12 + 60;
+
+            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), i * 0.5);
         }
 #endif
 
@@ -576,7 +575,7 @@ public class SynthPatch
     {
         lock (_lock)
         {
-            freq.Value = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
+            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), 0.0f);
 
 
             foreach (var env in envelopes)

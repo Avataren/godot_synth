@@ -86,5 +86,10 @@ namespace Synth
 		{
 			_scheduler.ScheduleValueAtTime(this, param, value, time, initialValue);
 		}
+
+   		public void LinearRampToValueAtTime(AudioParam param, double targetValue,  double endTimeInSeconds)
+		{
+			_scheduler.LinearRampToValueAtTime(this, param, targetValue, endTimeInSeconds);
+		}
 	}
 }

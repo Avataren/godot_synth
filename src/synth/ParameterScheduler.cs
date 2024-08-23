@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Godot;
 
 namespace Synth
 {
@@ -61,29 +62,81 @@ namespace Synth
             }
         }
 
-        public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds, double? initialValue = null)
+        // public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds, double? initialValue = null)
+        // {
+        //     lock (_lock)
+        //     {
+        //         var events = _nodeEventDictionary[node][param];
+        //         int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
+        //         if (index < 0) index = ~index;
+        //         events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
+        //         _nodeHasRemainingEvents[node][param] = true;
+        //     }
+        // }
+        public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
+        {
+            if (targetValue <= 0)
+            {
+                throw new ArgumentException("Exponential ramps require the target value to be positive.");
+            }
+
+            lock (_lock)
+            {
+                var events = _nodeEventDictionary[node][param];
+                double startTimeInSeconds = _currentTimeInSeconds;
+
+                if (endTimeInSeconds <= startTimeInSeconds + 0.001)
+                {
+                    events.Add(new ScheduleEvent(startTimeInSeconds, targetValue));
+                }
+                else
+                {
+                    double currentValue = _nodeLastScheduledValues[node][param];
+                    if (currentValue <= 0)
+                    {
+                        throw new InvalidOperationException("Exponential ramps require the current value to be positive.");
+                    }
+                    events.Add(new ScheduleEvent(startTimeInSeconds, currentValue, endTimeInSeconds, targetValue, currentValue, isExponential: true));
+                }
+
+                _nodeHasRemainingEvents[node][param] = true;
+            }
+        }
+
+
+        public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
             lock (_lock)
             {
                 var events = _nodeEventDictionary[node][param];
-                int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
-                if (index < 0) index = ~index;
-                events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
+                double startTimeInSeconds = _currentTimeInSeconds;
+
+                if (endTimeInSeconds <= startTimeInSeconds + 0.001)
+                {
+                    events.Add(new ScheduleEvent(startTimeInSeconds, targetValue));
+                }
+                else
+                {
+                    double currentValue = _nodeLastScheduledValues[node][param];
+                    events.Add(new ScheduleEvent(startTimeInSeconds, currentValue, endTimeInSeconds, targetValue, currentValue, isExponential: false));
+                }
+
                 _nodeHasRemainingEvents[node][param] = true;
             }
         }
+
+
 
         public void Process(double increment)
         {
             lock (_lock)
             {
-
                 foreach (var node in _nodeEventDictionary.Keys)
                 {
                     foreach (var param in _nodeEventDictionary[node].Keys)
                     {
                         var buffer = _nodeParameterBuffers[node][param];
-                        // Skip processing if no events are remaining
+
                         if (!_nodeHasRemainingEvents[node][param])
                         {
                             Array.Fill(buffer, _nodeLastScheduledValues[node][param]);
@@ -92,43 +145,123 @@ namespace Synth
 
                         var events = _nodeEventDictionary[node][param];
                         double lastScheduledValue = _nodeLastScheduledValues[node][param];
+                        double currentTime = _currentTimeInSeconds;
 
                         for (int i = 0; i < _bufferSize; i++)
                         {
-                            double timeAtSample = _currentTimeInSeconds + (i * increment);
+                            double timeAtSample = currentTime + (i * increment);
 
                             if (events.Count > 0)
                             {
                                 var evt = events[0];
 
-                                if (timeAtSample >= evt.Time)
+                                if (evt.EndTime.HasValue && evt.EndTime.Value > evt.Time)
                                 {
-                                    if (evt.InitialValue.HasValue)
+                                    if (timeAtSample >= evt.Time && timeAtSample <= evt.EndTime.Value)
                                     {
-                                        lastScheduledValue = evt.InitialValue.Value;
-                                        evt.InitialValue = null;  // Ensure the initial value is only applied once
+                                        double progress = (timeAtSample - evt.Time) / (evt.EndTime.Value - evt.Time);
+
+                                        if (evt.IsExponential)
+                                        {
+                                            if (evt.InitialValue > 0 && evt.TargetValue > 0)
+                                            {
+                                                lastScheduledValue = evt.InitialValue * Math.Pow(evt.TargetValue / evt.InitialValue, progress);
+                                            }
+                                            else
+                                            {
+                                                throw new InvalidOperationException("Exponential ramps require positive initial and target values.");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            lastScheduledValue = evt.InitialValue + progress * (evt.TargetValue - evt.InitialValue);
+                                        }
                                     }
-                                    else
+                                    else if (timeAtSample > evt.EndTime.Value)
                                     {
-                                        lastScheduledValue = evt.Value;
-                                        events.RemoveAt(0);  // Remove the event once processed
+                                        lastScheduledValue = evt.TargetValue;
+                                        events.RemoveAt(0);
                                         _processedEventCount++;
                                     }
                                 }
+                                else if (timeAtSample >= evt.Time)
+                                {
+                                    lastScheduledValue = evt.Value;
+                                    events.RemoveAt(0);
+                                    _processedEventCount++;
+                                }
                             }
 
-                            buffer[i] = lastScheduledValue;  // Always use the lastScheduledValue to fill the buffer
+                            buffer[i] = lastScheduledValue;
                         }
-                        // Update the last scheduled value for future use
-                        _nodeLastScheduledValues[node][param] = lastScheduledValue;
 
-                        // Determine if more events remain to be processed
+                        _nodeLastScheduledValues[node][param] = lastScheduledValue;
                         _nodeHasRemainingEvents[node][param] = events.Count > 0;
                     }
                 }
+
                 _currentTimeInSeconds += increment * _bufferSize;
             }
         }
+
+
+
+        // public void Process(double increment)
+        // {
+        //     lock (_lock)
+        //     {
+
+        //         foreach (var node in _nodeEventDictionary.Keys)
+        //         {
+        //             foreach (var param in _nodeEventDictionary[node].Keys)
+        //             {
+        //                 var buffer = _nodeParameterBuffers[node][param];
+        //                 // Skip processing if no events are remaining
+        //                 if (!_nodeHasRemainingEvents[node][param])
+        //                 {
+        //                     Array.Fill(buffer, _nodeLastScheduledValues[node][param]);
+        //                     continue;
+        //                 }
+
+        //                 var events = _nodeEventDictionary[node][param];
+        //                 double lastScheduledValue = _nodeLastScheduledValues[node][param];
+
+        //                 for (int i = 0; i < _bufferSize; i++)
+        //                 {
+        //                     double timeAtSample = _currentTimeInSeconds + (i * increment);
+
+        //                     if (events.Count > 0)
+        //                     {
+        //                         var evt = events[0];
+
+        //                         if (timeAtSample >= evt.Time)
+        //                         {
+        //                             if (evt.InitialValue.HasValue)
+        //                             {
+        //                                 lastScheduledValue = evt.InitialValue.Value;
+        //                                 evt.InitialValue = null;  // Ensure the initial value is only applied once
+        //                             }
+        //                             else
+        //                             {
+        //                                 lastScheduledValue = evt.Value;
+        //                                 events.RemoveAt(0);  // Remove the event once processed
+        //                                 _processedEventCount++;
+        //                             }
+        //                         }
+        //                     }
+
+        //                     buffer[i] = lastScheduledValue;  // Always use the lastScheduledValue to fill the buffer
+        //                 }
+        //                 // Update the last scheduled value for future use
+        //                 _nodeLastScheduledValues[node][param] = lastScheduledValue;
+
+        //                 // Determine if more events remain to be processed
+        //                 _nodeHasRemainingEvents[node][param] = events.Count > 0;
+        //             }
+        //         }
+        //         _currentTimeInSeconds += increment * _bufferSize;
+        //     }
+        // }
 
 
 
@@ -175,15 +308,17 @@ namespace Synth
         public double Value { get; }
         public double? EndTime { get; }
         public double TargetValue { get; }
-        public double? InitialValue { get; set; }
+        public double InitialValue { get; set; }
+        public bool IsExponential { get; } // New flag to indicate if the ramp is exponential
 
-        public ScheduleEvent(double time, double value, double? endTime = null, double targetValue = 0.0, double? initialValue = null)
+        public ScheduleEvent(double time, double value, double? endTime = null, double targetValue = 0.0, double? initialValue = null, bool isExponential = false)
         {
             Time = time;
             Value = value;
             EndTime = endTime;
             TargetValue = targetValue;
-            InitialValue = initialValue;
+            InitialValue = initialValue ?? value;
+            IsExponential = isExponential; // Initialize the exponential flag
         }
 
         public int CompareTo(ScheduleEvent other)
@@ -191,4 +326,6 @@ namespace Synth
             return Time.CompareTo(other.Time);
         }
     }
+
+
 }

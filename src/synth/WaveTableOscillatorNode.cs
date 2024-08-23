@@ -218,7 +218,8 @@ namespace Synth
 		private double CalculateModulatedPhase(double basePhase, double phaseOffset, float previousSample, float selfModulationStrength)
 		{
 			var offset = phaseOffset + _smoothModulationStrength + previousSample * selfModulationStrength;
-			return (basePhase + offset + 100.0) % 1.0;
+			return ModuloOne(basePhase + offset);
+			//(basePhase + offset + 100.0) % 1.0;
 		}
 
 		private void UpdateWaveTableFrequency(float freq)

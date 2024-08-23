@@ -57,7 +57,7 @@ public class SynthPatch
 
 #if false
         float speed = 0.35f;
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 100000; i++)
         {
             // Rhythm pattern for the bassline
             double timeOffset = 0.5 * speed;  // Consistent rhythm, adjusted for speed
@@ -72,7 +72,7 @@ public class SynthPatch
             int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
 
             // Set the frequency based on the note
-            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) * 2.5, i * timeOffset);
+            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) * 0.5, i * timeOffset);
 
             // Schedule the gate open and close for each step
             for (int j = 0; j < MaxEnvelopes; j++)
@@ -595,12 +595,14 @@ public class SynthPatch
     {
         lock (_lock)
         {
-            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), 0.0f);
+            //freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), 0.0f);
+            var now = AudioContext.Instance.CurrentTimeInSeconds;
+            freq.LinearRampToValueAtTime(AudioParam.ConstValue, 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), now + 0.1);
             foreach (var env in envelopes)
             {
                 if (env.Enabled)
                 {
-                    env.ScheduleGateOpen(AudioContext.Instance.CurrentTimeInSeconds+0.00, true);
+                    env.ScheduleGateOpen(AudioContext.Instance.CurrentTimeInSeconds, true);
                 }
             }
             foreach (var osc in oscillators)

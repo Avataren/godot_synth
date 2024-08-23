@@ -55,12 +55,13 @@ namespace Synth
 
 		public WaveTableOscillatorNode() : base()
 		{
+			_scheduler.RegisterNode(this, [AudioParam.Gate]);
 			WaveTableMemory = WaveTableRepository.SinOsc();
 			Enabled = false;
 			UpdateSampleFunction();
 		}
 
-		public void ResetPhase(double startPhase = 0.0, int crossfadeSamples = 64)
+		public void ResetPhase(double startPhase = 0.0)
 		{
 			Phase = startPhase;
 		}
@@ -150,7 +151,8 @@ namespace Synth
 
 			return a * frac * frac * frac + b * frac * frac + c * frac + d;
 		}
-
+		bool _isGateOpen = false;
+		int gateNum = 0;
 		public override void Process(double increment)
 		{
 			var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
@@ -163,7 +165,23 @@ namespace Synth
 			for (int i = 0; i < NumSamples; i++)
 			{
 				UpdateParameters(i);
-
+				double gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
+				if (!_isGateOpen && gateValue > 0.5)
+				{
+					gateNum++;
+					GD.Print("Gate open osc sampleNum: " + i + " gateNum: " + gateNum);
+					_isGateOpen = true;
+					_previousSample = 0.0f;
+					if (HardSync)
+					{
+						Phase = 0.0;
+					}
+				}
+				else if (_isGateOpen && gateValue < 0.5)
+				{
+					_isGateOpen = false;
+				}
+				//_lastFrequency = SmoothFrequencyTransition(_lastFrequency, targetFrequency, 0.01f);
 				if (HasFrequencyChanged(_lastFrequency))
 				{
 					UpdateWaveTableFrequency(_lastFrequency);
@@ -171,7 +189,6 @@ namespace Synth
 				}
 
 				modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
-				//_previousSample = GetLinearlyInterpolatedSample(currentWaveTable, (float)(modulatedPhase * (currentWaveTable.WaveTableData.Length - 1)));
 				_previousSample = GetSamplePWM(currentWaveTable, modulatedPhase);
 				buffer[i] = _previousSample * Amplitude * Gain;
 
@@ -181,6 +198,10 @@ namespace Synth
 			Phase = ModuloOne(phase);
 		}
 
+		private float SmoothFrequencyTransition(float currentFrequency, float targetFrequency, float alpha)
+		{
+			return currentFrequency + (targetFrequency - currentFrequency) * alpha;
+		}
 		private void UpdateParameters(int sampleIndex)
 		{
 			var pitchParam = GetParameter(AudioParam.Pitch, sampleIndex);
@@ -194,7 +215,7 @@ namespace Synth
 			Gain = gainParam.Item2;
 			float phase_modulation = phaseParam.Item1;
 			_smoothModulationStrength = phase_modulation * ModulationStrength * pmodParam.Item1;
-			_lastFrequency = pitchParam.Item1 * _detuneFactor * pitchParam.Item2;
+			_lastFrequency = pitchParam.Item1 * _detuneFactor;
 		}
 
 		private double CalculateModulatedPhase(double basePhase, double phaseOffset, float previousSample, float selfModulationStrength)
@@ -222,6 +243,23 @@ namespace Synth
 					break;
 				}
 			}
+		}
+
+		public void ScheduleGateOpen(double time, bool forceCloseFirst = false)
+		{
+			if (forceCloseFirst)
+			{
+				_scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time, 0.0);
+			}
+			else
+			{
+				_scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time);
+			}
+		}
+
+		public void ScheduleGateClose(double time)
+		{
+			_scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time);
 		}
 
 		private void UpdateDetuneFactor()

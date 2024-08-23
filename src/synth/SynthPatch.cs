@@ -20,6 +20,7 @@ public class SynthPatch
     ReverbEffectNode reverbEffectNode;
     MoogFilterNode moogFilterNode;
     PassThroughNode speakerNode;
+    FuzzNode fuzzNode;
 
 
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
@@ -34,6 +35,7 @@ public class SynthPatch
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
+        fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
         for (int i = 0; i < MaxOscillators; i++)
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
@@ -53,13 +55,13 @@ public class SynthPatch
             }
         }
 
-#if true
+#if false
         float speed = 0.35f;
         for (int i = 0; i < 1000; i++)
         {
             // Rhythm pattern for the bassline
             double timeOffset = 0.5 * speed;  // Consistent rhythm, adjusted for speed
-            double gateLength = 0.25 * speed;  // Slightly longer gate for a sustained bass sound
+            double gateLength = 0.15 * speed;  // Slightly longer gate for a sustained bass sound
 
             // Define a chord progression or root note changes
             int[] rootNotes = { 36, 37, 41, 39 }; // C1, D1, F1, G1 (MIDI notes)
@@ -70,7 +72,7 @@ public class SynthPatch
             int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
 
             // Set the frequency based on the note
-            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) / 1.5, i * timeOffset);
+            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) * 2.5, i * timeOffset);
 
             // Schedule the gate open and close for each step
             for (int j = 0; j < MaxEnvelopes; j++)
@@ -96,6 +98,8 @@ public class SynthPatch
 
         //graph.Connect(ampEnvelope, mix1, AudioParam.Gain, ModulationType.Multiply);
         graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
+        //graph.Connect(fuzzNode, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
+        fuzzNode.Enabled = false;
         graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
@@ -589,26 +593,35 @@ public class SynthPatch
 
     public void NoteOn(int note, float velocity = 1.0f)
     {
-        lock (_lock)
+        //lock (_lock)
         {
             freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), 0.0f);
-
-
             foreach (var env in envelopes)
             {
-                env.ScheduleGateOpen(0, true);
+                if (env.Enabled)
+                {
+                    env.ScheduleGateOpen(0, true);
+                }
             }
-
+            foreach (var osc in oscillators)
+            {
+                osc.ScheduleGateOpen(0, true); ;
+            }
         }
     }
 
     public void NoteOff()
     {
-        lock (_lock)
+        //lock (_lock)
         {
             foreach (var env in envelopes)
             {
                 env.ScheduleGateClose(0);
+            }
+
+            foreach (var osc in oscillators)
+            {
+                osc.ScheduleGateClose(0);
             }
         }
     }

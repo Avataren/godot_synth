@@ -121,9 +121,10 @@ namespace Synth
             _expBaseRelease = Math.Pow(2.0, _releaseCtrl) - 1.0;
         }
 
-
+        int gateNum = 0;
         public override void OpenGate()
         {
+            gateNum++;
             _isGateOpen = true;
             _envelopePosition = 0.0;
             _attackStartAmplitude = _currentAmplitude;  // Capture the current amplitude
@@ -193,6 +194,7 @@ namespace Synth
                 if (!_isGateOpen && gateValue > 0.5)
                 {
                     OpenGate();
+                    GD.Print("Gate open ENV sampleNum: " + i + " gateNum: " + gateNum);
                 }
                 else if (_isGateOpen && gateValue <= 0.5)
                 {

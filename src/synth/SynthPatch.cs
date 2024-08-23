@@ -59,14 +59,14 @@ public class SynthPatch
         {
             // Rhythm pattern for the bassline
             double timeOffset = 0.5 * speed;  // Consistent rhythm, adjusted for speed
-            double gateLength = 0.4 * speed;  // Slightly longer gate for a sustained bass sound
+            double gateLength = 0.25 * speed;  // Slightly longer gate for a sustained bass sound
 
             // Define a chord progression or root note changes
-            int[] rootNotes = { 36, 38, 41, 43 }; // C1, D1, F1, G1 (MIDI notes)
-            int rootNote = rootNotes[(i / 8) % rootNotes.Length];  // Change root note every 16 steps (4 bars)
+            int[] rootNotes = { 36, 37, 41, 39 }; // C1, D1, F1, G1 (MIDI notes)
+            int rootNote = rootNotes[(i / 16) % rootNotes.Length];  // Change root note every 16 steps (4 bars)
 
             // Low-low-high-high bass pattern with octave shifts, relative to the root note
-            int[] bassPattern = { rootNote, rootNote, rootNote + 12, rootNote + 12 };  // Adjusted to the current root note
+            int[] bassPattern = { rootNote, rootNote, rootNote + 12, rootNote, rootNote + 10, rootNote + 12, rootNote, rootNote + 12 };  // Adjusted to the current root note
             int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
 
             // Set the frequency based on the note

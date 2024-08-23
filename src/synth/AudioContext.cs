@@ -27,11 +27,10 @@ namespace Synth
 
         ParameterScheduler _scheduler = null;
         static AudioContext _instance = null;
-        static double _currentTimeInSeconds = Scheduler.CurrentTimeInSeconds;
 
         public double CurrentTimeInSeconds
         {
-            get => _currentTimeInSeconds;
+            get => Scheduler.CurrentTimeInSeconds;
         }
 
         public static ParameterScheduler Scheduler
@@ -58,7 +57,8 @@ namespace Synth
 
         public void ResetTime()
         {
-            _currentTimeInSeconds = 0.0;
+            _scheduler.SetCurrentTimeInSeconds(0.0);
+            
         }
 
         public AudioContext()

@@ -22,6 +22,11 @@ namespace Synth
             _bufferSize = bufferSize;
         }
 
+        public void SetCurrentTimeInSeconds(double timeInSeconds)
+        {
+            _currentTimeInSeconds = timeInSeconds;
+        }
+
         public void RegisterNode(AudioNode node, List<AudioParam> parameters)
         {
             lock (_lock)

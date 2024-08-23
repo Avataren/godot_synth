@@ -593,14 +593,14 @@ public class SynthPatch
 
     public void NoteOn(int note, float velocity = 1.0f)
     {
-        //lock (_lock)
+        lock (_lock)
         {
             freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), 0.0f);
             foreach (var env in envelopes)
             {
                 if (env.Enabled)
                 {
-                    env.ScheduleGateOpen(0, true);
+                    env.ScheduleGateOpen(AudioContext.Instance.CurrentTimeInSeconds+0.00, true);
                 }
             }
             foreach (var osc in oscillators)
@@ -612,7 +612,7 @@ public class SynthPatch
 
     public void NoteOff()
     {
-        //lock (_lock)
+        lock (_lock)
         {
             foreach (var env in envelopes)
             {
@@ -628,7 +628,7 @@ public class SynthPatch
 
     public PassThroughNode Process(double increment)
     {
-        // lock (_lock)
+         lock (_lock)
         {
             graph.Process(increment);
             //var node = graph.GetNode("Speaker") as PassThroughNode;

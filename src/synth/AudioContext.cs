@@ -6,7 +6,7 @@ namespace Synth
     {
         static int _bufferSize = 512;
         static int _sampleRate = 44100;
-        public static int Oversampling = 4;
+        public static int Oversampling = 1;
 
         public static int BufferSize
         {
@@ -16,7 +16,7 @@ namespace Synth
                 Instance.ResetScheduler();
             }
         }
-        public static int SampleRate 
+        public static int SampleRate
         {
             get => _sampleRate; set
             {
@@ -66,7 +66,7 @@ namespace Synth
             ResetScheduler();
         }
 
-        public void Process (double increment)
+        public void Process(double increment)
         {
             _scheduler.Process(increment);
         }

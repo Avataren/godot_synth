@@ -77,13 +77,8 @@ namespace Synth
 
 		protected float GetSamplePWM(WaveTable currentWaveTable, double phase)
 		{
-			int length = currentWaveTable.WaveTableData.Length;
-
-			// Ensure the PWM duty cycle is within valid bounds
-			//PWMDutyCycle = Math.Clamp(PWMDutyCycle, 0f, 1f);
-
+			int length = currentWaveTable.WaveTableData.Length - 1;
 			double adjustedPhase;
-
 			if (phase < PWMDutyCycle)
 			{
 				// Compress the first half
@@ -94,12 +89,10 @@ namespace Synth
 				// Expand the second half
 				adjustedPhase = 0.5 + (phase - PWMDutyCycle) / (1.0 - PWMDutyCycle) * 0.5;
 			}
-
 			// Convert the adjusted phase to the wavetable index
-			double phaseIndex = adjustedPhase * length;
-
+			//double phaseIndex = adjustedPhase * length;
 			// Retrieve the sample using linear interpolation
-			return GetCubicInterpolatedSample(currentWaveTable, (float)phaseIndex);
+			return GetCubicInterpolatedSample(currentWaveTable, (float)adjustedPhase);
 		}
 
 		protected float GetSample(WaveTable currentWaveTable, double phase)
@@ -132,7 +125,7 @@ namespace Synth
 			int length = table.WaveTableData.Length;
 
 			// Wrap the position around the length of the table to ensure it's within bounds
-			position = Mathf.PosMod(position, length);
+			position *= length - 1.0f;
 
 			int baseIndex = (int)position;
 			float frac = position - baseIndex;
@@ -162,14 +155,14 @@ namespace Synth
 		{
 			var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 			UpdateDetuneFactor();
-			double phase = Phase;  // Use a local phase variable to accumulate the phase.
+			double phase = Phase;
+
+			double phaseIncrement = _lastFrequency * increment;
+			double modulatedPhase;
 
 			for (int i = 0; i < NumSamples; i++)
 			{
 				UpdateParameters(i);
-
-				// Update the phase increment based on the latest frequency
-				double phaseIncrement = _lastFrequency * increment;
 
 				if (HasFrequencyChanged(_lastFrequency))
 				{
@@ -177,41 +170,39 @@ namespace Synth
 					currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 				}
 
-				double modulatedPhase = CalculateModulatedPhase(phase, i);
-
+				modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
+				//_previousSample = GetLinearlyInterpolatedSample(currentWaveTable, (float)(modulatedPhase * (currentWaveTable.WaveTableData.Length - 1)));
 				_previousSample = GetSamplePWM(currentWaveTable, modulatedPhase);
 				buffer[i] = _previousSample * Amplitude * Gain;
 
-				// Accumulate phase for the next sample
 				phase += phaseIncrement;
 			}
 
-			// Wrap the phase back to the range [0, 1) if necessary
 			Phase = ModuloOne(phase);
 		}
-
-
 
 		private void UpdateParameters(int sampleIndex)
 		{
 			var pitchParam = GetParameter(AudioParam.Pitch, sampleIndex);
 			var gainParam = GetParameter(AudioParam.Gain, sampleIndex);
-			var pmodParam = GetParameter(AudioParam.PMod, sampleIndex);
+			var pmodParam = GetParameter(AudioParam.PMod, sampleIndex, 1.0f); // remember to fix add / mul type here when implemented in the UI
 			var phaseParam = GetParameter(AudioParam.Phase, sampleIndex);
 			var pwmParam = GetParameter(AudioParam.PWM, sampleIndex);
 
 			PWMAdd = pwmParam.Item1;
 			PWMMultiply = pwmParam.Item2;
 			Gain = gainParam.Item2;
-			_smoothModulationStrength = SmoothValue(_smoothModulationStrength, (ModulationStrength + pmodParam.Item1) * pmodParam.Item2, 0.01f);
+			float phase_modulation = phaseParam.Item1;
+			_smoothModulationStrength = phase_modulation * ModulationStrength * pmodParam.Item1;
 			_lastFrequency = pitchParam.Item1 * _detuneFactor * pitchParam.Item2;
 		}
 
-		private double CalculateModulatedPhase(double basePhase, int sampleIndex)
+		private double CalculateModulatedPhase(double basePhase, double phaseOffset, float previousSample, float selfModulationStrength)
 		{
-			double phaseWithOffset = ModuloOne(basePhase + PhaseOffset);
-			return ModuloOne(phaseWithOffset + _smoothModulationStrength * GetParameter(AudioParam.Phase, sampleIndex).Item1 * GetParameter(AudioParam.Phase, sampleIndex).Item2 + _previousSample * SelfModulationStrength);
+			var offset = phaseOffset + _smoothModulationStrength + previousSample * selfModulationStrength;
+			return (basePhase + offset + 100.0) % 1.0;
 		}
+
 		private bool HasFrequencyChanged(float newFrequency)
 		{
 			return Math.Abs(newFrequency - _lastFrequency) > FrequencyChangeThreshold;

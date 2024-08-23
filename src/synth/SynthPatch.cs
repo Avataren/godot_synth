@@ -11,10 +11,7 @@ public class SynthPatch
 
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
-    List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
-    List<EnvelopeNode> CustomEnvelopes = new List<EnvelopeNode>();
-
-    // EnvelopeNode ampEnvelope;
+    // List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     WaveTableBank waveTableBank;
     public AudioGraph graph { get; set; } = new AudioGraph();
     List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
@@ -23,6 +20,7 @@ public class SynthPatch
     ReverbEffectNode reverbEffectNode;
     MoogFilterNode moogFilterNode;
     PassThroughNode speakerNode;
+
 
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
@@ -270,9 +268,10 @@ public class SynthPatch
 
     public void SetModulationStrength(float strength, int OscillatorIndex = -1)
     {
-        //GD.Print("Setting modulation strength for oscillator " + OscillatorIndex + " to " + strength);
+        GD.Print("Setting modulation strength for oscillator " + OscillatorIndex + " to " + strength);
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
+
             oscillators[OscillatorIndex].ModulationStrength = strength;
             return;
         }
@@ -297,19 +296,19 @@ public class SynthPatch
         }
     }
 
-    public void SetADSREnabled(bool enabled, int EnvelopeIndex = -1)
-    {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
-        {
-            graph.SetNodeEnabled(AmpEnvelopes[EnvelopeIndex], enabled);
-            return;
-        }
+    // public void SetADSREnabled(bool enabled, int EnvelopeIndex = -1)
+    // {
+    //     if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
+    //     {
+    //         graph.SetNodeEnabled(AmpEnvelopes[EnvelopeIndex], enabled);
+    //         return;
+    //     }
 
-        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
-        {
-            graph.SetNodeEnabled(AmpEnvelopes[idx], enabled);
-        }
-    }
+    //     for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
+    //     {
+    //         graph.SetNodeEnabled(AmpEnvelopes[idx], enabled);
+    //     }
+    // }
 
 
     public void SetLFOWaveform(string waveTypeName, int LFOIndex = -1)
@@ -516,25 +515,25 @@ public class SynthPatch
         }
     }
 
-    public void SetADSR(double attack, double decay, double sustain, double release, int EnvelopeIndex = -1)
-    {
-        if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
-        {
-            AmpEnvelopes[EnvelopeIndex].AttackTime = attack;
-            AmpEnvelopes[EnvelopeIndex].DecayTime = decay;
-            AmpEnvelopes[EnvelopeIndex].SustainLevel = sustain;
-            AmpEnvelopes[EnvelopeIndex].ReleaseTime = release;
-            return;
-        }
+    // public void SetADSR(double attack, double decay, double sustain, double release, int EnvelopeIndex = -1)
+    // {
+    //     if (EnvelopeIndex >= 0 && EnvelopeIndex < AmpEnvelopes.Count)
+    //     {
+    //         AmpEnvelopes[EnvelopeIndex].AttackTime = attack;
+    //         AmpEnvelopes[EnvelopeIndex].DecayTime = decay;
+    //         AmpEnvelopes[EnvelopeIndex].SustainLevel = sustain;
+    //         AmpEnvelopes[EnvelopeIndex].ReleaseTime = release;
+    //         return;
+    //     }
 
-        for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
-        {
-            AmpEnvelopes[idx].AttackTime = attack;
-            AmpEnvelopes[idx].DecayTime = decay;
-            AmpEnvelopes[idx].SustainLevel = sustain;
-            AmpEnvelopes[idx].ReleaseTime = release;
-        }
-    }
+    //     for (int idx = 0; idx < AmpEnvelopes.Count; idx++)
+    //     {
+    //         AmpEnvelopes[idx].AttackTime = attack;
+    //         AmpEnvelopes[idx].DecayTime = decay;
+    //         AmpEnvelopes[idx].SustainLevel = sustain;
+    //         AmpEnvelopes[idx].ReleaseTime = release;
+    //     }
+    // }
 
     public WaveTableOscillatorNode GetOscillator(int idx)
     {
@@ -616,11 +615,11 @@ public class SynthPatch
 
     public PassThroughNode Process(double increment)
     {
-        lock (_lock)
+        // lock (_lock)
         {
             graph.Process(increment);
-            var node = graph.GetNode("Speaker") as PassThroughNode;
-            return node;
+            //var node = graph.GetNode("Speaker") as PassThroughNode;
+            return speakerNode;
         }
     }
 }

@@ -99,7 +99,7 @@ public partial class PatchEditor : Node2D
 	{
 		if (AdsrVisualizer != null)
 		{
-			for (int i = 0; i < 5; i++)
+			for (int i = 0; i < SynthPatch.MaxEnvelopes; i++)
 			{
 				AdsrVisualizer.SetADSRNodeReference(AudioOutputNode.CurrentPatch.GetEnvelope(i), i);
 			}
@@ -382,10 +382,11 @@ public partial class PatchEditor : Node2D
 			AudioOutputNode.CurrentPatch.SetHardSync(enabled, oscNum);
 		};
 
-		osc.ADSRToggled += (enabled) =>
-		{
-			AudioOutputNode.CurrentPatch.SetADSREnabled(enabled, oscNum);
-		};
+		// osc.ADSRToggled += (enabled) =>
+		// {
+		// 	GD.PrintErr("ADSRToggled is CURRENTLY DISABLED");
+		// 	//	AudioOutputNode.CurrentPatch.SetADSREnabled(enabled, oscNum);
+		// };
 
 		osc.PWMChanged += (pwm) =>
 		{

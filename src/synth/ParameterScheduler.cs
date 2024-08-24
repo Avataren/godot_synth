@@ -85,25 +85,35 @@ namespace Synth
                 var events = _nodeEventDictionary[node][param];
                 double startTimeInSeconds = _currentTimeInSeconds;
 
-                if (endTimeInSeconds <= startTimeInSeconds + 0.001)
+                // Remove any events that start after or at the same time as this new ramp
+                events.RemoveAll(e => e.Time >= startTimeInSeconds);
+
+                // Find the value at the start of the ramp
+                double startValue = _nodeLastScheduledValues[node][param];
+                if (events.Count > 0 && events[events.Count - 1].EndTime.HasValue && events[events.Count - 1].EndTime.Value > startTimeInSeconds)
                 {
-                    events.Add(new ScheduleEvent(startTimeInSeconds, targetValue));
-                }
-                else
-                {
-                    double currentValue = _nodeLastScheduledValues[node][param];
-                    if (currentValue <= 0)
+                    var lastEvent = events[events.Count - 1];
+                    double progress = (startTimeInSeconds - lastEvent.Time) / (lastEvent.EndTime.Value - lastEvent.Time);
+                    if (lastEvent.IsExponential)
                     {
-                        throw new InvalidOperationException("Exponential ramps require the current value to be positive.");
+                        startValue = lastEvent.InitialValue * Math.Pow(lastEvent.TargetValue / lastEvent.InitialValue, progress);
                     }
-                    events.Add(new ScheduleEvent(startTimeInSeconds, currentValue, endTimeInSeconds, targetValue, currentValue, isExponential: true));
+                    else
+                    {
+                        startValue = lastEvent.InitialValue + progress * (lastEvent.TargetValue - lastEvent.InitialValue);
+                    }
+                    events.RemoveAt(events.Count - 1);
                 }
 
+                if (startValue <= 0)
+                {
+                    throw new InvalidOperationException("Exponential ramps require the current value to be positive.");
+                }
+
+                events.Add(new ScheduleEvent(startTimeInSeconds, startValue, endTimeInSeconds, targetValue, startValue, isExponential: true));
                 _nodeHasRemainingEvents[node][param] = true;
             }
         }
-
-
         public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
             lock (_lock)
@@ -111,16 +121,20 @@ namespace Synth
                 var events = _nodeEventDictionary[node][param];
                 double startTimeInSeconds = _currentTimeInSeconds;
 
-                if (endTimeInSeconds <= startTimeInSeconds + 0.001)
+                // Remove any events that start after or at the same time as this new ramp
+                events.RemoveAll(e => e.Time >= startTimeInSeconds);
+
+                // Find the value at the start of the ramp
+                double startValue = _nodeLastScheduledValues[node][param];
+                if (events.Count > 0 && events[events.Count - 1].EndTime.HasValue && events[events.Count - 1].EndTime.Value > startTimeInSeconds)
                 {
-                    events.Add(new ScheduleEvent(startTimeInSeconds, targetValue));
-                }
-                else
-                {
-                    double currentValue = _nodeLastScheduledValues[node][param];
-                    events.Add(new ScheduleEvent(startTimeInSeconds, currentValue, endTimeInSeconds, targetValue, currentValue, isExponential: false));
+                    var lastEvent = events[events.Count - 1];
+                    double progress = (startTimeInSeconds - lastEvent.Time) / (lastEvent.EndTime.Value - lastEvent.Time);
+                    startValue = lastEvent.InitialValue + progress * (lastEvent.TargetValue - lastEvent.InitialValue);
+                    events.RemoveAt(events.Count - 1);
                 }
 
+                events.Add(new ScheduleEvent(startTimeInSeconds, startValue, endTimeInSeconds, targetValue, startValue, isExponential: false));
                 _nodeHasRemainingEvents[node][param] = true;
             }
         }
@@ -136,57 +150,33 @@ namespace Synth
                     foreach (var param in _nodeEventDictionary[node].Keys)
                     {
                         var buffer = _nodeParameterBuffers[node][param];
-
-                        if (!_nodeHasRemainingEvents[node][param])
-                        {
-                            Array.Fill(buffer, _nodeLastScheduledValues[node][param]);
-                            continue;
-                        }
-
                         var events = _nodeEventDictionary[node][param];
                         double lastScheduledValue = _nodeLastScheduledValues[node][param];
-                        double currentTime = _currentTimeInSeconds;
 
                         for (int i = 0; i < _bufferSize; i++)
                         {
-                            double timeAtSample = currentTime + (i * increment);
+                            double timeAtSample = _currentTimeInSeconds + (i * increment);
 
-                            if (events.Count > 0)
+                            while (events.Count > 0 && timeAtSample >= events[0].Time)
                             {
                                 var evt = events[0];
 
-                                if (evt.EndTime.HasValue && evt.EndTime.Value > evt.Time)
+                                if (evt.EndTime.HasValue && timeAtSample <= evt.EndTime.Value)
                                 {
-                                    if (timeAtSample >= evt.Time && timeAtSample <= evt.EndTime.Value)
+                                    double progress = (timeAtSample - evt.Time) / (evt.EndTime.Value - evt.Time);
+                                    if (evt.IsExponential)
                                     {
-                                        double progress = (timeAtSample - evt.Time) / (evt.EndTime.Value - evt.Time);
-
-                                        if (evt.IsExponential)
-                                        {
-                                            if (evt.InitialValue > 0 && evt.TargetValue > 0)
-                                            {
-                                                lastScheduledValue = evt.InitialValue * Math.Pow(evt.TargetValue / evt.InitialValue, progress);
-                                            }
-                                            else
-                                            {
-                                                throw new InvalidOperationException("Exponential ramps require positive initial and target values.");
-                                            }
-                                        }
-                                        else
-                                        {
-                                            lastScheduledValue = evt.InitialValue + progress * (evt.TargetValue - evt.InitialValue);
-                                        }
+                                        lastScheduledValue = evt.InitialValue * Math.Pow(evt.TargetValue / evt.InitialValue, progress);
                                     }
-                                    else if (timeAtSample > evt.EndTime.Value)
+                                    else
                                     {
-                                        lastScheduledValue = evt.TargetValue;
-                                        events.RemoveAt(0);
-                                        _processedEventCount++;
+                                        lastScheduledValue = evt.InitialValue + progress * (evt.TargetValue - evt.InitialValue);
                                     }
+                                    break;
                                 }
-                                else if (timeAtSample >= evt.Time)
+                                else
                                 {
-                                    lastScheduledValue = evt.Value;
+                                    lastScheduledValue = evt.EndTime.HasValue ? evt.TargetValue : evt.Value;
                                     events.RemoveAt(0);
                                     _processedEventCount++;
                                 }
@@ -203,7 +193,6 @@ namespace Synth
                 _currentTimeInSeconds += increment * _bufferSize;
             }
         }
-
 
 
         // public void Process(double increment)

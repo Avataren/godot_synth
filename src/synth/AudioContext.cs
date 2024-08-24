@@ -57,7 +57,7 @@ namespace Synth
 
         public void ResetTime()
         {
-            _scheduler.SetCurrentTimeInSeconds(0.0);
+            //_scheduler.SetCurrentTimeInSeconds(0.0);
             
         }
 

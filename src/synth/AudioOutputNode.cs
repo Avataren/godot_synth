@@ -134,7 +134,17 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 		if (@event is InputEventKey eventKey)
 		{
-			var semitones = keyMap[eventKey.Keycode];
+			int semitones;
+			try
+			{
+				semitones = keyMap[eventKey.Keycode];
+			}
+			catch (Exception)
+			{
+				GD.PrintErr("Key not found in keyMap: " + eventKey.Keycode);
+				return;
+			}
+
 			var note = semitones + 12 * BaseOctave;
 			if (!eventKey.Pressed)
 			{
@@ -157,7 +167,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 					//if (CurrKey != eventKey.Keycode)
 					//{
 					//	KeyDownCount++;
-						//CurrKey = eventKey.Keycode;
+					//CurrKey = eventKey.Keycode;
 					//}
 
 					//envelopeNode.OpenGate();

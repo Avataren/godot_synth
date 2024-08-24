@@ -57,7 +57,7 @@ namespace Synth
 		{
 			_scheduler.RegisterNode(this, [AudioParam.Gate]);
 			WaveTableMemory = WaveTableRepository.SinOsc();
-			Enabled = false;
+			//Enabled = false;
 			UpdateSampleFunction();
 		}
 

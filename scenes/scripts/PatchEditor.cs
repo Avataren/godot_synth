@@ -59,7 +59,7 @@ public partial class PatchEditor : Node2D
 		{
 			Print("Patch Editor Ready");
 			ConnectEnvelopesToGui();
-			Print("envelopes connected");
+			//Print("envelopes connected");
 			Oscillator1.Enable();
 			for (int i = 0; i < oscs.Length; i++)
 			{
@@ -67,7 +67,7 @@ public partial class PatchEditor : Node2D
 			}
 			for (int i = 0; i < lfos.Length; i++)
 			{
-				Print("Connecting LFO Signals" + i);
+				//Print("Connecting LFO Signals" + i);
 				ConnectLFOSignals(lfos[i], i);
 			}
 			//ConnectAmplitudeEnvelope();
@@ -444,6 +444,16 @@ public partial class PatchEditor : Node2D
 	// 		AudioOutputNode.CurrentPatch.SetRelease(releaseTime / 1000.0f);
 	// 	};
 	// }
+
+	void _on_patch_controls_gain_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.SetMasterGain(value);
+	}
+
+	void _on_patch_controls_portamento_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.PortamentoTime = value;
+	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)

@@ -6,8 +6,8 @@ public class SynthPatch
 {
     private readonly object _lock = new object();
     public const int MaxOscillators = 5;
-    public const int MaxLFOs = 4;
-    public const int MaxEnvelopes = 5;
+    public const int MaxLFOs = 1;
+    public const int MaxEnvelopes = 1;
     public float PortamentoTime = 0.1f;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
@@ -38,7 +38,7 @@ public class SynthPatch
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
-        fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
+        //fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
         for (int i = 0; i < MaxOscillators; i++)
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
@@ -63,8 +63,8 @@ public class SynthPatch
         for (int i = 0; i < 100000; i++)
         {
             // Rhythm pattern for the bassline
-            double timeOffset = 0.5 * speed;  // Consistent rhythm, adjusted for speed
-            double gateLength = 0.15 * speed;  // Slightly longer gate for a sustained bass sound
+            double timeOffset = 0.75 * speed;  // Consistent rhythm, adjusted for speed
+            double gateLength = 0.5 * speed;  // Slightly longer gate for a sustained bass sound
 
             // Define a chord progression or root note changes
             int[] rootNotes = { 36, 37, 41, 39 }; // C1, D1, F1, G1 (MIDI notes)
@@ -81,7 +81,7 @@ public class SynthPatch
             for (int j = 0; j < MaxEnvelopes; j++)
             {
                 envelopes[j].ScheduleGateOpen(i * timeOffset, true);
-                //envelopes[j].ScheduleGateClose(i * timeOffset + gateLength);
+                envelopes[j].ScheduleGateClose(i * timeOffset + gateLength);
             }
         }
 #endif
@@ -102,11 +102,25 @@ public class SynthPatch
         //graph.Connect(ampEnvelope, mix1, AudioParam.Gain, ModulationType.Multiply);
         graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
         //graph.Connect(fuzzNode, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
-        fuzzNode.Enabled = false;
+        //fuzzNode.Enabled = false;
+
+        graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
 
+        
+        graph.TopologicalSortWorkingGraph();
+        GD.Print("Initial setup:");
+        //graph.DebugPrint();
+
+        GD.Print("Disabling all oscillators except Osc0");
+        for (int i = 1; i < oscillators.Count; i++)
+        {
+            graph.SetNodeEnabled(oscillators[i], false);
+        }
+        GD.Print("after disabling:");
+        //graph.DebugPrint();        
         this.waveTableBank = waveTableBank;
         // Initialize the patch
         // for (int idx = 0; idx < MaxOscillators; idx++)
@@ -116,14 +130,44 @@ public class SynthPatch
         //         Enabled = false
         //     });
         // }
-
-        oscillators[0].Enabled = true;
-        graph.TopologicalSort();
-
         //disable effects by default
-        reverbEffectNode.RoomSize = 0.5f;
+        //reverbEffectNode.RoomSize = 0.5f;
+
+        //oscillators[0].Enabled = true;
+
+        // for (int i = 0; i < oscillators.Count; i++)
+        // {
+        //     graph.SetNodeEnabled(oscillators[i], true);
+        //     graph.DebugPrint();
+        // }
+
+        // for (int i = 0; i < oscillators.Count; i++)
+        // {
+        //     graph.SetNodeEnabled(oscillators[i], false);
+        //     graph.DebugPrint();
+        // }
+
+        // for (int i = 0; i < oscillators.Count; i++)
+        // {
+        //     graph.SetNodeEnabled(oscillators[i], true);
+        //     graph.DebugPrint();
+        // }
+
+
         graph.SetNodeEnabled(reverbEffectNode, false);
+        //graph.DebugPrint();
         graph.SetNodeEnabled(delayEffectNode, false);
+        //graph.DebugPrint();
+        //SetDelayEffect_Enabled(false);
+        //SetReverbEffect_Enabled(false);
+
+        //graph.TopologicalSort();
+        //graph.DebugPrint();
+    }
+
+    public void SetMasterGain(float gain)
+    {
+        speakerNode.Gain = gain;
     }
 
     public float[] CreateWaveform(WaveTableWaveType waveType, int bufSize)
@@ -133,8 +177,10 @@ public class SynthPatch
 
     public void SetReverbEffect_Enabled(bool enabled)
     {
+        GD.Print("Setting reverb enabled to " + enabled);
         graph.SetNodeEnabled(reverbEffectNode, enabled);
         reverbEffectNode.Mute();
+        //graph.DebugPrint();
     }
 
     public void SetReverbEffect_RoomSize(float roomSize)
@@ -165,8 +211,10 @@ public class SynthPatch
 
     public void SetDelayEffect_Enabled(bool enabled)
     {
+        GD.Print("Setting delay enabled to " + enabled);
         graph.SetNodeEnabled(delayEffectNode, enabled);
         delayEffectNode.Mute();
+        //graph.DebugPrint();
     }
 
     public void SetDelayEffect_Delay(int delay)
@@ -411,6 +459,7 @@ public class SynthPatch
         if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
         {
             graph.SetNodeEnabled(oscillators[OscillatorIndex], enabled);
+            //graph.DebugPrint();
             ResetAllOscillatorPhases();
             return;
         }
@@ -418,6 +467,7 @@ public class SynthPatch
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
             graph.SetNodeEnabled(oscillators[idx], enabled);
+            //graph.DebugPrint();
         }
         ResetAllOscillatorPhases();
     }

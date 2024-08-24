@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=21 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://brjdceq6gabsc" path="res://scenes/MoogFilter.tscn" id="9_tmfms"]
 [ext_resource type="PackedScene" uid="uid://c4ngt17drrav4" path="res://scenes/ADSR_Visualizer.tscn" id="10_6jxek"]
 [ext_resource type="PackedScene" uid="uid://bqic6ky7yxt0h" path="res://scenes/ModulationMatrix.tscn" id="10_o17te"]
+[ext_resource type="PackedScene" uid="uid://crjemhpcmuknv" path="res://scenes/PatchControls.tscn" id="14_4hro0"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.03
@@ -247,13 +248,8 @@ theme_override_constants/separation = 200
 [node name="MoogFilter" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("9_tmfms")]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer"]
+[node name="PatchControls" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("14_4hro0")]
 layout_mode = 2
-
-[node name="Label" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer"]
-layout_mode = 2
-text = "Amplitude Envelope
-"
 
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
 [connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]
@@ -271,3 +267,5 @@ text = "Amplitude Envelope
 [connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_cutoff_changed"]
 [connection signal="drive_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_drive_changed"]
 [connection signal="resonance_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_resonance_changed"]
+[connection signal="gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/PatchControls" to="." method="_on_patch_controls_gain_changed"]
+[connection signal="portamento_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/PatchControls" to="." method="_on_patch_controls_portamento_changed"]

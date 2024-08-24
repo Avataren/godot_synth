@@ -4,8 +4,16 @@ namespace Synth
 {
     public class PassThroughNode : AudioNode
     {
+        float _gain = 1.0f;
+        public float Gain
+        {
+            get => _gain;
+            set => _gain = value;
+        }
+
         public PassThroughNode()
         {
+            AcceptedInputType = InputType.Stereo;
             LeftBuffer = new float[NumSamples];
             RightBuffer = new float[NumSamples];
         }
@@ -24,8 +32,8 @@ namespace Synth
 
                 for (int i = 0; i < NumSamples; i++)
                 {
-                    LeftBuffer[i] += node.LeftBuffer[i];
-                    RightBuffer[i] += node.RightBuffer[i];
+                    LeftBuffer[i] += node.LeftBuffer[i] * Gain;
+                    RightBuffer[i] += node.RightBuffer[i] * Gain;
                 }
             }
         }

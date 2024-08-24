@@ -11,6 +11,7 @@ namespace Synth
         public float[] RightBufferTmp;
         public ReverbEffectNode() : base()
         {
+            AcceptedInputType = InputType.Stereo;
             LeftBuffer = new float[NumSamples];
             RightBuffer = new float[NumSamples];
             LeftBufferTmp = new float[NumSamples];

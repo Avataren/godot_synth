@@ -1,81 +1,52 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Godot;
 
 namespace Synth
 {
+    public class AudioConnection
+    {
+        public AudioNode Source { get; set; }
+        public AudioNode Destination { get; set; }
+        public string Param { get; set; }
+        public string ModType { get; set; }
+        public float Strength { get; set; }
+
+        public AudioConnection(AudioNode source, AudioNode destination, string param, string modType, float strength)
+        {
+            Source = source;
+            Destination = destination;
+            Param = param;
+            ModType = modType;
+            Strength = strength;
+        }
+    }
+
     public class AudioGraph
     {
         private readonly object _lock = new object();
-        protected List<AudioNode> Nodes = new List<AudioNode>();
+        protected List<AudioNode> OriginalNodes = new List<AudioNode>();
+        protected List<AudioNode> WorkingNodes = new List<AudioNode>();
         protected List<AudioNode> SortedNodes = null;
+        private Dictionary<AudioNode, List<AudioConnection>> OriginalConnections = new Dictionary<AudioNode, List<AudioConnection>>();
 
-        // Store original connections for each node
-        //private Dictionary<AudioNode, List<(AudioNode Source, AudioNode Destination, AudioParam Param)>> originalConnections = new Dictionary<AudioNode, List<(AudioNode, AudioNode, AudioParam)>>();
-        private Dictionary<AudioNode, List<(AudioNode Source, AudioNode Destination, AudioParam Param, ModulationType ModType, float Strength)>> originalConnections =
-    new Dictionary<AudioNode, List<(AudioNode, AudioNode, AudioParam, ModulationType, float)>>();
-
-
-        // Factory method to create and register nodes
-        //public T CreateNode<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(string name, int bufferSize, float sampleRate = 44100) where T : AudioNode
         public T CreateNode<T>(string name) where T : AudioNode, new()
         {
-            //var constructorInfo = typeof(T).GetConstructor(new Type[] { typeof(int), typeof(float) }) ?? throw new InvalidOperationException($"Type {typeof(T)} does not have a constructor with parameters (int, float).");
-
-            //T node = (T)constructorInfo.Invoke(new object[] { bufferSize, sampleRate });
-            T node = (T)Activator.CreateInstance(typeof(T));
+            T node = new T();
             node.Name = name;
-
             RegisterNode(node);
             return node;
-        }
-
-        public void DebugPrint()
-        {
-            if (SortedNodes == null)
-            {
-                TopologicalSort();
-            }
-            Godot.GD.Print("AudioGraph debug print:");
-            foreach (AudioNode node in SortedNodes)
-            {
-                Godot.GD.Print(node.Name);
-                foreach (var param in node.AudioParameters)
-                {
-                    Godot.GD.Print($"param:  {param.Key}");
-                    foreach (var paramNode in param.Value)
-                    {
-                        Godot.GD.Print($"    {paramNode.SourceNode.Name}");
-                    }
-                }
-            }
-        }
-
-        public AudioNode GetNode(string name)
-        {
-            lock (_lock)
-            {
-                return Nodes.Find(node => node.Name == name);
-            }
         }
 
         public void RegisterNode(AudioNode node)
         {
             lock (_lock)
             {
-                Nodes.Add(node);
-                SortedNodes = null;
-            }
-        }
-
-        public void RemoveNode(string name)
-        {
-            lock (_lock)
-            {
-                Nodes.RemoveAll(node => node.Name == name);
-                SortedNodes = null;
+                OriginalNodes.Add(node);
+                WorkingNodes.Add(node); // Start with the same nodes in the working graph
+                OriginalConnections[node] = new List<AudioConnection>();
+                GD.Print($"Registered node: {node.Name}");
             }
         }
 
@@ -83,19 +54,28 @@ namespace Synth
         {
             lock (_lock)
             {
-                if (!destination.AudioParameters.ContainsKey(param))
+                if (!OriginalConnections[source].Any(c => c.Destination == destination && c.Param == param.ToString()))
                 {
-                    destination.AudioParameters[param] = new List<ParameterConnection>();
+                    OriginalConnections[source].Add(new AudioConnection(source, destination, param.ToString(), modType.ToString(), strength));
+                    AddConnectionToWorkingGraph(source, destination, param, modType, strength);
+                    GD.Print($"Connected {source.Name} to {destination.Name} on param {param}");
                 }
-                //GD.Print("Adding connection from " + source.Name + " to " + destination.Name + " with param " + param);
-                destination.AudioParameters[param].Add(new ParameterConnection(source, strength, modType));
-                //GD.Print("Destination " + destination.Name + " now has " + destination.AudioParameters[param].Count + " connections, they are:");
-                foreach (var paramCon in destination.AudioParameters[param])
+                else
                 {
-                    GD.Print(paramCon.SourceNode.Name);
+                    GD.Print($"Connection from {source.Name} to {destination.Name} on param {param} already exists");
                 }
-                SortedNodes = null;
             }
+        }
+
+        private void AddConnectionToWorkingGraph(AudioNode source, AudioNode destination, AudioParam param, ModulationType modType, float strength)
+        {
+            if (!destination.AudioParameters.ContainsKey(param))
+            {
+                destination.AudioParameters[param] = new List<ParameterConnection>();
+            }
+
+            destination.AudioParameters[param].Add(new ParameterConnection(source, strength, modType));
+            GD.Print($"[Working Graph] Connected {source.Name} to {destination.Name} on param {param} (Strength: {strength}, ModType: {modType})");
         }
 
         public void Disconnect(AudioNode source, AudioNode destination, AudioParam param)
@@ -104,298 +84,122 @@ namespace Synth
             {
                 if (destination.AudioParameters.ContainsKey(param))
                 {
-                    //GD.Print("Removing connection from " + source.Name + " to " + destination.Name + " with param " + param);
-
                     destination.AudioParameters[param].RemoveAll(x => x.SourceNode == source);
+                    if (destination.AudioParameters[param].Count == 0)
+                    {
+                        destination.AudioParameters.Remove(param);
+                    }
+                    GD.Print($"Disconnected {source.Name} from {destination.Name} on param {param}");
                 }
             }
-            SortedNodes = null;
         }
 
-        // Handle enabling/disabling nodes with rerouting logic
         public void SetNodeEnabled(AudioNode node, bool enabled)
         {
             lock (_lock)
             {
                 if (node.Enabled != enabled)
                 {
+                    GD.Print($"Setting node {node.Name} enabled to {enabled}");
                     node.Enabled = enabled;
-
-                    if (enabled)
-                    {
-                        RestoreConnections(node);
-                    }
-                    else
-                    {
-                        RerouteConnections(node);
-                    }
-
-                    TopologicalSort(); // Re-sort after changing connections
+                    ReconstructWorkingGraph();
+                    TopologicalSortWorkingGraph();
+                    GD.Print("Working graph reconstruction and topological sort completed");
                 }
             }
         }
 
-        private void RerouteConnections(AudioNode node)
+        private void ReconstructWorkingGraph()
         {
-            if (!originalConnections.ContainsKey(node))
+            GD.Print("[Working Graph] Reconstructing working graph...");
+
+            // Clear the working graph connections
+            foreach (var node in WorkingNodes)
             {
-                originalConnections[node] = new List<(AudioNode, AudioNode, AudioParam, ModulationType, float)>();
+                GD.Print($"[Working Graph] Clearing connections for node {node.Name}");
+                node.AudioParameters.Clear();
             }
 
-            // Disconnect the node and reroute its inputs
-            foreach (var param in node.AudioParameters.Keys)
+            // Rebuild the working graph connections based on the enabled nodes
+            foreach (var source in OriginalConnections.Keys)
             {
-                // Create a copy of the list to avoid modifying the collection while iterating
-                var connectionsCopy = node.AudioParameters[param].ToList();
-
-                foreach (var connection in connectionsCopy)
+                if (source.Enabled)
                 {
-                    var inputNode = connection.SourceNode;
+                    GD.Print($"[Working Graph] Processing enabled node {source.Name}");
 
-                    foreach (var dependentNode in Nodes)
+                    foreach (var connection in OriginalConnections[source])
                     {
-                        if (dependentNode.AudioParameters.ContainsKey(param))
+                        var destination = connection.Destination;
+
+                        if (destination.Enabled)
                         {
-                            var dependentConnections = dependentNode.AudioParameters[param];
+                            GD.Print($"[Working Graph] Reconnecting {source.Name} -> {destination.Name} on param {connection.Param}");
+                            AddConnectionToWorkingGraph(source, destination, Enum.Parse<AudioParam>(connection.Param), Enum.Parse<ModulationType>(connection.ModType), connection.Strength);
+                        }
+                        else
+                        {
+                            // Attempt to reroute the connection to maintain signal flow
+                            var reroutedNode = FindNextEnabledDownstreamNode(destination);
 
-                            // Check if the dependent node has a connection from the current node
-                            var dependentConnection = dependentConnections.FirstOrDefault(c => c.SourceNode == node);
-                            if (dependentConnection != null)
+                            if (reroutedNode != null)
                             {
-                                // Save the original connection, including ModType and Strength
-                                originalConnections[node].Add((inputNode, dependentNode, param, connection.ModType, connection.Strength));
-
-                                // Disconnect the current node from the dependent node
-                                Disconnect(node, dependentNode, param);
-
-                                // Avoid duplicate connections
-                                if (!dependentConnections.Any(c => c.SourceNode == inputNode))
-                                {
-                                    // Connect inputNode directly to the dependentNode with the same ModType and Strength
-                                    Connect(inputNode, dependentNode, param, connection.ModType, connection.Strength);
-                                }
+                                GD.Print($"[Working Graph] Rerouting {source.Name} -> {reroutedNode.Name} instead of {destination.Name} on param {connection.Param}");
+                                AddConnectionToWorkingGraph(source, reroutedNode, Enum.Parse<AudioParam>(connection.Param), Enum.Parse<ModulationType>(connection.ModType), connection.Strength);
+                            }
+                            else
+                            {
+                                GD.Print($"[Working Graph] No enabled downstream node found for {destination.Name}, skipping connection.");
                             }
                         }
                     }
                 }
+                else
+                {
+                    GD.Print($"[Working Graph] Skipping disabled node {source.Name}");
+                }
             }
+
+            // Print the final state of the working graph connections
+            PrintConnections();
         }
 
-
-        // private void RerouteConnections(AudioNode node)
-        // {
-        //     if (!originalConnections.ContainsKey(node))
-        //     {
-        //         originalConnections[node] = new List<(AudioNode, AudioNode, AudioParam, ModulationType, float)>();
-        //     }
-
-        //     // Disconnect the node and reroute its inputs
-        //     foreach (var param in node.AudioParameters.Keys)
-        //     {
-        //         foreach (var connection in node.AudioParameters[param])
-        //         {
-        //             var inputNode = connection.SourceNode;
-
-        //             foreach (var dependentNode in Nodes)
-        //             {
-        //                 if (dependentNode.AudioParameters.ContainsKey(param))
-        //                 {
-        //                     var dependentConnections = dependentNode.AudioParameters[param];
-
-        //                     // Check if the dependent node has a connection from the current node
-        //                     var dependentConnection = dependentConnections.FirstOrDefault(c => c.SourceNode == node);
-        //                     if (dependentConnection != null)
-        //                     {
-        //                         // Save the original connection, including ModType and Strength
-        //                         originalConnections[node].Add((inputNode, dependentNode, param, connection.ModType, connection.Strength));
-
-        //                         // Disconnect the current node from the dependent node
-        //                         Disconnect(node, dependentNode, param);
-
-        //                         // Avoid duplicate connections
-        //                         if (!dependentConnections.Any(c => c.SourceNode == inputNode))
-        //                         {
-        //                             // Connect inputNode directly to the dependentNode with the same ModType and Strength
-        //                             Connect(inputNode, dependentNode, param, connection.ModType, connection.Strength);
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-
-        // private void RerouteConnections(AudioNode node)
-        // {
-        //     if (!originalConnections.ContainsKey(node))
-        //     {
-        //         originalConnections[node] = new List<(AudioNode, AudioNode, AudioParam)>();
-        //     }
-
-        //     // Disconnect the node and reroute its inputs
-        //     foreach (var param in node.AudioParameters.Keys)
-        //     {
-        //         foreach (var connection in node.AudioParameters[param])
-        //         {
-        //             var inputNode = connection.SourceNode;
-
-        //             foreach (var dependentNode in Nodes)
-        //             {
-        //                 if (dependentNode.AudioParameters.ContainsKey(param))
-        //                 {
-        //                     var dependentConnections = dependentNode.AudioParameters[param];
-
-        //                     // Check if the dependent node has a connection from the current node
-        //                     if (dependentConnections.Any(c => c.SourceNode == node))
-        //                     {
-        //                         // Save the original connection
-        //                         originalConnections[node].Add((inputNode, dependentNode, param));
-
-        //                         // Disconnect the current node from the dependent node
-        //                         Disconnect(node, dependentNode, param);
-
-        //                         // Avoid duplicate connections
-        //                         if (!dependentConnections.Any(c => c.SourceNode == inputNode))
-        //                         {
-        //                             // Connect inputNode directly to the dependentNode
-        //                             Connect(inputNode, dependentNode, param);
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-        private void RestoreConnections(AudioNode node)
+        private AudioNode FindNextEnabledDownstreamNode(AudioNode node)
         {
-            // Restore the original connections
-            if (originalConnections.ContainsKey(node))
+            var downstreamNodes = FindDownstreamNodes(node);
+
+            foreach (var downstreamNode in downstreamNodes)
             {
-                foreach (var (source, destination, param, modType, strength) in originalConnections[node])
+                if (downstreamNode.Enabled)
                 {
-                    // Find the ParameterConnection where the SourceNode is the source
-                    var existingConnection = destination.AudioParameters[param]
-                        .FirstOrDefault(c => c.SourceNode == source);
-
-                    if (existingConnection != null)
+                    return downstreamNode;
+                }
+                else
+                {
+                    // Recursively search for an enabled downstream node
+                    var nextNode = FindNextEnabledDownstreamNode(downstreamNode);
+                    if (nextNode != null)
                     {
-                        // Disconnect the rerouted connection
-                        Disconnect(source, destination, param);
-                    }
-
-                    // Check if the original node is already connected
-                    var originalConnection = destination.AudioParameters[param]
-                        .FirstOrDefault(c => c.SourceNode == node);
-
-                    if (originalConnection == null)
-                    {
-                        // Reconnect the original node with the saved ModType and Strength
-                        Connect(node, destination, param, modType, strength);
+                        return nextNode;
                     }
                 }
-
-                // Clear stored original connections
-                originalConnections[node].Clear();
             }
+
+            return null; // No enabled downstream node found
         }
 
+        private IEnumerable<AudioNode> FindDownstreamNodes(AudioNode node)
+        {
+            // This method should return a list of nodes that are connected downstream of the provided node
+            return OriginalConnections.Values
+                .SelectMany(connections => connections)
+                .Where(connection => connection.Source == node)
+                .Select(connection => connection.Destination);
+        }
 
-        // private void RestoreConnections(AudioNode node)
-        // {
-        //     // Restore the original connections
-        //     if (originalConnections.ContainsKey(node))
-        //     {
-        //         foreach (var (source, destination, param) in originalConnections[node])
-        //         {
-        //             // Find the ParameterConnection where the SourceNode is the source
-        //             var existingConnection = destination.AudioParameters[param]
-        //                 .FirstOrDefault(c => c.SourceNode == source);
-
-        //             if (existingConnection != null)
-        //             {
-        //                 // Disconnect the rerouted connection
-        //                 Disconnect(source, destination, param);
-        //             }
-
-        //             // Check if the original node is already connected
-        //             var originalConnection = destination.AudioParameters[param]
-        //                 .FirstOrDefault(c => c.SourceNode == node);
-
-        //             if (originalConnection == null)
-        //             {
-        //                 // Reconnect the original node
-        //                 Connect(node, destination, param);
-        //             }
-        //         }
-
-        //         // Clear stored original connections
-        //         originalConnections[node].Clear();
-        //     }
-        // }
-
-
-        // private void RerouteConnections(AudioNode node)
-        // {
-        //     if (!originalConnections.ContainsKey(node))
-        //     {
-        //         originalConnections[node] = new List<(AudioNode, AudioNode, AudioParam)>();
-        //     }
-
-        //     // Disconnect the node and reroute its inputs
-        //     foreach (var param in node.AudioParameters.Keys)
-        //     {
-        //         foreach (var inputNode in node.AudioParameters[param])
-        //         {
-        //             foreach (var dependentNode in Nodes)
-        //             {
-        //                 if (dependentNode.AudioParameters.ContainsKey(param) && dependentNode.AudioParameters[param].Contains(node))
-        //                 {
-        //                     // Save the original connection
-        //                     originalConnections[node].Add((inputNode, dependentNode, param));
-
-        //                     // Disconnect the current node from the dependent node
-        //                     Disconnect(node, dependentNode, param);
-
-        //                     // Avoid duplicate connections
-        //                     if (!dependentNode.AudioParameters[param].Contains(inputNode))
-        //                     {
-        //                         // Connect inputNode directly to the dependentNode
-        //                         Connect(inputNode, dependentNode, param);
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-
-        // private void RestoreConnections(AudioNode node)
-        // {
-        //     // Restore the original connections
-        //     if (originalConnections.ContainsKey(node))
-        //     {
-        //         foreach (var (source, destination, param) in originalConnections[node])
-        //         {
-        //             // Avoid duplicate disconnections
-        //             if (destination.AudioParameters[param].Contains(source))
-        //             {
-        //                 // Disconnect the rerouted connection
-        //                 Disconnect(source, destination, param);
-        //             }
-
-        //             // Avoid duplicate connections
-        //             if (!destination.AudioParameters[param].Contains(node))
-        //             {
-        //                 // Reconnect the original node
-        //                 Connect(node, destination, param);
-        //             }
-        //         }
-
-        //         // Clear stored original connections
-        //         originalConnections[node].Clear();
-        //     }
-        // }
+        private AudioNode FindImmediateParentNode(AudioNode node)
+        {
+            return OriginalNodes.FirstOrDefault(n => n.AudioParameters.Values.Any(paramList => paramList.Any(conn => conn.SourceNode == node)));
+        }
 
         public void Process(double increment)
         {
@@ -403,89 +207,141 @@ namespace Synth
             {
                 if (SortedNodes == null)
                 {
-                    TopologicalSort();
+                    GD.Print("[Process] SortedNodes is null, running topological sort");
+                    TopologicalSortWorkingGraph();
                 }
 
                 foreach (AudioNode node in SortedNodes)
                 {
                     if (node.Enabled)
                     {
+                        //GD.Print($"[Process] Processing node {node.Name}");
+
+                        // Assuming each node processes its inputs and produces an output
                         node.Process(increment);
+
+                        // Add logging to track the output of each node
+                        //GD.Print($"[Process] Node {node.Name} output state: {node.OutputState()}"); // Hypothetical method
+                    }
+                    else
+                    {
+                        GD.Print($"[Process] Skipping disabled node {node.Name}");
                     }
                 }
             }
         }
 
-        public void TopologicalSort()
+
+        public void TopologicalSortWorkingGraph()
         {
             SortedNodes = new List<AudioNode>();
             HashSet<AudioNode> visited = new HashSet<AudioNode>();
             HashSet<AudioNode> stack = new HashSet<AudioNode>();
 
-            foreach (AudioNode node in Nodes)
+            //GD.Print("[TopologicalSort] Starting topological sort...");
+
+            foreach (AudioNode node in WorkingNodes)
             {
-                if (!visited.Contains(node))
+                if (!visited.Contains(node) && node.Enabled)  // Ensure only enabled nodes are considered
                 {
+                    //GD.Print($"[TopologicalSort] Visiting node {node.Name}");
                     Visit(node, visited, stack);
                 }
             }
+
+            //GD.Print("[TopologicalSort] Topological sort completed. Node order:");
+            // foreach (var node in SortedNodes)
+            // {
+            //     GD.Print($"[TopologicalSort] Node: {node.Name}");
+            // }
         }
 
         private void Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
         {
             if (stack.Contains(node))
             {
-                //throw new InvalidOperationException("Cycle detected in the audio graph");
+                GD.Print($"[Visit] Node {node.Name} is already in the stack, skipping.");
                 return;
             }
             if (!visited.Contains(node))
             {
-                if (node.Enabled) // Skip disabled nodes
-                {
-                    stack.Add(node);
-                    visited.Add(node);
+                GD.Print($"[Visit] Visiting node {node.Name} for the first time");
 
-                    foreach (var paramlist in node.AudioParameters.Values)
+                stack.Add(node);
+                visited.Add(node);
+
+                foreach (var paramlist in node.AudioParameters.Values)
+                {
+                    foreach (var connection in paramlist)
                     {
-                        foreach (var connection in paramlist)
+                        AudioNode dependentNode = connection.SourceNode;
+                        if (dependentNode.Enabled)  // Ensure only enabled nodes are considered
                         {
-                            AudioNode dependentNode = connection.SourceNode;
+                            GD.Print($"[Visit] Node {node.Name} depends on {dependentNode.Name}, visiting...");
                             Visit(dependentNode, visited, stack);
                         }
+                        else
+                        {
+                            GD.Print($"[Visit] Node {dependentNode.Name} is disabled, skipping.");
+                        }
                     }
+                }
 
-                    stack.Remove(node);
-                    SortedNodes.Add(node);
+                stack.Remove(node);
+                SortedNodes.Add(node);
+                GD.Print($"[Visit] Added node {node.Name} to SortedNodes");
+            }
+        }
+
+        public void DebugPrint()
+        {
+            if (SortedNodes == null)
+            {
+                TopologicalSortWorkingGraph();
+            }
+            GD.Print("AudioGraph debug print:");
+            foreach (AudioNode node in SortedNodes)
+            {
+                GD.Print(node.Name);
+                foreach (var param in node.AudioParameters)
+                {
+                    GD.Print($"param:  {param.Key}");
+                    foreach (var paramNode in param.Value)
+                    {
+                        GD.Print($"    {paramNode.SourceNode.Name}");
+                    }
                 }
             }
         }
 
+        public AudioNode GetNode(string name)
+        {
+            GD.Print($"[GetNode] Looking for node with name: {name}");
+            var node = OriginalNodes.FirstOrDefault(n => n.Name == name);
+            if (node != null)
+            {
+                GD.Print($"[GetNode] Found node: {node.Name}");
+            }
+            else
+            {
+                GD.Print($"[GetNode] Node with name {name} not found");
+            }
+            return node;
+        }
 
-        // private void Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
-        // {
-        //     if (stack.Contains(node))
-        //     {
-        //         throw new InvalidOperationException("Cycle detected in the audio graph");
-        //     }
-        //     if (!visited.Contains(node))
-        //     {
-        //         if (node.Enabled) // Skip disabled nodes
-        //         {
-        //             stack.Add(node);
-        //             visited.Add(node);
-
-        //             foreach (var paramlist in node.AudioParameters.Values)
-        //             {
-        //                 foreach (AudioNode dependentNode in paramlist)
-        //                 {
-        //                     Visit(dependentNode, visited, stack);
-        //                 }
-        //             }
-
-        //             stack.Remove(node);
-        //             SortedNodes.Add(node);
-        //         }
-        //     }
-        // }
+        private void PrintConnections()
+        {
+            GD.Print("Current working connections:");
+            foreach (var node in WorkingNodes)
+            {
+                foreach (var param in node.AudioParameters)
+                {
+                    foreach (var connection in param.Value)
+                    {
+                        GD.Print($"  {connection.SourceNode.Name} -> {node.Name} on param {param.Key}");
+                    }
+                }
+            }
+        }
     }
 }

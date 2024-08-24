@@ -94,7 +94,6 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			{
 				return;
 			}
-			GD.Print("Unhandled input: " + eKey.Keycode);
 		}
 
 		var keyMap = new Dictionary<Godot.Key, int> {
@@ -175,7 +174,7 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 	public void Debug()
 	{
-		CurrentPatch.graph.DebugPrint();
+		//CurrentPatch.graph.DebugPrint();
 	}
 
 	public void Connect(string srcName, string dstName, string param, ModulationType modType, float strength = 1.0f)

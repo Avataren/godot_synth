@@ -15,6 +15,10 @@ namespace Synth
         public override void Process(double increment)
         {
             var nodes = GetParameterNodes(AudioParam.Input);
+            if (nodes == null || nodes.Count == 0)
+            {
+                return;
+            }
             Array.Clear(LeftBuffer);
             Array.Clear(RightBuffer);
 

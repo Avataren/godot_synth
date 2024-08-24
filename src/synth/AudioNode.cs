@@ -4,6 +4,12 @@ using System.Collections.Generic;
 
 namespace Synth
 {
+	public enum InputType
+	{
+		Mono,
+		Stereo,
+		Both
+	}
 	// Interface for audio processing nodes
 	public abstract class AudioNode
 	{
@@ -22,6 +28,7 @@ namespace Synth
 		public Dictionary<AudioParam, List<ParameterConnection>> AudioParameters = new Dictionary<AudioParam, List<ParameterConnection>>();
 		//private Dictionary<AudioParam, List<ParameterConnection>> originalConnections = new Dictionary<AudioParam, List<ParameterConnection>>();
 		protected ParameterScheduler _scheduler = AudioContext.Scheduler;
+	    public InputType AcceptedInputType { get; set; } = InputType.Mono; // Default to stereo, can be overridden
 
 		public static double ModuloOne(double val)
 		{

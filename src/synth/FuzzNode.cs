@@ -21,6 +21,7 @@ namespace Synth
 
         public FuzzNode() : base()
         {
+            AcceptedInputType = InputType.Stereo;
             LeftBuffer = new float[NumSamples];
             RightBuffer = new float[NumSamples];
         }

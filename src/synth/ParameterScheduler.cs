@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Godot;
 
@@ -71,15 +72,17 @@ namespace Synth
                 }
 
                 double progress = (startTimeInSeconds - lastEvent.Time) / duration;
-                progress = Math.Max(0.0, Math.Min(1.0, progress)); // Clamp progress between 0 and 1
+                progress = Math.Clamp(progress, 0.0, 1.0); // Using Math.Clamp for clarity
+
+                double startValue = lastEvent.InitialValue ?? lastEvent.Value;
 
                 if (lastEvent.IsExponential)
                 {
-                    return SafeExponentialInterpolation(lastEvent.InitialValue, lastEvent.TargetValue, progress);
+                    return SafeExponentialInterpolation(startValue, lastEvent.TargetValue, progress);
                 }
                 else
                 {
-                    return lastEvent.InitialValue + progress * (lastEvent.TargetValue - lastEvent.InitialValue);
+                    return startValue + progress * (lastEvent.TargetValue - startValue);
                 }
             }
             return Math.Max(MIN_EXPONENTIAL_VALUE, currentValue);
@@ -210,60 +213,55 @@ namespace Synth
                     {
                         var buffer = _nodeParameterBuffers[node][param];
                         var events = _nodeEventDictionary[node][param];
-                        double lastScheduledValue = Math.Max(MIN_EXPONENTIAL_VALUE, _nodeLastScheduledValues[node][param]);
+                        double lastScheduledValue = _nodeLastScheduledValues[node][param];
+
 
                         for (int i = 0; i < _bufferSize; i++)
                         {
                             double timeAtSample = _currentTimeInSeconds + (i * increment);
+                            bool initialValueApplied = false;
 
                             while (events.Count > 0 && timeAtSample >= events[0].Time - TIME_EPSILON)
                             {
                                 var evt = events[0];
 
-                                if (evt.EndTime.HasValue && timeAtSample <= evt.EndTime.Value + TIME_EPSILON)
+                                if (Math.Abs(timeAtSample - evt.Time) < increment / 2)
                                 {
-                                    double duration = evt.EndTime.Value - evt.Time;
-                                    if (duration <= TIME_EPSILON)
+                                    // This is the closest sample to the event time
+                                    if (evt.InitialValue.HasValue)
                                     {
-                                        lastScheduledValue = evt.TargetValue;
+                                        buffer[i] = evt.InitialValue.Value;
+                                        initialValueApplied = true;
                                     }
-                                    else
-                                    {
-                                        double progress = (timeAtSample - evt.Time) / duration;
-                                        progress = Math.Max(0.0, Math.Min(1.0, progress)); // Clamp progress between 0 and 1
-
-                                        if (evt.IsExponential)
-                                        {
-                                            lastScheduledValue = SafeExponentialInterpolation(evt.InitialValue, evt.TargetValue, progress);
-                                        }
-                                        else
-                                        {
-                                            lastScheduledValue = evt.InitialValue + progress * (evt.TargetValue - evt.InitialValue);
-                                        }
-                                    }
-                                    break;
+                                    lastScheduledValue = evt.Value;
                                 }
                                 else
                                 {
-                                    lastScheduledValue = evt.EndTime.HasValue ? evt.TargetValue : evt.Value;
-                                    _lock.EnterWriteLock();
-                                    try
-                                    {
-                                        events.RemoveAt(0);
-                                        _processedEventCount++;
-                                    }
-                                    finally
-                                    {
-                                        _lock.ExitWriteLock();
-                                    }
+                                    lastScheduledValue = evt.Value;
+                                }
+
+                                _lock.EnterWriteLock();
+                                try
+                                {
+                                    events.RemoveAt(0);
+                                    _processedEventCount++;
+                                }
+                                finally
+                                {
+                                    _lock.ExitWriteLock();
                                 }
                             }
 
-                            buffer[i] = Math.Max(MIN_EXPONENTIAL_VALUE, lastScheduledValue);
+                            if (!initialValueApplied)
+                            {
+                                buffer[i] = lastScheduledValue;
+                            }
+
                         }
 
                         _nodeLastScheduledValues[node][param] = lastScheduledValue;
                         _nodeHasRemainingEvents[node][param] = events.Count > 0;
+
                     }
                 }
 
@@ -274,12 +272,6 @@ namespace Synth
                 _lock.ExitUpgradeableReadLock();
             }
         }
-
-        public void Dispose()
-        {
-            _lock.Dispose();
-        }
-
         // public void Process(double increment)
         // {
         //     lock (_lock)
@@ -387,7 +379,7 @@ namespace Synth
         public double Value { get; }
         public double? EndTime { get; }
         public double TargetValue { get; }
-        public double InitialValue { get; set; }
+        public double? InitialValue { get; set; }
         public bool IsExponential { get; } // New flag to indicate if the ramp is exponential
 
         public ScheduleEvent(double time, double value, double? endTime = null, double targetValue = 0.0, double? initialValue = null, bool isExponential = false)
@@ -396,7 +388,7 @@ namespace Synth
             Value = value;
             EndTime = endTime;
             TargetValue = targetValue;
-            InitialValue = initialValue ?? value;
+            InitialValue = initialValue;
             IsExponential = isExponential; // Initialize the exponential flag
         }
 

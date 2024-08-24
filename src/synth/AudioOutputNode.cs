@@ -177,6 +177,11 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		//CurrentPatch.graph.DebugPrint();
 	}
 
+	public void PrepareGraph()
+	{
+		//CurrentPatch.graph.TopologicalSortWorkingGraph();
+	}
+
 	public void Connect(string srcName, string dstName, string param, ModulationType modType, float strength = 1.0f)
 	{
 		// Print("Connecting " + srcName + " to " + dstName + " with param " + param);

@@ -21,6 +21,7 @@ func _add_new_connections() ->  void:
 				%AudioOutputNode.Connect(src_name, dst_name, param_name, 0, 1.0)
 			
 			previous_connections.append({src = src_name, dst = dst_name, param = param_name})
+		#%AudioOutputNode.PrepareGraph();
 							
 func _remove_existing_connections() -> void:
 	for entry in previous_connections:

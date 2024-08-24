@@ -33,8 +33,7 @@ namespace Synth
 
         public T CreateNode<T>(string name) where T : AudioNode, new()
         {
-            T node = new T();
-            node.Name = name;
+            T node = new T { Name = name };
             RegisterNode(node);
             return node;
         }
@@ -44,30 +43,12 @@ namespace Synth
             lock (_lock)
             {
                 OriginalNodes.Add(node);
-                WorkingNodes.Add(node); // Start with the same nodes in the working graph
+                WorkingNodes.Add(node);
                 OriginalConnections[node] = new List<AudioConnection>();
-                GD.Print($"Registered node: {node.Name}");
             }
         }
 
-        public void Connect(AudioNode source, AudioNode destination, AudioParam param, ModulationType modType, float strength = 1.0f)
-        {
-            lock (_lock)
-            {
-                if (!OriginalConnections[source].Any(c => c.Destination == destination && c.Param == param.ToString()))
-                {
-                    OriginalConnections[source].Add(new AudioConnection(source, destination, param.ToString(), modType.ToString(), strength));
-                    AddConnectionToWorkingGraph(source, destination, param, modType, strength);
-                    GD.Print($"Connected {source.Name} to {destination.Name} on param {param}");
-                }
-                else
-                {
-                    GD.Print($"Connection from {source.Name} to {destination.Name} on param {param} already exists");
-                }
-            }
-        }
-
-        private void AddConnectionToWorkingGraph(AudioNode source, AudioNode destination, AudioParam param, ModulationType modType, float strength)
+        private void AddConnectionToWorkingGraph(AudioNode source, AudioNode destination, AudioParam param, ModulationType modType, float strength = 1.0f)
         {
             if (!destination.AudioParameters.ContainsKey(param))
             {
@@ -75,13 +56,55 @@ namespace Synth
             }
 
             destination.AudioParameters[param].Add(new ParameterConnection(source, strength, modType));
-            GD.Print($"[Working Graph] Connected {source.Name} to {destination.Name} on param {param} (Strength: {strength}, ModType: {modType})");
         }
 
+        // Flag to prevent recursive calls when restoring oscillator connections
+        private bool _restoringOscillatorConnection = false;
+
+        public void Connect(AudioNode source, AudioNode destination, AudioParam param, ModulationType modType, float strength = 1.0f)
+        {
+            lock (_lock)
+            {
+                if (!OriginalConnections.ContainsKey(source))
+                {
+                    OriginalConnections[source] = new List<AudioConnection>();
+                }
+
+                GD.Print($"Connecting {source.Name} to {destination.Name} on {param} with {modType} (strength {strength})");
+
+                // Ensure no existing connection to this destination/parameter remains
+                Disconnect(source, destination, param);
+
+                // Add the new connection
+                var newConnection = new AudioConnection(source, destination, param.ToString(), modType.ToString(), strength);
+                OriginalConnections[source].Add(newConnection);
+                AddConnectionToWorkingGraph(source, destination, param, modType, strength);
+
+                // Update the working graph and sort it
+                ReconstructWorkingGraph();
+                TopologicalSortWorkingGraph();
+            }
+        }
         public void Disconnect(AudioNode source, AudioNode destination, AudioParam param)
         {
             lock (_lock)
             {
+                GD.Print($"Disconnecting {source.Name} from {destination.Name} on {param}");
+
+                if (OriginalConnections.ContainsKey(source))
+                {
+                    // Remove the connection from OriginalConnections
+                    var connectionToRemove = OriginalConnections[source]
+                        .FirstOrDefault(c => c.Destination == destination && c.Param == param.ToString());
+
+                    if (connectionToRemove != null)
+                    {
+                        OriginalConnections[source].Remove(connectionToRemove);
+                        GD.Print($"Removed connection from {source.Name} to {destination.Name} on {param}");
+                    }
+                }
+
+                // Remove the connection from the working graph
                 if (destination.AudioParameters.ContainsKey(param))
                 {
                     destination.AudioParameters[param].RemoveAll(x => x.SourceNode == source);
@@ -89,9 +112,20 @@ namespace Synth
                     {
                         destination.AudioParameters.Remove(param);
                     }
-                    GD.Print($"Disconnected {source.Name} from {destination.Name} on param {param}");
+
+                    GD.Print($"Removed connection in working graph from {source.Name} to {destination.Name} on {param}");
                 }
+
+                // Update the working graph and sort it
+                ReconstructWorkingGraph();
+                TopologicalSortWorkingGraph();
             }
+        }
+
+        private AudioNode FindMixerNode()
+        {
+            // Implement logic to find the mixer node in your graph
+            return OriginalNodes.FirstOrDefault(node => node is MixerNode); // Assuming MixerNode is the type for mixers
         }
 
         public void SetNodeEnabled(AudioNode node, bool enabled)
@@ -100,67 +134,43 @@ namespace Synth
             {
                 if (node.Enabled != enabled)
                 {
-                    GD.Print($"Setting node {node.Name} enabled to {enabled}");
                     node.Enabled = enabled;
                     ReconstructWorkingGraph();
                     TopologicalSortWorkingGraph();
-                    GD.Print("Working graph reconstruction and topological sort completed");
                 }
             }
         }
 
         private void ReconstructWorkingGraph()
         {
-            GD.Print("[Working Graph] Reconstructing working graph...");
-
-            // Clear the working graph connections
             foreach (var node in WorkingNodes)
             {
-                GD.Print($"[Working Graph] Clearing connections for node {node.Name}");
                 node.AudioParameters.Clear();
             }
 
-            // Rebuild the working graph connections based on the enabled nodes
             foreach (var source in OriginalConnections.Keys)
             {
                 if (source.Enabled)
                 {
-                    GD.Print($"[Working Graph] Processing enabled node {source.Name}");
-
                     foreach (var connection in OriginalConnections[source])
                     {
                         var destination = connection.Destination;
 
                         if (destination.Enabled)
                         {
-                            GD.Print($"[Working Graph] Reconnecting {source.Name} -> {destination.Name} on param {connection.Param}");
                             AddConnectionToWorkingGraph(source, destination, Enum.Parse<AudioParam>(connection.Param), Enum.Parse<ModulationType>(connection.ModType), connection.Strength);
                         }
                         else
                         {
-                            // Attempt to reroute the connection to maintain signal flow
                             var reroutedNode = FindNextEnabledDownstreamNode(destination);
-
                             if (reroutedNode != null)
                             {
-                                GD.Print($"[Working Graph] Rerouting {source.Name} -> {reroutedNode.Name} instead of {destination.Name} on param {connection.Param}");
                                 AddConnectionToWorkingGraph(source, reroutedNode, Enum.Parse<AudioParam>(connection.Param), Enum.Parse<ModulationType>(connection.ModType), connection.Strength);
-                            }
-                            else
-                            {
-                                GD.Print($"[Working Graph] No enabled downstream node found for {destination.Name}, skipping connection.");
                             }
                         }
                     }
                 }
-                else
-                {
-                    GD.Print($"[Working Graph] Skipping disabled node {source.Name}");
-                }
             }
-
-            // Print the final state of the working graph connections
-            PrintConnections();
         }
 
         private AudioNode FindNextEnabledDownstreamNode(AudioNode node)
@@ -175,7 +185,6 @@ namespace Synth
                 }
                 else
                 {
-                    // Recursively search for an enabled downstream node
                     var nextNode = FindNextEnabledDownstreamNode(downstreamNode);
                     if (nextNode != null)
                     {
@@ -184,21 +193,15 @@ namespace Synth
                 }
             }
 
-            return null; // No enabled downstream node found
+            return null;
         }
 
         private IEnumerable<AudioNode> FindDownstreamNodes(AudioNode node)
         {
-            // This method should return a list of nodes that are connected downstream of the provided node
             return OriginalConnections.Values
                 .SelectMany(connections => connections)
                 .Where(connection => connection.Source == node)
                 .Select(connection => connection.Destination);
-        }
-
-        private AudioNode FindImmediateParentNode(AudioNode node)
-        {
-            return OriginalNodes.FirstOrDefault(n => n.AudioParameters.Values.Any(paramList => paramList.Any(conn => conn.SourceNode == node)));
         }
 
         public void Process(double increment)
@@ -207,7 +210,6 @@ namespace Synth
             {
                 if (SortedNodes == null)
                 {
-                    GD.Print("[Process] SortedNodes is null, running topological sort");
                     TopologicalSortWorkingGraph();
                 }
 
@@ -215,58 +217,48 @@ namespace Synth
                 {
                     if (node.Enabled)
                     {
-                        //GD.Print($"[Process] Processing node {node.Name}");
-
-                        // Assuming each node processes its inputs and produces an output
                         node.Process(increment);
-
-                        // Add logging to track the output of each node
-                        //GD.Print($"[Process] Node {node.Name} output state: {node.OutputState()}"); // Hypothetical method
-                    }
-                    else
-                    {
-                        GD.Print($"[Process] Skipping disabled node {node.Name}");
                     }
                 }
             }
         }
 
-
+        // Handle the potential cycles in Topological Sort
+        // Handle the potential cycles in Topological Sort
         public void TopologicalSortWorkingGraph()
         {
             SortedNodes = new List<AudioNode>();
             HashSet<AudioNode> visited = new HashSet<AudioNode>();
             HashSet<AudioNode> stack = new HashSet<AudioNode>();
 
-            //GD.Print("[TopologicalSort] Starting topological sort...");
-
             foreach (AudioNode node in WorkingNodes)
             {
-                if (!visited.Contains(node) && node.Enabled)  // Ensure only enabled nodes are considered
+                if (!visited.Contains(node) && node.Enabled)
                 {
-                    //GD.Print($"[TopologicalSort] Visiting node {node.Name}");
-                    Visit(node, visited, stack);
+                    if (!Visit(node, visited, stack))
+                    {
+                        // Handle cycle detection (perhaps log it, throw an exception, or handle it based on your application logic)
+                        GD.PrintErr($"Cycle detected in graph with node: {node.Name}");
+                        return;
+                    }
                 }
             }
 
-            //GD.Print("[TopologicalSort] Topological sort completed. Node order:");
-            // foreach (var node in SortedNodes)
-            // {
-            //     GD.Print($"[TopologicalSort] Node: {node.Name}");
-            // }
+            GD.Print("Topological sort completed. Node order:");
+            foreach (var node in SortedNodes)
+            {
+                GD.Print($" - {node.Name}");
+            }
         }
 
-        private void Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
+        private bool Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
         {
             if (stack.Contains(node))
             {
-                GD.Print($"[Visit] Node {node.Name} is already in the stack, skipping.");
-                return;
+                return false; // Cycle detected
             }
             if (!visited.Contains(node))
             {
-                GD.Print($"[Visit] Visiting node {node.Name} for the first time");
-
                 stack.Add(node);
                 visited.Add(node);
 
@@ -275,73 +267,26 @@ namespace Synth
                     foreach (var connection in paramlist)
                     {
                         AudioNode dependentNode = connection.SourceNode;
-                        if (dependentNode.Enabled)  // Ensure only enabled nodes are considered
+                        if (dependentNode.Enabled)
                         {
-                            GD.Print($"[Visit] Node {node.Name} depends on {dependentNode.Name}, visiting...");
-                            Visit(dependentNode, visited, stack);
-                        }
-                        else
-                        {
-                            GD.Print($"[Visit] Node {dependentNode.Name} is disabled, skipping.");
+                            if (!Visit(dependentNode, visited, stack))
+                            {
+                                return false; // Cycle detected further down
+                            }
                         }
                     }
                 }
 
                 stack.Remove(node);
                 SortedNodes.Add(node);
-                GD.Print($"[Visit] Added node {node.Name} to SortedNodes");
             }
-        }
 
-        public void DebugPrint()
-        {
-            if (SortedNodes == null)
-            {
-                TopologicalSortWorkingGraph();
-            }
-            GD.Print("AudioGraph debug print:");
-            foreach (AudioNode node in SortedNodes)
-            {
-                GD.Print(node.Name);
-                foreach (var param in node.AudioParameters)
-                {
-                    GD.Print($"param:  {param.Key}");
-                    foreach (var paramNode in param.Value)
-                    {
-                        GD.Print($"    {paramNode.SourceNode.Name}");
-                    }
-                }
-            }
+            return true; // No cycle detected
         }
 
         public AudioNode GetNode(string name)
         {
-            GD.Print($"[GetNode] Looking for node with name: {name}");
-            var node = OriginalNodes.FirstOrDefault(n => n.Name == name);
-            if (node != null)
-            {
-                GD.Print($"[GetNode] Found node: {node.Name}");
-            }
-            else
-            {
-                GD.Print($"[GetNode] Node with name {name} not found");
-            }
-            return node;
-        }
-
-        private void PrintConnections()
-        {
-            GD.Print("Current working connections:");
-            foreach (var node in WorkingNodes)
-            {
-                foreach (var param in node.AudioParameters)
-                {
-                    foreach (var connection in param.Value)
-                    {
-                        GD.Print($"  {connection.SourceNode.Name} -> {node.Name} on param {param.Key}");
-                    }
-                }
-            }
+            return OriginalNodes.FirstOrDefault(n => n.Name == name);
         }
     }
 }

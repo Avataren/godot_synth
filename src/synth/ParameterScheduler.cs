@@ -275,6 +275,11 @@ namespace Synth
             }
         }
 
+        public void Dispose()
+        {
+            _lock.Dispose();
+        }
+
         // public void Process(double increment)
         // {
         //     lock (_lock)

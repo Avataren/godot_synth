@@ -37,5 +37,10 @@ namespace Synth
         {
             base.LinearRampToValueAtTime(AudioParam.ConstValue, value, time);
         }
+
+        public void ExponentialRampToValueAtTime(double value, double time)
+        {
+            base.ExponentialRampToValueAtTime(AudioParam.ConstValue, value, time);
+        }
     }
 }

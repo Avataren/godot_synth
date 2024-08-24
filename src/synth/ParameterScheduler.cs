@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Godot;
-
 namespace Synth
 {
+
     public class ParameterScheduler
     {
         private const double TIME_EPSILON = 1e-10;
@@ -30,6 +30,7 @@ namespace Synth
 
         public void SetCurrentTimeInSeconds(double timeInSeconds)
         {
+            Console.WriteLine($"Set current time to: {timeInSeconds}");
             _currentTimeInSeconds = timeInSeconds;
         }
 
@@ -38,6 +39,7 @@ namespace Synth
             _lock.EnterWriteLock();
             try
             {
+                Console.WriteLine($"Registering node: {node}, with parameters: {parameters.Count}");
                 if (!_nodeParameterBuffers.ContainsKey(node))
                 {
                     _nodeParameterBuffers[node] = new Dictionary<AudioParam, double[]>();
@@ -59,6 +61,76 @@ namespace Synth
                 _lock.ExitWriteLock();
             }
         }
+
+        public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds, double? initialValue = null)
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                Console.WriteLine($"Scheduling value at time: {timeInSeconds}, value: {value}, initial: {initialValue}");
+                var events = _nodeEventDictionary[node][param];
+                int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue));
+                if (index < 0) index = ~index;
+                events.Insert(index, new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue));
+                _nodeHasRemainingEvents[node][param] = true;
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
+        public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                Console.WriteLine($"Scheduling linear ramp: Node={node}, Param={param}, TargetValue={targetValue}, EndTime={endTimeInSeconds}");
+                double startTimeInSeconds = _currentTimeInSeconds;
+                var events = _nodeEventDictionary[node][param];
+                events.RemoveAll(e => e.Time >= startTimeInSeconds - TIME_EPSILON);
+
+                double startValue = CalculateStartValue(events, startTimeInSeconds, _nodeLastScheduledValues[node][param]);
+
+                events.Add(new ScheduleEvent(startTimeInSeconds, startValue, endTimeInSeconds, targetValue, startValue, isExponential: false));
+                _nodeHasRemainingEvents[node][param] = true;
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
+        public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
+        {
+            _lock.EnterWriteLock();
+            try
+            {
+                Console.WriteLine($"Scheduling exponential ramp: Node={node}, Param={param}, TargetValue={targetValue}, EndTime={endTimeInSeconds}");
+                if (targetValue < MIN_EXPONENTIAL_VALUE)
+                {
+                    throw new ArgumentException($"Exponential ramps require the target value to be at least {MIN_EXPONENTIAL_VALUE}.");
+                }
+                if (endTimeInSeconds <= _currentTimeInSeconds)
+                {
+                    throw new ArgumentException("End time must be in the future.");
+                }
+
+                double startTimeInSeconds = _currentTimeInSeconds;
+                var events = _nodeEventDictionary[node][param];
+                events.RemoveAll(e => e.Time >= startTimeInSeconds - TIME_EPSILON);
+
+                double startValue = CalculateStartValue(events, startTimeInSeconds, _nodeLastScheduledValues[node][param]);
+
+                events.Add(new ScheduleEvent(startTimeInSeconds, startValue, endTimeInSeconds, targetValue, startValue, isExponential: true));
+                _nodeHasRemainingEvents[node][param] = true;
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
+            }
+        }
+
         private double CalculateStartValue(List<ScheduleEvent> events, double startTimeInSeconds, double currentValue)
         {
             if (events.Count > 0 && events[events.Count - 1].EndTime.HasValue &&
@@ -87,29 +159,6 @@ namespace Synth
             }
             return Math.Max(MIN_EXPONENTIAL_VALUE, currentValue);
         }
-        public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds, double? initialValue = null)
-        {
-            lock (_lock)
-            {
-                var events = _nodeEventDictionary[node][param];
-                int index = events.BinarySearch(new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue));
-                if (index < 0) index = ~index;
-                events.Insert(index, new ScheduleEvent(timeInSeconds, value, null, 0.0, initialValue));
-                _nodeHasRemainingEvents[node][param] = true;
-            }
-        }
-
-        // public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double startTimeInSeconds, double endTimeInSeconds, double? initialValue = null)
-        // {
-        //     lock (_lock)
-        //     {
-        //         var events = _nodeEventDictionary[node][param];
-        //         int index = events.BinarySearch(new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
-        //         if (index < 0) index = ~index;
-        //         events.Insert(index, new ScheduleEvent(startTimeInSeconds, targetValue, endTimeInSeconds, targetValue, initialValue));
-        //         _nodeHasRemainingEvents[node][param] = true;
-        //     }
-        // }
 
         private double SafeExponentialInterpolation(double start, double end, double progress)
         {
@@ -128,80 +177,17 @@ namespace Synth
 
             return start * Math.Pow(ratio, progress);
         }
-        public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
+
+        public double GetValueAtSample(AudioNode node, AudioParam param, int sampleIndex)
         {
-            if (targetValue < MIN_EXPONENTIAL_VALUE)
+            if (sampleIndex < _bufferSize)
             {
-                throw new ArgumentException($"Exponential ramps require the target value to be at least {MIN_EXPONENTIAL_VALUE}.");
+                return _nodeParameterBuffers[node][param][sampleIndex];
             }
-            if (endTimeInSeconds <= _currentTimeInSeconds)
-            {
-                throw new ArgumentException("End time must be in the future.");
-            }
-
-            _lock.EnterWriteLock();
-            try
-            {
-                var events = _nodeEventDictionary[node][param];
-                double startTimeInSeconds = _currentTimeInSeconds;
-
-                events.RemoveAll(e => e.Time >= startTimeInSeconds - TIME_EPSILON);
-
-                double startValue = CalculateStartValue(events, startTimeInSeconds, _nodeLastScheduledValues[node][param]);
-
-                if (startValue < MIN_EXPONENTIAL_VALUE)
-                {
-                    throw new InvalidOperationException($"Exponential ramps require the current value to be at least {MIN_EXPONENTIAL_VALUE}.");
-                }
-
-                if (events.Count > 0 && events[events.Count - 1].EndTime.HasValue &&
-                    events[events.Count - 1].EndTime.Value > startTimeInSeconds + TIME_EPSILON)
-                {
-                    events.RemoveAt(events.Count - 1);
-                }
-
-                events.Add(new ScheduleEvent(startTimeInSeconds, startValue, endTimeInSeconds, targetValue, startValue, isExponential: true));
-                _nodeHasRemainingEvents[node][param] = true;
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
-            }
+            Console.WriteLine($"Requested sample index {sampleIndex} out of bounds.");
+            return 0.0;
         }
-        public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
-        {
-            if (endTimeInSeconds <= _currentTimeInSeconds)
-            {
-                //throw new ArgumentException("End time must be in the future.");
-                //set value at time instead
-                ScheduleValueAtTime(node, param, targetValue, _currentTimeInSeconds);
-                return;
-            }
 
-            _lock.EnterWriteLock();
-            try
-            {
-                var events = _nodeEventDictionary[node][param];
-                double startTimeInSeconds = _currentTimeInSeconds;
-
-                events.RemoveAll(e => e.Time >= startTimeInSeconds - TIME_EPSILON);
-
-                double startValue = CalculateStartValue(events, startTimeInSeconds, _nodeLastScheduledValues[node][param]);
-
-                if (events.Count > 0 && events[events.Count - 1].EndTime.HasValue &&
-                    events[events.Count - 1].EndTime.Value > startTimeInSeconds + TIME_EPSILON)
-                {
-                    events.RemoveAt(events.Count - 1);
-                }
-
-                events.Add(new ScheduleEvent(startTimeInSeconds, startValue, endTimeInSeconds, targetValue, startValue, isExponential: false));
-                _nodeHasRemainingEvents[node][param] = true;
-            }
-            finally
-            {
-                _lock.ExitWriteLock();
-            }
-        }
         public void Process(double increment)
         {
             _lock.EnterUpgradeableReadLock();
@@ -215,53 +201,65 @@ namespace Synth
                         var events = _nodeEventDictionary[node][param];
                         double lastScheduledValue = _nodeLastScheduledValues[node][param];
 
-
                         for (int i = 0; i < _bufferSize; i++)
                         {
                             double timeAtSample = _currentTimeInSeconds + (i * increment);
-                            bool initialValueApplied = false;
+                            bool isEventProcessed = false;
 
-                            while (events.Count > 0 && timeAtSample >= events[0].Time - TIME_EPSILON)
+                            if (events.Count > 0)
                             {
                                 var evt = events[0];
-
-                                if (Math.Abs(timeAtSample - evt.Time) < increment / 2)
+                                if (timeAtSample >= evt.Time)
                                 {
-                                    // This is the closest sample to the event time
-                                    if (evt.InitialValue.HasValue)
+                                    if (evt.EndTime.HasValue)
                                     {
-                                        buffer[i] = evt.InitialValue.Value;
-                                        initialValueApplied = true;
+                                        if (timeAtSample <= evt.EndTime.Value)
+                                        {
+                                            double duration = evt.EndTime.Value - evt.Time;
+                                            double progress = (timeAtSample - evt.Time) / duration;
+                                            lastScheduledValue = evt.Value + progress * (evt.TargetValue - evt.Value);
+                                        }
+                                        else if (timeAtSample > evt.EndTime.Value)
+                                        {
+                                            // Processed past the end time of the event.
+                                            lastScheduledValue = evt.TargetValue;
+                                            _lock.EnterWriteLock();
+                                            try
+                                            {
+                                                events.RemoveAt(0);
+                                                _processedEventCount++;
+                                            }
+                                            finally
+                                            {
+                                                _lock.ExitWriteLock();
+                                            }
+                                            isEventProcessed = true;
+                                        }
                                     }
-                                    lastScheduledValue = evt.Value;
-                                }
-                                else
-                                {
-                                    lastScheduledValue = evt.Value;
-                                }
-
-                                _lock.EnterWriteLock();
-                                try
-                                {
-                                    events.RemoveAt(0);
-                                    _processedEventCount++;
-                                }
-                                finally
-                                {
-                                    _lock.ExitWriteLock();
+                                    else
+                                    {
+                                        // For events without an end time, simply set the value.
+                                        lastScheduledValue = evt.Value;
+                                        _lock.EnterWriteLock();
+                                        try
+                                        {
+                                            events.RemoveAt(0);
+                                            _processedEventCount++;
+                                        }
+                                        finally
+                                        {
+                                            _lock.ExitWriteLock();
+                                        }
+                                        isEventProcessed = true;
+                                    }
                                 }
                             }
 
-                            if (!initialValueApplied)
-                            {
-                                buffer[i] = lastScheduledValue;
-                            }
-
+                            buffer[i] = lastScheduledValue;
                         }
 
                         _nodeLastScheduledValues[node][param] = lastScheduledValue;
                         _nodeHasRemainingEvents[node][param] = events.Count > 0;
-
                     }
                 }
 
@@ -272,87 +270,14 @@ namespace Synth
                 _lock.ExitUpgradeableReadLock();
             }
         }
-        // public void Process(double increment)
-        // {
-        //     lock (_lock)
-        //     {
 
-        //         foreach (var node in _nodeEventDictionary.Keys)
-        //         {
-        //             foreach (var param in _nodeEventDictionary[node].Keys)
-        //             {
-        //                 var buffer = _nodeParameterBuffers[node][param];
-        //                 // Skip processing if no events are remaining
-        //                 if (!_nodeHasRemainingEvents[node][param])
-        //                 {
-        //                     Array.Fill(buffer, _nodeLastScheduledValues[node][param]);
-        //                     continue;
-        //                 }
-
-        //                 var events = _nodeEventDictionary[node][param];
-        //                 double lastScheduledValue = _nodeLastScheduledValues[node][param];
-
-        //                 for (int i = 0; i < _bufferSize; i++)
-        //                 {
-        //                     double timeAtSample = _currentTimeInSeconds + (i * increment);
-
-        //                     if (events.Count > 0)
-        //                     {
-        //                         var evt = events[0];
-
-        //                         if (timeAtSample >= evt.Time)
-        //                         {
-        //                             if (evt.InitialValue.HasValue)
-        //                             {
-        //                                 lastScheduledValue = evt.InitialValue.Value;
-        //                                 evt.InitialValue = null;  // Ensure the initial value is only applied once
-        //                             }
-        //                             else
-        //                             {
-        //                                 lastScheduledValue = evt.Value;
-        //                                 events.RemoveAt(0);  // Remove the event once processed
-        //                                 _processedEventCount++;
-        //                             }
-        //                         }
-        //                     }
-
-        //                     buffer[i] = lastScheduledValue;  // Always use the lastScheduledValue to fill the buffer
-        //                 }
-        //                 // Update the last scheduled value for future use
-        //                 _nodeLastScheduledValues[node][param] = lastScheduledValue;
-
-        //                 // Determine if more events remain to be processed
-        //                 _nodeHasRemainingEvents[node][param] = events.Count > 0;
-        //             }
-        //         }
-        //         _currentTimeInSeconds += increment * _bufferSize;
-        //     }
-        // }
-
-
-
-        private void FillRemainingBuffer(double[] buffer, int startIndex, double value)
-        {
-            for (int i = startIndex; i < buffer.Length; i++)
-            {
-                buffer[i] = value;
-            }
-        }
-
-        public double GetValueAtSample(AudioNode node, AudioParam param, int sampleIndex)
-        {
-            if (sampleIndex < _bufferSize)
-            {
-                return _nodeParameterBuffers[node][param][sampleIndex];
-            }
-            return 0.0;
-        }
 
         public void Clear()
         {
             _lock.EnterWriteLock();
             try
             {
+                Console.WriteLine("Clearing all scheduling data.");
                 foreach (var node in _nodeParameterBuffers.Keys)
                 {
                     foreach (var param in _nodeParameterBuffers[node].Keys)
@@ -365,6 +290,7 @@ namespace Synth
                 }
 
                 _processedEventCount = 0;
+                Console.WriteLine("All data cleared.");
             }
             finally
             {
@@ -380,7 +306,7 @@ namespace Synth
         public double? EndTime { get; }
         public double TargetValue { get; }
         public double? InitialValue { get; set; }
-        public bool IsExponential { get; } // New flag to indicate if the ramp is exponential
+        public bool IsExponential { get; }
 
         public ScheduleEvent(double time, double value, double? endTime = null, double targetValue = 0.0, double? initialValue = null, bool isExponential = false)
         {
@@ -389,7 +315,7 @@ namespace Synth
             EndTime = endTime;
             TargetValue = targetValue;
             InitialValue = initialValue;
-            IsExponential = isExponential; // Initialize the exponential flag
+            IsExponential = isExponential;
         }
 
         public int CompareTo(ScheduleEvent other)

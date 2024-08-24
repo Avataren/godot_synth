@@ -194,7 +194,6 @@ namespace Synth
                 if (!_isGateOpen && gateValue > 0.5)
                 {
                     OpenGate();
-                    GD.Print("Gate open ENV sampleNum: " + i + " gateNum: " + gateNum);
                 }
                 else if (_isGateOpen && gateValue <= 0.5)
                 {

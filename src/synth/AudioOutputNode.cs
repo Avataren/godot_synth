@@ -88,6 +88,15 @@ public partial class AudioOutputNode : AudioStreamPlayer
 	Godot.Key CurrKey = Key.None;
 	public override void _UnhandledInput(InputEvent @event)
 	{
+		if (@event is InputEventKey eKey)
+		{
+			if (eKey.Echo)
+			{
+				return;
+			}
+			GD.Print("Unhandled input: " + eKey.Keycode);
+		}
+
 		var keyMap = new Dictionary<Godot.Key, int> {
 			{ Key.Q, 0 +12},
 			{ Key.Key2, 1 +12},
@@ -124,36 +133,38 @@ public partial class AudioOutputNode : AudioStreamPlayer
 			{ Key.Quoteleft, 15},
 		};
 
-		if (@event is InputEventKey eventKey && !eventKey.Echo)
+		if (@event is InputEventKey eventKey)
 		{
+			var semitones = keyMap[eventKey.Keycode];
+			var note = semitones + 12 * BaseOctave;
 			if (!eventKey.Pressed)
 			{
-				if (keyMap.ContainsKey(eventKey.Keycode))
+				//if (keyMap.ContainsKey(eventKey.Keycode))
 				{
-					KeyDownCount--;
-					if (KeyDownCount <= 0)
+					//KeyDownCount--;
+					//if (KeyDownCount <= 0)
 					{
 						//envelopeNode.CloseGate();
-						CurrentPatch.NoteOff();
-						KeyDownCount = 0;
-						CurrKey = Key.None;
+						CurrentPatch.NoteOff(note);
+						//KeyDownCount = 0;
+						//CurrKey = Key.None;
 					}
 				}
 			}
 			else if (eventKey.Pressed)
 			{
-				if (keyMap.ContainsKey(eventKey.Keycode))
+				//if (keyMap.ContainsKey(eventKey.Keycode))
 				{
-					if (CurrKey != eventKey.Keycode)
-					{
-						KeyDownCount++;
-						CurrKey = eventKey.Keycode;
-					}
+					//if (CurrKey != eventKey.Keycode)
+					//{
+					//	KeyDownCount++;
+						//CurrKey = eventKey.Keycode;
+					//}
 
 					//envelopeNode.OpenGate();
-					var semitones = keyMap[eventKey.Keycode];
+
 					//waveTableNode.Frequency = CalculateFrequency(BaseOctave, semitones);
-					CurrentPatch.NoteOn(semitones + 12 * BaseOctave);
+					CurrentPatch.NoteOn(note);
 				}
 			}
 

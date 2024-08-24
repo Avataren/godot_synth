@@ -32,5 +32,10 @@ namespace Synth
         //     get => Value;
         //     set => Value = value;
         // }
+
+        public void LinearRampToValueAtTime(double value, double time)
+        {
+            base.LinearRampToValueAtTime(AudioParam.ConstValue, value, time);
+        }
     }
 }

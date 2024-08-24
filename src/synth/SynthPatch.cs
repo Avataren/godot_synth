@@ -8,7 +8,7 @@ public class SynthPatch
     public const int MaxOscillators = 5;
     public const int MaxLFOs = 4;
     public const int MaxEnvelopes = 5;
-
+    public float PortamentoTime = 0.1f;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
     // List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
@@ -22,6 +22,9 @@ public class SynthPatch
     PassThroughNode speakerNode;
     FuzzNode fuzzNode;
 
+
+    //Dictionary<int, float> NoteVelocityRegister = new Dictionary<int, float>();
+    Stack<int> NoteVelocityRegister = new Stack<int>();
 
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
@@ -595,42 +598,95 @@ public class SynthPatch
     {
         lock (_lock)
         {
-            //freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), 0.0f);
-            var now = AudioContext.Instance.CurrentTimeInSeconds;
-            freq.LinearRampToValueAtTime(AudioParam.ConstValue, 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0), now + 0.1);
-            foreach (var env in envelopes)
+            if (NoteVelocityRegister.Contains(note))
             {
-                if (env.Enabled)
+                GD.Print("Note already playing");
+                //this will cause an issue when key is release
+                return;
+            }
+
+            float newFrequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
+            var now = AudioContext.Instance.CurrentTimeInSeconds;
+
+            if (NoteVelocityRegister.Count == 0)
+            {
+                // No note is currently playing, start the new note with full envelope
+                NoteVelocityRegister.Push(note);
+
+                freq.SetValueAtTime(newFrequency, now);
+
+                foreach (var env in envelopes)
                 {
-                    env.ScheduleGateOpen(AudioContext.Instance.CurrentTimeInSeconds, true);
+                    if (env.Enabled)
+                    {
+                        env.ScheduleGateOpen(now, true);  // Open with full envelope
+                    }
+                }
+                foreach (var osc in oscillators)
+                {
+                    osc.ScheduleGateOpen(0, true);  // Open oscillator gates
                 }
             }
-            foreach (var osc in oscillators)
+            else
             {
-                osc.ScheduleGateOpen(0, true); ;
+                // A note is already playing, apply portamento (legato)
+                NoteVelocityRegister.Push(note);
+
+                freq.LinearRampToValueAtTime(newFrequency, now + PortamentoTime);  // Glide to new note
             }
         }
     }
 
-    public void NoteOff()
+    public void NoteOff(int note)
     {
         lock (_lock)
         {
-            foreach (var env in envelopes)
+            var now = AudioContext.Instance.CurrentTimeInSeconds;
+
+            // Remove the released note from the stack
+            var tempStack = new Stack<int>();
+            while (NoteVelocityRegister.Count > 0)
             {
-                env.ScheduleGateClose(0);
+                var n = NoteVelocityRegister.Pop();
+                if (n != note)
+                {
+                    tempStack.Push(n);
+                }
             }
 
-            foreach (var osc in oscillators)
+            // Restore the remaining notes back into the original stack
+            while (tempStack.Count > 0)
             {
-                osc.ScheduleGateClose(0);
+                NoteVelocityRegister.Push(tempStack.Pop());
+            }
+
+            // Now determine the behavior based on the remaining notes
+            if (NoteVelocityRegister.Count > 0)
+            {
+                // If there's another note in the stack, glide to it
+                int nextNote = NoteVelocityRegister.Peek();
+                float nextFrequency = 440.0f * (float)Math.Pow(2.0, (nextNote - 69) / 12.0);
+                freq.LinearRampToValueAtTime(nextFrequency, now + PortamentoTime);
+            }
+            else
+            {
+                // No more notes, stop the sound
+                foreach (var env in envelopes)
+                {
+                    env.ScheduleGateClose(now);  // Close envelope gates
+                }
+                foreach (var osc in oscillators)
+                {
+                    osc.ScheduleGateClose(0);  // Close oscillator gates
+                }
             }
         }
     }
 
+
     public PassThroughNode Process(double increment)
     {
-         lock (_lock)
+        lock (_lock)
         {
             graph.Process(increment);
             //var node = graph.GetNode("Speaker") as PassThroughNode;

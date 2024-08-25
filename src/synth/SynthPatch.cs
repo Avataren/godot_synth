@@ -658,7 +658,7 @@ public class SynthPatch
             float newFrequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
             var now = AudioContext.Instance.CurrentTimeInSeconds;
 
-            if (NoteVelocityRegister.Count == 0)
+            if (NoteVelocityRegister.Count == 0 || PortamentoTime < 0.001)
             {
                 // No note is currently playing, start the new note with full envelope
                 NoteVelocityRegister.Push(note);
@@ -682,7 +682,7 @@ public class SynthPatch
                 // A note is already playing, apply portamento (legato)
                 NoteVelocityRegister.Push(note);
 
-                freq.LinearRampToValueAtTime(newFrequency, now + PortamentoTime);  // Glide to new note
+                freq.ExponentialRampToValueAtTime(newFrequency, now + PortamentoTime);  // Glide to new note
             }
         }
     }

@@ -20,7 +20,7 @@ public class SynthPatch
     ReverbEffectNode reverbEffectNode;
     MoogFilterNode moogFilterNode;
     PassThroughNode speakerNode;
-    FuzzNode fuzzNode;
+    public FuzzNode fuzzNode;
 
 
     //Dictionary<int, float> NoteVelocityRegister = new Dictionary<int, float>();
@@ -143,7 +143,7 @@ public class SynthPatch
         //     graph.DebugPrint();
         // }
 
-        //graph.SetNodeEnabled(fuzzNode, false);
+        graph.SetNodeEnabled(fuzzNode, false);
         graph.SetNodeEnabled(reverbEffectNode, false);
         //graph.DebugPrint();
         graph.SetNodeEnabled(delayEffectNode, false);

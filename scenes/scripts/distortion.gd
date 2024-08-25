@@ -17,7 +17,7 @@ func _ready() -> void:
 	cutoff_changed.emit(%CutoffKnob.current_value)
 	feedback_changed.emit(%FeedbackKnob.current_value)
 	bias_changed.emit(%BiasKnob.current_value)
-	enabled_changed.emit(%EnabledCheckBox.pressed)
+	#enabled_changed.emit(false)
 	
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

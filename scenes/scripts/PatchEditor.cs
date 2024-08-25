@@ -79,7 +79,6 @@ public partial class PatchEditor : Node2D
 			// }
 			ConnectPerformanceUpdate();
 
-
 		}
 		catch (Exception e)
 		{
@@ -110,6 +109,7 @@ public partial class PatchEditor : Node2D
 			PrintErr("AdsrVisualizer not set!");
 		}
 	}
+
 	private void ConnectPerformanceUpdate()
 	{
 		AudioOutputNode.PerformanceTimeUpdate += (process_time, buffer_push_time, frames) =>
@@ -213,6 +213,41 @@ public partial class PatchEditor : Node2D
 			default:
 				return WaveTableWaveType.SINE;
 		}
+	}
+
+	private void _on_distortion_bias_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.fuzzNode.Bias = value;
+	}
+
+	private void _on_distortion_cutoff_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.fuzzNode.LowPassCutoff = value;
+	}
+
+	private void _on_distortion_enabled_changed(bool enabled)
+	{
+		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.fuzzNode, enabled);
+	}
+
+	private void _on_distortion_feedback_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.fuzzNode.FeedbackAmount = value;
+	}
+
+	private void _on_distortion_input_gain_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.fuzzNode.InputGain = value;
+	}
+
+	private void _on_distortion_mix_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.fuzzNode.Mix = value;
+	}
+
+	private void _on_distortion_output_gain_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.fuzzNode.OutputGain = value;
 	}
 
 	private void _on_reverb_wet_changed(float value)

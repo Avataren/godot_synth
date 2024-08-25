@@ -89,9 +89,9 @@ namespace Synth
 		virtual public void OpenGate() { }
 		virtual public void CloseGate() { }
 
-		public virtual void ScheduleValueAtTime(AudioParam param, double value, double time = 0.0, double initialValue = 0.0)
+		public virtual void ScheduleValueAtTime(AudioParam param, double value, double time = 0.0)
 		{
-			_scheduler.ScheduleValueAtTime(this, param, value, time, initialValue);
+			_scheduler.ScheduleValueAtTime(this, param, value, time);
 		}
 
    		public void LinearRampToValueAtTime(AudioParam param, double targetValue,  double endTimeInSeconds)

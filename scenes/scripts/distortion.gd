@@ -15,7 +15,7 @@ func _ready() -> void:
 	output_gain_changed.emit(%OutputGainKnob.current_value)
 	mix_changed.emit(%MixKnob.current_value)
 	cutoff_changed.emit(%CutoffKnob.current_value)
-	feedback_changed.emit(%FeedbackKnob.current.value)
+	feedback_changed.emit(%FeedbackKnob.current_value)
 	bias_changed.emit(%BiasKnob.current_value)
 	enabled_changed.emit(%EnabledCheckBox.pressed)
 	

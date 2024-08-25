@@ -68,7 +68,7 @@ namespace Synth
 
         public void Process(double increment)
         {
-            _scheduler.Process(increment);
+            _scheduler.Process();
         }
     }
 }

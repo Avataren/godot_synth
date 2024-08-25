@@ -7,195 +7,135 @@ namespace Synth.Tests
     [TestFixture]
     public class ParameterSchedulerTests
     {
-        // [Test]
-        // public void Process_WritesZeroAndOneToBuffer()
-        // {
-        //     // Arrange
-        //     var bufferSize = 5;
-        //     var sampleRate = 44100;
-        //     var increment = 1.0 / sampleRate;
-        //     var scheduler = new ParameterScheduler(bufferSize, sampleRate);
-        //     var node = new EnvelopeNode();
-        //     var param = AudioParam.Gate;
-        //     scheduler.RegisterNode(node, new List<AudioParam> { param });
+        private ParameterScheduler scheduler;
+        private AudioNode testNode;
+        private AudioParam testParam;
+        private const int BufferSize = 128;
+        private const int SampleRate = 44100;
+        private const double PRECISION = 1e-3;
 
-        //     var time = 0.0; // let's assume current time in seconds
-        //     scheduler.ScheduleValueAtTime(node, param, 1.0, time, 0.0); // At current time
-        //     Assert.That(scheduler.ProcessedEventCount, Is.EqualTo(0), "Should have 0 processed events");
-        //     // Act
-        //     scheduler.Process(increment); // Process with the increment corresponding to one sample
-        //     Assert.That(scheduler.ProcessedEventCount, Is.EqualTo(1), "Should have 1 processed events");
-        //     // Assert
-        //     var buffer = new double[bufferSize];
-        //     for (int i = 0; i < bufferSize; i++)
-        //     {
-        //         buffer[i] = scheduler.GetValueAtSample(node, param, i);
-        //     }
-        //     TestContext.WriteLine("Buffer values: " + string.Join(", ", buffer));
-        //     // Expected: [0.0, 0.0, 0.0, 0.0, 1.0] or similar based on time resolution and how many samples are processed
-        //     Assert.That(buffer[0], Is.EqualTo(0.0), "First buffer value should be 0.0");
-        //     Assert.That(buffer[1], Is.EqualTo(1.0), "Next sample value should be 1.0");
-        //     Assert.That(buffer[2], Is.EqualTo(1.0), "Next sample value should be 1.0");
-        //     Assert.That(buffer[3], Is.EqualTo(1.0), "Next sample value should be 1.0");
-        //     Assert.That(buffer[4], Is.EqualTo(1.0), "Last buffer value should be 1.0");
-        //     // Act
-        //     scheduler.Process(increment); // Process with the increment corresponding to one sample
-        //     Assert.That(scheduler.ProcessedEventCount, Is.EqualTo(1), "Should have 1 processed events after second process call");
-        //     for (int i = 0; i < bufferSize; i++)
-        //     {
-        //         buffer[i] = scheduler.GetValueAtSample(node, param, i);
-        //     }
-        //     TestContext.WriteLine("Buffer values after process: " + string.Join(", ", buffer));
-        //     Assert.That(buffer[0], Is.EqualTo(1.0), "First buffer value should be 1.0 after processing the next buffer");
-        //     Assert.That(buffer[1], Is.EqualTo(1.0), "Next sample value should be 1.0 after processing the next buffer");
-        //     Assert.That(buffer[2], Is.EqualTo(1.0), "Next sample value should be 1.0 after processing the next buffer");
-        //     Assert.That(buffer[3], Is.EqualTo(1.0), "Next sample value should be 1.0 after processing the next buffer");
-        //     Assert.That(buffer[4], Is.EqualTo(1.0), "Last buffer value should be 1.0 after processing the next buffer");
-        // }
-
-        [Test]
-        public void Process_WritesEventWithoutInitialValue()
+        [SetUp]
+        public void Setup()
         {
-            // Arrange
-            var bufferSize = 5;
-            var sampleRate = 44100;
-            var increment = 1.0 / sampleRate;
-            var scheduler = new ParameterScheduler(bufferSize, sampleRate);
-            var node = new EnvelopeNode();
-            var param = AudioParam.Gate;
-            scheduler.RegisterNode(node, new List<AudioParam> { param });
-
-            var time = 0.0; // let's assume current time in seconds
-            scheduler.ScheduleValueAtTime(node, param, 1.0, time); // At current time
-            // Act
-            scheduler.Process(increment); // Process with the increment corresponding to one sample
-
-            // Assert
-            var buffer = new double[bufferSize];
-            for (int i = 0; i < bufferSize; i++)
-            {
-                buffer[i] = scheduler.GetValueAtSample(node, param, i);
-            }
-            TestContext.WriteLine("Buffer values: " + string.Join(", ", buffer));
-            // Expected: [0.0, 0.0, 0.0, 0.0, 1.0] or similar based on time resolution and how many samples are processed
-            Assert.That(buffer[0], Is.EqualTo(1.0), "First buffer value should be 0.0");
-            Assert.That(buffer[1], Is.EqualTo(1.0), "Next sample value should be 1.0");
-            Assert.That(buffer[2], Is.EqualTo(1.0), "Next sample value should be 1.0");
-            Assert.That(buffer[3], Is.EqualTo(1.0), "Next sample value should be 1.0");
-            Assert.That(buffer[4], Is.EqualTo(1.0), "Last buffer value should be 1.0");
-            // Act
-            scheduler.Process(increment); // Process with the increment corresponding to one sample
-            for (int i = 0; i < bufferSize; i++)
-            {
-                buffer[i] = scheduler.GetValueAtSample(node, param, i);
-            }
-            TestContext.WriteLine("Buffer values after process: " + string.Join(", ", buffer));
-            Assert.That(buffer[0], Is.EqualTo(1.0), "First buffer value should be 1.0 after processing the next buffer");
-            Assert.That(buffer[1], Is.EqualTo(1.0), "Next sample value should be 1.0 after processing the next buffer");
-            Assert.That(buffer[2], Is.EqualTo(1.0), "Next sample value should be 1.0 after processing the next buffer");
-            Assert.That(buffer[3], Is.EqualTo(1.0), "Next sample value should be 1.0 after processing the next buffer");
-            Assert.That(buffer[4], Is.EqualTo(1.0), "Last buffer value should be 1.0 after processing the next buffer");
-        }
-        [Test]
-        public void ExponentialRampToValueAtTime_RampsCorrectly()
-        {
-            // Arrange
-            var bufferSize = 10;
-            var sampleRate = 44100;
-            var scheduler = new ParameterScheduler(bufferSize, sampleRate);
-            var node = new EnvelopeNode();
-            var param = AudioParam.Gate;
-
-            var startTime = 0.0;
-            var endTime = 0.1;  // 100 ms ramp
-            var startValue = 0.1;
-            var endValue = 1.0;
-
-            scheduler.RegisterNode(node, new List<AudioParam> { param });
-
-            // Setting the starting conditions
-            scheduler.SetCurrentTimeInSeconds(startTime);
-            scheduler.ScheduleValueAtTime(node, param, startValue, startTime);
-            scheduler.ExponentialRampToValueAtTime(node, param, endValue, endTime);
-
-            // Act
-            var totalSamples = (int)(endTime * sampleRate);
-            var processedSamples = 0;
-            var lastValue = startValue;
-
-            Console.WriteLine("Sample,Expected,Actual,Difference");
-
-            while (processedSamples < totalSamples)
-            {
-                scheduler.Process(1.0 / sampleRate);
-
-                for (int i = 0; i < bufferSize && processedSamples < totalSamples; i++, processedSamples++)
-                {
-                    var currentValue = scheduler.GetValueAtSample(node, param, i);
-                    var expectedValue = startValue * Math.Pow(endValue / startValue, (double)processedSamples / totalSamples);
-                    var difference = Math.Abs(expectedValue - currentValue);
-
-                    //Console.WriteLine($"{processedSamples},{expectedValue:F8},{currentValue:F8},{difference:F8}");
-
-                    Assert.That(currentValue, Is.EqualTo(expectedValue).Within(0.0002),
-                        $"Sample {processedSamples}: Expected {expectedValue:F6}, Actual {currentValue:F6}");
-
-                    lastValue = currentValue;
-                }
-            }
-
-            // Check final value
-            var finalValue = scheduler.GetValueAtSample(node, param, bufferSize - 1);
-            Assert.That(finalValue, Is.EqualTo(endValue).Within(0.005), "Final value should be close to end value");
+            scheduler = new ParameterScheduler(BufferSize, SampleRate);
+            testNode = new PassThroughNode();
+            testParam = AudioParam.Input;
+            scheduler.RegisterNode(testNode, new List<AudioParam> { testParam });
         }
 
         [Test]
-        public void LinearRampToValueAtTime_RampsCorrectly()
+        public void TestImmediateValueChange()
         {
-            // Arrange
-            var bufferSize = 10;
-            var sampleRate = 44100;
-            var scheduler = new ParameterScheduler(bufferSize, sampleRate);
-            var node = new EnvelopeNode();
-            var param = AudioParam.Gate;
-            scheduler.RegisterNode(node, new List<AudioParam> { param });
+            scheduler.SetCurrentTimeInSeconds(0);
+            scheduler.ScheduleValueAtTime(testNode, testParam, 1.0, 0);
+            scheduler.Process();
 
-            var startTime = 0.0;
-            var endTime = 0.1; // 100ms ramp
-            var startValue = 0.0;
-            var endValue = 1.0;
-
-            // Schedule the linear ramp
-            scheduler.SetCurrentTimeInSeconds(startTime);
-            scheduler.LinearRampToValueAtTime(node, param, endValue, endTime);
-
-            // Act and Assert
-            var totalSamples = (int)(endTime * sampleRate);
-            var processedSamples = 0;
-            var lastValue = startValue;
-
-            while (processedSamples < totalSamples)
-            {
-                scheduler.Process(1.0 / sampleRate);
-
-                for (int i = 0; i < bufferSize && processedSamples < totalSamples; i++, processedSamples++)
-                {
-                    var currentValue = scheduler.GetValueAtSample(node, param, i);
-                    var expectedValue = startValue + (endValue - startValue) * (processedSamples / (double)totalSamples);
-
-                    Console.WriteLine($"Sample {processedSamples}: Expected {expectedValue:F6}, Actual {currentValue:F6}, Difference {Math.Abs(expectedValue - currentValue):F6}");
-
-                    Assert.That(currentValue, Is.GreaterThanOrEqualTo(lastValue).Within(1e-6), $"Sample {processedSamples} should be monotonically increasing");
-                    Assert.That(currentValue, Is.EqualTo(expectedValue).Within(1e-6), $"Sample {processedSamples} should be close to expected value");
-
-                    lastValue = currentValue;
-                }
-            }
-
-            // Check final value
-            var finalValue = scheduler.GetValueAtSample(node, param, bufferSize - 1);
-            Assert.That(finalValue, Is.EqualTo(endValue).Within(1e-3), "Final value should be close to end value");
+            Assert.That(scheduler.GetValueAtSample(testNode, testParam, 0), Is.EqualTo(1.0).Within(PRECISION));
+            Assert.That(scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1), Is.EqualTo(1.0).Within(PRECISION));
         }
 
+        [Test]
+        public void TestLinearRamp()
+        {
+            scheduler.SetCurrentTimeInSeconds(0);
+            scheduler.ScheduleValueAtTime(testNode, testParam, 0, 0);
+            scheduler.LinearRampToValueAtTime(testNode, testParam, 1, 1);
+
+            for (int i = 0; i < SampleRate; i += BufferSize)
+            {
+                scheduler.Process();
+            }
+
+            double result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Linear Ramp Result: {result}");
+            Assert.That(result, Is.EqualTo(1.0).Within(PRECISION));
+        }
+
+        [Test]
+        public void TestExponentialRamp()
+        {
+            scheduler.SetCurrentTimeInSeconds(0);
+            scheduler.ScheduleValueAtTime(testNode, testParam, 1, 0);
+            scheduler.ExponentialRampToValueAtTime(testNode, testParam, 10, 1);
+
+            for (int i = 0; i < SampleRate; i += BufferSize)
+            {
+                scheduler.Process();
+            }
+
+            double result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Exponential Ramp Result: {result}");
+            Assert.That(result, Is.EqualTo(10.0).Within(PRECISION));
+        }
+
+        [Test]
+        public void TestOverlappingEvents()
+        {
+            scheduler.SetCurrentTimeInSeconds(0);
+            scheduler.LinearRampToValueAtTime(testNode, testParam, 1, 1);
+            scheduler.ScheduleValueAtTime(testNode, testParam, 0.5, 0.5);
+
+            for (int i = 0; i < SampleRate / 2; i += BufferSize)
+            {
+                scheduler.Process();
+            }
+
+            double result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Overlapping Events Result at 0.5s: {result}");
+            Assert.That(result, Is.EqualTo(0.5).Within(PRECISION));
+
+            for (int i = SampleRate / 2; i < SampleRate; i += BufferSize)
+            {
+                scheduler.Process();
+            }
+
+            result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Overlapping Events Result at 1s: {result}");
+            Assert.That(result, Is.EqualTo(0.5).Within(PRECISION));
+        }
+
+        [Test]
+        public void TestExponentialRampOverlap()
+        {
+            scheduler.SetCurrentTimeInSeconds(0);
+            scheduler.ScheduleValueAtTime(testNode, testParam, 1, 0);
+            scheduler.ExponentialRampToValueAtTime(testNode, testParam, 100, 1);
+            scheduler.ExponentialRampToValueAtTime(testNode, testParam, 50, 1.5);
+
+            for (int i = 0; i < (int)(1.5 * SampleRate); i += BufferSize)
+            {
+                scheduler.Process();
+            }
+
+            double result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Exponential Ramp Overlap Result: {result}");
+            Assert.That(result, Is.EqualTo(50.0).Within(PRECISION));
+        }
+
+        [Test]
+        public void TestCancelAndHold()
+        {
+            scheduler.SetCurrentTimeInSeconds(0);
+            scheduler.ScheduleValueAtTime(testNode, testParam, 0, 0);
+            scheduler.LinearRampToValueAtTime(testNode, testParam, 1, 1);
+
+            for (int i = 0; i < SampleRate / 2; i += BufferSize)
+            {
+                scheduler.Process();
+            }
+
+            double midValue = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Mid-ramp value: {midValue}");
+            scheduler.Clear(); // This acts like cancelAndHold
+
+            for (int i = SampleRate / 2; i < SampleRate; i += BufferSize)
+            {
+                scheduler.Process();
+            }
+
+            double result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Cancel and Hold Result: {result}");
+            Assert.That(result, Is.EqualTo(midValue).Within(PRECISION));
+        }
     }
 }

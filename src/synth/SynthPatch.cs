@@ -6,9 +6,9 @@ public class SynthPatch
 {
     private readonly object _lock = new object();
     public const int MaxOscillators = 5;
-    public const int MaxLFOs = 1;
-    public const int MaxEnvelopes = 1;
-    public float PortamentoTime = 0.1f;
+    public const int MaxLFOs = 4;
+    public const int MaxEnvelopes = 5;
+    public float PortamentoTime = 0.0f;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
     // List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();

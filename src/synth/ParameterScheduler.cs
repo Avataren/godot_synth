@@ -20,7 +20,7 @@ namespace Synth
         private readonly ConcurrentDictionary<AudioNode, ConcurrentDictionary<AudioParam, double[]>> _nodeParameterBuffers = new();
         private readonly ConcurrentDictionary<AudioNode, ConcurrentDictionary<AudioParam, List<ScheduleEvent>>> _nodeEventDictionary = new();
         private readonly ConcurrentDictionary<AudioNode, ConcurrentDictionary<AudioParam, double>> _nodeLastScheduledValues = new();
-
+        private readonly ScheduleEventPool _eventPool = new ScheduleEventPool();
         private double _currentSample = 0;
         private readonly ReaderWriterLockSlim _lock = new();
 
@@ -97,7 +97,7 @@ namespace Synth
 
                 var events = _nodeEventDictionary[node][param];
 
-                var newEvent = new ScheduleEvent(sampleTime, value, isSetValueAtTime: true);
+                var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
                 events.Add(newEvent);
                 events.Sort((a, b) => a.SampleTime.CompareTo(b.SampleTime));
 
@@ -137,7 +137,8 @@ namespace Synth
 
                 TruncateOngoingEvent(events, startSampleTime);
 
-                events.Add(new ScheduleEvent(startSampleTime, currentValue, endSampleTime, targetValue, true));
+                // Only add the ramp event, not an additional set value event
+                events.Add(_eventPool.Get(startSampleTime, currentValue, endSampleTime, targetValue, true));
                 events.Sort((a, b) => a.SampleTime.CompareTo(b.SampleTime));
 
                 _nodeLastScheduledValues[node][param] = currentValue;
@@ -147,7 +148,6 @@ namespace Synth
                 _lock.ExitWriteLock();
             }
         }
-
 
         public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
@@ -283,16 +283,15 @@ namespace Synth
                                     {
                                         currentValue = activeEvent.Value;
                                         events.RemoveAt(0);
+                                        _eventPool.Return(activeEvent);
+                                        // GD.Print($"[{sampleTime}] Set value: {currentValue} for {node} {param}");
                                     }
-                                    else if (activeEvent.EndSampleTime == null || Math.Abs(activeEvent.SampleTime - activeEvent.EndSampleTime.Value) < TIME_EPSILON)
-                                    {
-                                        currentValue = activeEvent.Value;
-                                        events.RemoveAt(0);
-                                    }
-                                    else if (sampleTime >= activeEvent.EndSampleTime)
+                                    else if (activeEvent.EndSampleTime == null || sampleTime >= activeEvent.EndSampleTime)
                                     {
                                         currentValue = activeEvent.TargetValue;
                                         events.RemoveAt(0);
+                                        _eventPool.Return(activeEvent);
+                                        // GD.Print($"[{sampleTime}] Ramp completed: {currentValue} for {node} {param}");
                                     }
                                     else
                                     {
@@ -309,6 +308,9 @@ namespace Synth
                         }
 
                         _nodeLastScheduledValues[node][param] = currentValue;
+
+                        // GD.Print($"[{_currentSample}-{_currentSample + _bufferSize - 1}] {node} {param}: " +
+                        //          $"Final: {currentValue}, Remaining events: {events.Count}");
                     }
                 }
 
@@ -319,7 +321,6 @@ namespace Synth
                 _lock.ExitWriteLock();
             }
         }
-
         private static double InterpolateLinear(double start, double end, double progress)
         {
             progress = Math.Max(0, Math.Min(1, progress));
@@ -404,12 +405,12 @@ namespace Synth
             private const double TIME_EPSILON = 1e-10;
             private const double VALUE_EPSILON = 1e-6;
 
-            public double SampleTime { get; }
-            public double Value { get; }
+            public double SampleTime { get; set; }
+            public double Value { get; set; }
             public double? EndSampleTime { get; set; }
             public double TargetValue { get; set; }
-            public bool IsExponential { get; }
-            public bool IsSetValueAtTime { get; }
+            public bool IsExponential { get; set; }
+            public bool IsSetValueAtTime { get; set; }
 
             public ScheduleEvent(double sampleTime, double value, double? endSampleTime = null, double targetValue = 0.0, bool isExponential = false, bool isSetValueAtTime = false)
             {
@@ -438,6 +439,54 @@ namespace Synth
                         GD.Print($"Warning: Very short duration ramp converted to instant change. SampleTime: {sampleTime}, Value: {value}, TargetValue: {targetValue}, EndSampleTime: {endSampleTime}");
                     }
                 }
+            }
+
+            public void Reset(double sampleTime, double value, double? endSampleTime = null, double targetValue = 0.0, bool isExponential = false, bool isSetValueAtTime = false)
+            {
+                SampleTime = sampleTime;
+                Value = value;
+                IsExponential = isExponential;
+                IsSetValueAtTime = isSetValueAtTime;
+
+                if (isSetValueAtTime)
+                {
+                    EndSampleTime = null;
+                    TargetValue = value;
+                }
+                else if (endSampleTime.HasValue && endSampleTime.Value > sampleTime + TIME_EPSILON)
+                {
+                    EndSampleTime = endSampleTime;
+                    TargetValue = targetValue;
+                }
+                else
+                {
+                    EndSampleTime = null;
+                    TargetValue = targetValue;
+                    if (Math.Abs(targetValue - value) > VALUE_EPSILON)
+                    {
+                        GD.Print($"Warning: Very short duration ramp converted to instant change. SampleTime: {sampleTime}, Value: {value}, TargetValue: {targetValue}, EndSampleTime: {endSampleTime}");
+                    }
+                }
+            }
+        }
+
+        public class ScheduleEventPool
+        {
+            private readonly ConcurrentBag<ScheduleEvent> _pool = new ConcurrentBag<ScheduleEvent>();
+
+            public ScheduleEvent Get(double sampleTime, double value, double? endSampleTime = null, double targetValue = 0.0, bool isExponential = false, bool isSetValueAtTime = false)
+            {
+                if (_pool.TryTake(out var ev))
+                {
+                    ev.Reset(sampleTime, value, endSampleTime, targetValue, isExponential, isSetValueAtTime);
+                    return ev;
+                }
+                return new ScheduleEvent(sampleTime, value, endSampleTime, targetValue, isExponential, isSetValueAtTime);
+            }
+
+            public void Return(ScheduleEvent ev)
+            {
+                _pool.Add(ev);
             }
         }
     }

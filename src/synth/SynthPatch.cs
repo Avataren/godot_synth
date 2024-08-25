@@ -60,7 +60,7 @@ public class SynthPatch
 
 #if false
         float speed = 0.35f;
-        for (int i = 0; i < 100000; i++)
+        for (int i = 0; i < 1000; i++)
         {
             // Rhythm pattern for the bassline
             double timeOffset = 0.75 * speed;  // Consistent rhythm, adjusted for speed

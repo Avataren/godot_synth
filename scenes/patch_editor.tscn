@@ -16,7 +16,7 @@
 [ext_resource type="PackedScene" uid="uid://crjemhpcmuknv" path="res://scenes/PatchControls.tscn" id="14_4hro0"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
-buffer_length = 0.03
+buffer_length = 0.02
 
 [sub_resource type="Theme" id="Theme_7ofu8"]
 

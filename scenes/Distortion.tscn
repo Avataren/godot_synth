@@ -1,0 +1,50 @@
+[gd_scene load_steps=2 format=3 uid="uid://cejpagsok6vs7"]
+
+[ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_g4kvf"]
+
+[node name="Distortion" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
+mouse_filter = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Fuzzbox"
+horizontal_alignment = 1
+
+[node name="EnabledCheckBox" type="CheckBox" parent="VBoxContainer"]
+layout_mode = 2
+text = "Enabled"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="InputGainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_g4kvf")]
+layout_mode = 2
+title = "Gain in"
+
+[node name="OutputGainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_g4kvf")]
+layout_mode = 2
+title = "Gain Out"
+
+[node name="MixKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_g4kvf")]
+layout_mode = 2
+title = "Mix"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="CutoffKnob" parent="VBoxContainer/HBoxContainer2" instance=ExtResource("1_g4kvf")]
+layout_mode = 2
+title = "Cutoff"
+
+[node name="FeedbackKnob" parent="VBoxContainer/HBoxContainer2" instance=ExtResource("1_g4kvf")]
+layout_mode = 2
+title = "Feedback"
+
+[node name="BiasKnob" parent="VBoxContainer/HBoxContainer2" instance=ExtResource("1_g4kvf")]
+layout_mode = 2
+title = "Bias"

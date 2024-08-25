@@ -38,7 +38,7 @@ public class SynthPatch
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
-        //fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
+        fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
         for (int i = 0; i < MaxOscillators; i++)
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
@@ -86,25 +86,15 @@ public class SynthPatch
         }
 #endif
 
-        // for (int i = 0; i < MaxEnvelopes; i++)
-        // {
-        //     CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
-        // }
 
         for (int i = 0; i < MaxLFOs; i++)
         {
             LFOs.Add(graph.CreateNode<LFONode>("LFO" + i));
         }
-        //ampEnvelope = graph.CreateNode<EnvelopeNode>("Env1", BufferSize, SampleRate);
+        graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(fuzzNode, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
 
-        //envelopes.Add(ampEnvelope);
-
-        //graph.Connect(ampEnvelope, mix1, AudioParam.Gain, ModulationType.Multiply);
-        graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
-        //graph.Connect(fuzzNode, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
-        //fuzzNode.Enabled = false;
-
-        graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
+        //graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
@@ -153,7 +143,7 @@ public class SynthPatch
         //     graph.DebugPrint();
         // }
 
-
+        //graph.SetNodeEnabled(fuzzNode, false);
         graph.SetNodeEnabled(reverbEffectNode, false);
         //graph.DebugPrint();
         graph.SetNodeEnabled(delayEffectNode, false);

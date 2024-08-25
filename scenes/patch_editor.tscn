@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=22 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://brjdceq6gabsc" path="res://scenes/MoogFilter.tscn" id="9_tmfms"]
 [ext_resource type="PackedScene" uid="uid://c4ngt17drrav4" path="res://scenes/ADSR_Visualizer.tscn" id="10_6jxek"]
 [ext_resource type="PackedScene" uid="uid://bqic6ky7yxt0h" path="res://scenes/ModulationMatrix.tscn" id="10_o17te"]
+[ext_resource type="PackedScene" uid="uid://cejpagsok6vs7" path="res://scenes/Distortion.tscn" id="10_p8ik4"]
 [ext_resource type="PackedScene" uid="uid://crjemhpcmuknv" path="res://scenes/PatchControls.tscn" id="14_4hro0"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
@@ -67,7 +68,7 @@ mouse_filter = 1
 theme = ExtResource("3_fpync")
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer/Control"]
-modulate = Color(0.0965384, 0.143352, 0.178491, 1)
+modulate = Color(0.1675, 0.21425, 0.25, 1)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -197,6 +198,9 @@ theme_override_constants/separation = 5
 layout_mode = 2
 
 [node name="PanelContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsContainer" instance=ExtResource("9_q5dht")]
+layout_mode = 2
+
+[node name="Distortion" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3" instance=ExtResource("10_p8ik4")]
 layout_mode = 2
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]

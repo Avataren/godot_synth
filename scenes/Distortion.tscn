@@ -1,11 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://cejpagsok6vs7"]
+[gd_scene load_steps=3 format=3 uid="uid://cejpagsok6vs7"]
 
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_g4kvf"]
+[ext_resource type="Script" path="res://scenes/scripts/distortion.gd" id="1_nes6q"]
 
 [node name="Distortion" type="PanelContainer"]
 offset_right = 40.0
 offset_bottom = 40.0
 mouse_filter = 1
+script = ExtResource("1_nes6q")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -16,6 +18,7 @@ text = "Fuzzbox"
 horizontal_alignment = 1
 
 [node name="EnabledCheckBox" type="CheckBox" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Enabled"
 
@@ -23,28 +26,62 @@ text = "Enabled"
 layout_mode = 2
 
 [node name="InputGainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_g4kvf")]
+unique_name_in_owner = true
 layout_mode = 2
+max_value = 50.0
+step = 0.1
 title = "Gain in"
 
 [node name="OutputGainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_g4kvf")]
+unique_name_in_owner = true
 layout_mode = 2
+max_value = 50.0
+step = 0.1
 title = "Gain Out"
 
 [node name="MixKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_g4kvf")]
+unique_name_in_owner = true
 layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.2
 title = "Mix"
+current_value = 0.8
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
 [node name="CutoffKnob" parent="VBoxContainer/HBoxContainer2" instance=ExtResource("1_g4kvf")]
+unique_name_in_owner = true
 layout_mode = 2
+max_value = 1.0
+step = 0.001
+label_unit_scale = 0.2
 title = "Cutoff"
+current_value = 0.3
 
 [node name="FeedbackKnob" parent="VBoxContainer/HBoxContainer2" instance=ExtResource("1_g4kvf")]
+unique_name_in_owner = true
 layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.2
 title = "Feedback"
+current_value = 0.2
 
 [node name="BiasKnob" parent="VBoxContainer/HBoxContainer2" instance=ExtResource("1_g4kvf")]
+unique_name_in_owner = true
 layout_mode = 2
+max_value = 0.5
+step = 0.001
+sensitivity = 0.2
 title = "Bias"
+current_value = 0.1
+
+[connection signal="toggled" from="VBoxContainer/EnabledCheckBox" to="." method="_on_enabled_check_box_toggled"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/InputGainKnob" to="." method="_on_input_gain_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/OutputGainKnob" to="." method="_on_output_gain_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/MixKnob" to="." method="_on_mix_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer2/CutoffKnob" to="." method="_on_cutoff_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer2/FeedbackKnob" to="." method="_on_feedback_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer2/BiasKnob" to="." method="_on_bias_knob_value_changed"]

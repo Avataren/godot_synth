@@ -3,7 +3,7 @@ shader_type canvas_item;
 #define BUFFER_SIZE 64
 
 uniform float curve_data[BUFFER_SIZE]; // Array of 64 floats, values between -1 and 1
-uniform vec4 curve_color = vec4(1.0, 1.0, 0.0, 1.0); // Color of the curve
+uniform vec4 curve_color:source_color = vec4(1.0, 1.0, 0.0, 1.0); // Color of the curve
 uniform float line_thickness = 0.02; // Thickness of the curve (in UV space)
 uniform float height_factor = 1.0; // Factor to adjust the height (0 to 1)
 

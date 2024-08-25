@@ -8,8 +8,8 @@
 resource_local_to_scene = true
 shader = ExtResource("1_0uiwr")
 shader_parameter/curve_data = null
-shader_parameter/curve_color = Vector4(1, 1, 0, 1)
-shader_parameter/line_thickness = 0.005
+shader_parameter/curve_color = Color(0.6248, 0.811947, 0.88, 1)
+shader_parameter/line_thickness = 0.01
 shader_parameter/height_factor = 0.5
 
 [node name="WaveformSelect" type="VBoxContainer" node_paths=PackedStringArray("colorRect", "waveformLabel")]

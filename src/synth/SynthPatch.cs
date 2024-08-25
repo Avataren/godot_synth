@@ -20,6 +20,7 @@ public class SynthPatch
     ReverbEffectNode reverbEffectNode;
     MoogFilterNode moogFilterNode;
     PassThroughNode speakerNode;
+    public NoiseNode noiseNode;
     public FuzzNode fuzzNode;
 
 
@@ -39,6 +40,7 @@ public class SynthPatch
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
         fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
+        noiseNode = graph.CreateNode<NoiseNode>("Noise");
         for (int i = 0; i < MaxOscillators; i++)
         {
             var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
@@ -91,6 +93,7 @@ public class SynthPatch
         {
             LFOs.Add(graph.CreateNode<LFONode>("LFO" + i));
         }
+        graph.Connect(noiseNode, mix1, AudioParam.Input, ModulationType.Add);
         graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(fuzzNode, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
 
@@ -102,57 +105,18 @@ public class SynthPatch
 
         graph.TopologicalSortWorkingGraph();
         GD.Print("Initial setup:");
-        //graph.DebugPrint();
 
-        GD.Print("Disabling all oscillators except Osc0");
+        // disable various nodes by default
         for (int i = 1; i < oscillators.Count; i++)
         {
             graph.SetNodeEnabled(oscillators[i], false);
         }
-        GD.Print("after disabling:");
-        //graph.DebugPrint();        
         this.waveTableBank = waveTableBank;
-        // Initialize the patch
-        // for (int idx = 0; idx < MaxOscillators; idx++)
-        // {
-        //     oscillators.Add(new WaveTableOscillatorNode(BufferSize, SampleRate));
-        //     AmpEnvelopes.Add(new EnvelopeNode(BufferSize, SampleRate){
-        //         Enabled = false
-        //     });
-        // }
-        //disable effects by default
-        //reverbEffectNode.RoomSize = 0.5f;
 
-        //oscillators[0].Enabled = true;
-
-        // for (int i = 0; i < oscillators.Count; i++)
-        // {
-        //     graph.SetNodeEnabled(oscillators[i], true);
-        //     graph.DebugPrint();
-        // }
-
-        // for (int i = 0; i < oscillators.Count; i++)
-        // {
-        //     graph.SetNodeEnabled(oscillators[i], false);
-        //     graph.DebugPrint();
-        // }
-
-        // for (int i = 0; i < oscillators.Count; i++)
-        // {
-        //     graph.SetNodeEnabled(oscillators[i], true);
-        //     graph.DebugPrint();
-        // }
-
+        graph.SetNodeEnabled(noiseNode, false);
         graph.SetNodeEnabled(fuzzNode, false);
         graph.SetNodeEnabled(reverbEffectNode, false);
-        //graph.DebugPrint();
         graph.SetNodeEnabled(delayEffectNode, false);
-        //graph.DebugPrint();
-        //SetDelayEffect_Enabled(false);
-        //SetReverbEffect_Enabled(false);
-
-        //graph.TopologicalSort();
-        //graph.DebugPrint();
     }
 
     public void SetMasterGain(float gain)

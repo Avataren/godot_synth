@@ -215,6 +215,33 @@ public partial class PatchEditor : Node2D
 		}
 	}
 
+	private void _on_panel_container_enabled_changed(bool enabled)
+	{
+		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.noiseNode, enabled);
+	}
+
+	private void _on_panel_container_gain_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.noiseNode.SetAmplitude(value);
+	}
+
+	private void _on_panel_container_noisetype_changed(string noiseType)
+	{
+		if (noiseType == "white")
+		{
+			AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.White);
+		}
+		else if (noiseType == "pink")
+		{
+			AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.Pink);
+		}
+	}
+
+	private void _on_panel_container_offset_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.noiseNode.SetDCOffset(value);
+	}
+
 	private void _on_distortion_bias_changed(float value)
 	{
 		AudioOutputNode.CurrentPatch.fuzzNode.Bias = value;

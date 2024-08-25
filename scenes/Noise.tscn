@@ -1,22 +1,73 @@
-[gd_scene load_steps=2 format=3 uid="uid://c04tg6ik10cnd"]
+[gd_scene load_steps=4 format=3 uid="uid://c04tg6ik10cnd"]
 
+[ext_resource type="Script" path="res://scenes/scripts/noise.gd" id="1_p08op"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_s7kww"]
 
-[node name="Noise" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[sub_resource type="ButtonGroup" id="ButtonGroup_b6a3m"]
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
-layout_mode = 0
+[node name="Noise" type="PanelContainer"]
 offset_right = 40.0
 offset_bottom = 40.0
+mouse_filter = 1
+script = ExtResource("1_p08op")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="Knob" parent="PanelContainer/HBoxContainer" instance=ExtResource("1_s7kww")]
+[node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+text = "Noise"
+horizontal_alignment = 1
+
+[node name="EnabledCheckBox" type="CheckBox" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enabled"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="WhiteNoiseButton" type="Button" parent="VBoxContainer/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_b6a3m")
+text = "White"
+
+[node name="PinkNoiseButton" type="Button" parent="VBoxContainer/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_group = SubResource("ButtonGroup_b6a3m")
+text = "Pink"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="DCOffsetKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_s7kww")]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -1.0
+max_value = 1.0
+step = 0.001
+sensitivity = 0.1
+title = "Offset"
+current_value = 0.0
+
+[node name="GainKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_s7kww")]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.2
+title = "Gain"
+current_value = 0.5
+
+[connection signal="toggled" from="VBoxContainer/EnabledCheckBox" to="." method="_on_enabled_check_box_toggled"]
+[connection signal="toggled" from="VBoxContainer/HBoxContainer2/WhiteNoiseButton" to="." method="_on_white_noise_button_toggled"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/DCOffsetKnob" to="." method="_on_dc_offset_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/GainKnob" to="." method="_on_gain_knob_value_changed"]

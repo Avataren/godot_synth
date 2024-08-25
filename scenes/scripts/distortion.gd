@@ -17,13 +17,6 @@ func _ready() -> void:
 	cutoff_changed.emit(%CutoffKnob.current_value)
 	feedback_changed.emit(%FeedbackKnob.current_value)
 	bias_changed.emit(%BiasKnob.current_value)
-	#enabled_changed.emit(false)
-	
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-
 
 func _on_bias_knob_value_changed(val) -> void:
 	bias_changed.emit(val)

@@ -5,8 +5,8 @@
 
 [node name="ModulationMatrix" type="PanelContainer"]
 custom_minimum_size = Vector2(510, 0)
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 510.0
+offset_bottom = 494.0
 size_flags_horizontal = 4
 size_flags_vertical = 0
 theme = ExtResource("1_vvfv3")
@@ -44,7 +44,7 @@ text = "Amount
 "
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer2"]
-custom_minimum_size = Vector2(0, 400)
+custom_minimum_size = Vector2(0, 350)
 layout_mode = 2
 
 [node name="ModEntryVBoxContainer" type="VBoxContainer" parent="VBoxContainer2/ScrollContainer"]

@@ -97,7 +97,7 @@ namespace Synth
 
                 var events = _nodeEventDictionary[node][param];
 
-                var newEvent = new ScheduleEvent(sampleTime, value);
+                var newEvent = new ScheduleEvent(sampleTime, value, isSetValueAtTime: true);
                 events.Add(newEvent);
                 events.Sort((a, b) => a.SampleTime.CompareTo(b.SampleTime));
 
@@ -128,6 +128,13 @@ namespace Synth
 
                 double currentValue = CalculateCurrentValue(node, param);
 
+                if (endSampleTime <= startSampleTime + TIME_EPSILON)
+                {
+                    GD.Print($"Warning: Attempted to create zero-duration exponential ramp. Node: {node}, Param: {param}, Start: {startSampleTime}, End: {endSampleTime}, Current: {currentValue}, Target: {targetValue}");
+                    ScheduleValueAtTime(node, param, targetValue, endTimeInSeconds);
+                    return;
+                }
+
                 TruncateOngoingEvent(events, startSampleTime);
 
                 events.Add(new ScheduleEvent(startSampleTime, currentValue, endSampleTime, targetValue, true));
@@ -141,6 +148,7 @@ namespace Synth
             }
         }
 
+
         public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
             _lock.EnterWriteLock();
@@ -151,6 +159,13 @@ namespace Synth
                 var events = _nodeEventDictionary[node][param];
 
                 double currentValue = CalculateCurrentValue(node, param);
+
+                if (endSampleTime <= startSampleTime + TIME_EPSILON)
+                {
+                    GD.Print($"Warning: Attempted to create zero-duration linear ramp. Node: {node}, Param: {param}, Start: {startSampleTime}, End: {endSampleTime}, Current: {currentValue}, Target: {targetValue}");
+                    ScheduleValueAtTime(node, param, targetValue, endTimeInSeconds);
+                    return;
+                }
 
                 TruncateOngoingEvent(events, startSampleTime);
 
@@ -264,7 +279,12 @@ namespace Synth
                                 {
                                     var activeEvent = events[0];
 
-                                    if (activeEvent.EndSampleTime == null || Math.Abs(activeEvent.SampleTime - activeEvent.EndSampleTime.Value) < TIME_EPSILON)
+                                    if (activeEvent.IsSetValueAtTime)
+                                    {
+                                        currentValue = activeEvent.Value;
+                                        events.RemoveAt(0);
+                                    }
+                                    else if (activeEvent.EndSampleTime == null || Math.Abs(activeEvent.SampleTime - activeEvent.EndSampleTime.Value) < TIME_EPSILON)
                                     {
                                         currentValue = activeEvent.Value;
                                         events.RemoveAt(0);
@@ -378,27 +398,44 @@ namespace Synth
         }
 
 
+
         public class ScheduleEvent
         {
+            private const double TIME_EPSILON = 1e-10;
+            private const double VALUE_EPSILON = 1e-6;
+
             public double SampleTime { get; }
             public double Value { get; }
             public double? EndSampleTime { get; set; }
             public double TargetValue { get; set; }
             public bool IsExponential { get; }
+            public bool IsSetValueAtTime { get; }
 
-            public ScheduleEvent(double sampleTime, double value, double? endSampleTime = null, double targetValue = 0.0, bool isExponential = false)
+            public ScheduleEvent(double sampleTime, double value, double? endSampleTime = null, double targetValue = 0.0, bool isExponential = false, bool isSetValueAtTime = false)
             {
                 SampleTime = sampleTime;
                 Value = value;
-                EndSampleTime = endSampleTime;
-                TargetValue = targetValue;
                 IsExponential = isExponential;
+                IsSetValueAtTime = isSetValueAtTime;
 
-                if (endSampleTime.HasValue && Math.Abs(SampleTime - endSampleTime.Value) < TIME_EPSILON)
+                if (isSetValueAtTime)
                 {
-                    if (IsExponential || Math.Abs(TargetValue - value) > VALUE_EPSILON)
+                    EndSampleTime = null;
+                    TargetValue = value;
+                }
+                else if (endSampleTime.HasValue && endSampleTime.Value > sampleTime + TIME_EPSILON)
+                {
+                    EndSampleTime = endSampleTime;
+                    TargetValue = targetValue;
+                }
+                else
+                {
+                    // Convert to instant value change if duration is too short
+                    EndSampleTime = null;
+                    TargetValue = targetValue;
+                    if (Math.Abs(targetValue - value) > VALUE_EPSILON)
                     {
-                        GD.PrintErr($"Creating zero-duration ramp event: StartSampleTime ({SampleTime}), EndSampleTime ({EndSampleTime})");
+                        GD.Print($"Warning: Very short duration ramp converted to instant change. SampleTime: {sampleTime}, Value: {value}, TargetValue: {targetValue}, EndSampleTime: {endSampleTime}");
                     }
                 }
             }

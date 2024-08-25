@@ -109,7 +109,7 @@ public class SynthPatch
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
 
-        
+
         graph.TopologicalSortWorkingGraph();
         GD.Print("Initial setup:");
         //graph.DebugPrint();
@@ -674,14 +674,13 @@ public class SynthPatch
                 }
                 foreach (var osc in oscillators)
                 {
-                    osc.ScheduleGateOpen(0, true);  // Open oscillator gates
+                    osc.ScheduleGateOpen(now, true);  // Open oscillator gates
                 }
             }
             else
             {
                 // A note is already playing, apply portamento (legato)
                 NoteVelocityRegister.Push(note);
-
                 freq.ExponentialRampToValueAtTime(newFrequency, now + PortamentoTime);  // Glide to new note
             }
         }
@@ -716,7 +715,14 @@ public class SynthPatch
                 // If there's another note in the stack, glide to it
                 int nextNote = NoteVelocityRegister.Peek();
                 float nextFrequency = 440.0f * (float)Math.Pow(2.0, (nextNote - 69) / 12.0);
-                freq.LinearRampToValueAtTime(nextFrequency, now + PortamentoTime);
+                if (PortamentoTime > 0.001)
+                {
+                    freq.LinearRampToValueAtTime(nextFrequency, now + PortamentoTime);
+                }
+                else
+                {
+                    freq.SetValueAtTime(nextFrequency, now);
+                }
             }
             else
             {
@@ -727,7 +733,7 @@ public class SynthPatch
                 }
                 foreach (var osc in oscillators)
                 {
-                    osc.ScheduleGateClose(0);  // Close oscillator gates
+                    osc.ScheduleGateClose(now);  // Close oscillator gates
                 }
             }
         }

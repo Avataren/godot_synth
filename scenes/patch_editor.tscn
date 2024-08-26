@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=24 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/nodes/AudioOutputNode.cs" id="2_suqit"]
@@ -8,6 +8,7 @@
 [ext_resource type="Shader" path="res://shaders/waveform.gdshader" id="5_61qe6"]
 [ext_resource type="PackedScene" uid="uid://cewu6w24764u8" path="res://scenes/lfo.tscn" id="6_4sevq"]
 [ext_resource type="Script" path="res://scenes/scripts/WaveformTextureRect.cs" id="6_psdfa"]
+[ext_resource type="PackedScene" uid="uid://ceb6fd56g3ooc" path="res://scenes/CpuMeter.tscn" id="7_fjx8d"]
 [ext_resource type="PackedScene" uid="uid://d2tnrme5j7xrt" path="res://scenes/Delay.tscn" id="8_pjurh"]
 [ext_resource type="PackedScene" uid="uid://dptpgfskdirph" path="res://scenes/Reverb.tscn" id="9_q5dht"]
 [ext_resource type="PackedScene" uid="uid://c04tg6ik10cnd" path="res://scenes/Noise.tscn" id="9_q8c8w"]
@@ -34,20 +35,19 @@ shader_parameter/aspect_ratio = 4.0
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_plx0a"]
 
-[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "PerformanceLabel", "AudioOutputNode", "AdsrVisualizer")]
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "AudioOutputNode", "AdsrVisualizer")]
 script = ExtResource("1_ox65v")
-Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator1")
-Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator2")
-Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator3")
-Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator4")
-Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer/Oscillator5")
-LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO1")
-LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO2")
-LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO3")
-LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer/LFO4")
-PerformanceLabel = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer/PerfLabel")
+Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator1")
+Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator2")
+Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator3")
+Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator4")
+Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator5")
+LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/LFO1")
+LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/LFO2")
+LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer/LFO3")
+LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer/LFO4")
 AudioOutputNode = NodePath("AudioOutputNode")
-AdsrVisualizer = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/ADSR_Envelope")
+AdsrVisualizer = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/ADSR_Envelope")
 metadata/_edit_vertical_guides_ = [-573.0]
 
 [node name="AudioOutputNode" type="AudioStreamPlayer" parent="."]
@@ -146,146 +146,154 @@ layout_mode = 2
 size_flags_vertical = 4
 text = "Reset Patch"
 
-[node name="PerfLabel" type="Label" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer"]
+[node name="CpuMeter" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer" instance=ExtResource("7_fjx8d")]
 layout_mode = 2
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+
+[node name="OscillatorContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="OscillatorsContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3"]
+[node name="OscillatorsContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer"]
 layout_mode = 2
 theme_override_constants/separation = 25
 alignment = 1
 
-[node name="VSeparator5" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
+[node name="VSeparator5" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
+[node name="VSeparator" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator2" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
+[node name="VSeparator2" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator3" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
+[node name="VSeparator3" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator4" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
+[node name="VSeparator4" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="Oscillator5" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer" instance=ExtResource("3_p4jms")]
+[node name="Oscillator5" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer" instance=ExtResource("3_p4jms")]
 layout_mode = 2
 
-[node name="VSeparator6" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/OscillatorsContainer"]
+[node name="VSeparator6" type="VSeparator" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer"]
 layout_mode = 2
 
-[node name="EffectsGridContainer" type="GridContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3"]
-layout_mode = 2
-columns = 2
-
-[node name="Distortion" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer" instance=ExtResource("10_p8ik4")]
-layout_mode = 2
-
-[node name="PanelContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer" instance=ExtResource("9_q8c8w")]
-layout_mode = 2
-
-[node name="Delay" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer" instance=ExtResource("8_pjurh")]
-layout_mode = 2
-
-[node name="Noise" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer" instance=ExtResource("9_q5dht")]
-layout_mode = 2
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
+[node name="BottomContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/separation = 60
 alignment = 1
 
-[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" instance=ExtResource("10_6jxek")]
+[node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer" instance=ExtResource("10_6jxek")]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_plx0a")
 
-[node name="ModulationMatrix" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2" instance=ExtResource("10_o17te")]
+[node name="ModulationMatrix" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer" instance=ExtResource("10_o17te")]
 layout_mode = 2
 
-[node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+[node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 25
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/LFOContainer"]
 layout_mode = 2
 theme_override_constants/separation = 30
 
-[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer"]
-layout_mode = 2
-columns = 2
-
-[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
-layout_mode = 2
-size_flags_vertical = 4
-
-[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
-layout_mode = 2
-size_flags_vertical = 4
-
-[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
-layout_mode = 2
-size_flags_vertical = 4
-
-[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/LFOContainer/VBoxContainer/GridContainer" instance=ExtResource("6_4sevq")]
-layout_mode = 2
-size_flags_vertical = 4
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="MoogFilter" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("9_tmfms")]
+[node name="EffectsGridContainer" type="GridContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+columns = 2
+
+[node name="Distortion" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("10_p8ik4")]
 layout_mode = 2
 
-[node name="PatchControls" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer" instance=ExtResource("14_4hro0")]
+[node name="PanelContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("9_q8c8w")]
 layout_mode = 2
 
+[node name="Delay" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("8_pjurh")]
+layout_mode = 2
+
+[node name="Noise" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("9_q5dht")]
+layout_mode = 2
+
+[node name="MoogFilter" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("9_tmfms")]
+layout_mode = 2
+
+[node name="PatchControls" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("14_4hro0")]
+layout_mode = 2
+
+[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer"]
+layout_mode = 2
+
+[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer" instance=ExtResource("6_4sevq")]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer" instance=ExtResource("6_4sevq")]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+
+[connection signal="CpuUsageChanged" from="." to="CanvasLayer/Control/VBoxContainer/HBoxContainer/CpuMeter" method="set_cpu_usage"]
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
 [connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]
-[connection signal="bias_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Distortion" to="." method="_on_distortion_bias_changed"]
-[connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Distortion" to="." method="_on_distortion_cutoff_changed"]
-[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Distortion" to="." method="_on_distortion_enabled_changed"]
-[connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Distortion" to="." method="_on_distortion_feedback_changed"]
-[connection signal="input_gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Distortion" to="." method="_on_distortion_input_gain_changed"]
-[connection signal="mix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Distortion" to="." method="_on_distortion_mix_changed"]
-[connection signal="output_gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Distortion" to="." method="_on_distortion_output_gain_changed"]
-[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_enabled_changed"]
-[connection signal="gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_gain_changed"]
-[connection signal="noisetype_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_noisetype_changed"]
-[connection signal="offset_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_offset_changed"]
-[connection signal="delay_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Delay" to="." method="_on_delay_delay_changed"]
-[connection signal="delay_enabled" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Delay" to="." method="_on_delay_delay_enabled"]
-[connection signal="drymix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Delay" to="." method="_on_delay_drymix_changed"]
-[connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Delay" to="." method="_on_delay_feedback_changed"]
-[connection signal="wetmix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Delay" to="." method="_on_delay_wetmix_changed"]
-[connection signal="damp_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Noise" to="." method="_on_reverb_damp_changed"]
-[connection signal="dry_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Noise" to="." method="_on_reverb_dry_changed"]
-[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Noise" to="." method="_on_reverb_enabled_toggled"]
-[connection signal="room_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Noise" to="." method="_on_reverb_room_size_changed"]
-[connection signal="wet_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Noise" to="." method="_on_reverb_wet_changed"]
-[connection signal="width_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer3/EffectsGridContainer/Noise" to="." method="_on_reverb_width_changed"]
-[connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_cutoff_changed"]
-[connection signal="drive_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_drive_changed"]
-[connection signal="filter_type_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_moog_filter_filter_type_changed"]
-[connection signal="resonance_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/MoogFilter" to="." method="_on_resonance_changed"]
-[connection signal="gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/PatchControls" to="." method="_on_patch_controls_gain_changed"]
-[connection signal="portamento_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/PatchControls" to="." method="_on_patch_controls_portamento_changed"]
+[connection signal="bias_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Distortion" to="." method="_on_distortion_bias_changed"]
+[connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Distortion" to="." method="_on_distortion_cutoff_changed"]
+[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Distortion" to="." method="_on_distortion_enabled_changed"]
+[connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Distortion" to="." method="_on_distortion_feedback_changed"]
+[connection signal="input_gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Distortion" to="." method="_on_distortion_input_gain_changed"]
+[connection signal="mix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Distortion" to="." method="_on_distortion_mix_changed"]
+[connection signal="output_gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Distortion" to="." method="_on_distortion_output_gain_changed"]
+[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_enabled_changed"]
+[connection signal="gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_gain_changed"]
+[connection signal="noisetype_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_noisetype_changed"]
+[connection signal="offset_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_offset_changed"]
+[connection signal="delay_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_delay_changed"]
+[connection signal="delay_enabled" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_delay_enabled"]
+[connection signal="drymix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_drymix_changed"]
+[connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_feedback_changed"]
+[connection signal="wetmix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_wetmix_changed"]
+[connection signal="damp_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Noise" to="." method="_on_reverb_damp_changed"]
+[connection signal="dry_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Noise" to="." method="_on_reverb_dry_changed"]
+[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Noise" to="." method="_on_reverb_enabled_toggled"]
+[connection signal="room_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Noise" to="." method="_on_reverb_room_size_changed"]
+[connection signal="wet_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Noise" to="." method="_on_reverb_wet_changed"]
+[connection signal="width_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Noise" to="." method="_on_reverb_width_changed"]
+[connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/MoogFilter" to="." method="_on_cutoff_changed"]
+[connection signal="drive_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/MoogFilter" to="." method="_on_drive_changed"]
+[connection signal="filter_type_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/MoogFilter" to="." method="_on_moog_filter_filter_type_changed"]
+[connection signal="resonance_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/MoogFilter" to="." method="_on_resonance_changed"]
+[connection signal="gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PatchControls" to="." method="_on_patch_controls_gain_changed"]
+[connection signal="portamento_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PatchControls" to="." method="_on_patch_controls_portamento_changed"]

@@ -59,6 +59,7 @@ current_value = 1.0
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 4
 columns = 2
 
 [node name="Button" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]

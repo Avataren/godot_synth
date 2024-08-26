@@ -26,14 +26,6 @@ public partial class PatchEditor : Node2D
 	private LFO LFO3;
 	[Export]
 	private LFO LFO4;
-	[Export]
-	private Label PerformanceLabel;
-	[Export]
-	private ADSR_Envelope CustomADSR1;
-	[Export]
-	private ADSR_Envelope CustomADSR2;
-	[Export]
-	private ADSR_Envelope CustomADSR3;
 
 	[Export]
 	private ADSR_Envelope ADSREnvelope;
@@ -43,6 +35,8 @@ public partial class PatchEditor : Node2D
 	[Export]
 	private AdsrVisualizer AdsrVisualizer;
 
+	[Signal]
+	public delegate void CpuUsageChangedEventHandler(float value);
 
 	//private Control lfoContainer;
 	private Control gdLFONode;
@@ -54,12 +48,10 @@ public partial class PatchEditor : Node2D
 		//lfoContainer = GetNode<Control>("%LFOContainer");
 		var oscs = new Oscillator[] { Oscillator1, Oscillator2, Oscillator3, Oscillator4, Oscillator5 };
 		var lfos = new LFO[] { LFO1, LFO2, LFO3, LFO4 };
-		var customEnvelopes = new ADSR_Envelope[] { CustomADSR1, CustomADSR2, CustomADSR3 };
 		try
 		{
 			Print("Patch Editor Ready");
 			ConnectEnvelopesToGui();
-			//Print("envelopes connected");
 			Oscillator1.Enable();
 			for (int i = 0; i < oscs.Length; i++)
 			{
@@ -67,16 +59,9 @@ public partial class PatchEditor : Node2D
 			}
 			for (int i = 0; i < lfos.Length; i++)
 			{
-				//Print("Connecting LFO Signals" + i);
 				ConnectLFOSignals(lfos[i], i);
 			}
-			//ConnectAmplitudeEnvelope();
-			//CallDeferred(nameof(CreateWaveforms));
 			CreateWaveforms();
-			// for (int i = 0; i < customEnvelopes.Length; i++)
-			// {
-			// 	ConnectCustomEnvelopes(customEnvelopes[i], i);
-			// }
 			ConnectPerformanceUpdate();
 
 		}
@@ -114,18 +99,15 @@ public partial class PatchEditor : Node2D
 	{
 		AudioOutputNode.PerformanceTimeUpdate += (process_time, buffer_push_time, frames) =>
 		{
-			if (PerformanceLabel != null)
+			var cpuUsage = process_time / (double)buffer_push_time;
+			cpuUsageHistory.Add(cpuUsage);
+			if (cpuUsageHistory.Count > historySize)
 			{
-				var cpuUsage = process_time / (double)buffer_push_time * 100.0;
-				cpuUsageHistory.Add(cpuUsage);
-				if (cpuUsageHistory.Count > historySize)
-				{
-					cpuUsageHistory.RemoveAt(0);
-				}
-				var smoothedCpuUsage = cpuUsageHistory.Average();
-				var perf = $"Frames avialable: ${frames,5} CPU load: {Math.Round(smoothedCpuUsage)}%";
-				PerformanceLabel.Text = perf;
+				cpuUsageHistory.RemoveAt(0);
 			}
+			var smoothedCpuUsage = cpuUsageHistory.Average();
+
+			EmitSignal(SignalName.CpuUsageChanged, smoothedCpuUsage);
 		};
 	}
 

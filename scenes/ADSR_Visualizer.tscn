@@ -60,6 +60,7 @@ button_group = ExtResource("2_l85fp")
 text = "Envelope 3"
 
 [node name="EnvelopeButton4" type="Button" parent="VBoxContainer/HBoxContainer2"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 4
@@ -68,6 +69,7 @@ button_group = ExtResource("2_l85fp")
 text = "Envelope 4"
 
 [node name="EnvelopeButton5" type="Button" parent="VBoxContainer/HBoxContainer2"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 4

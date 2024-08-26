@@ -6,8 +6,8 @@ public class SynthPatch
 {
     private readonly object _lock = new object();
     public const int MaxOscillators = 5;
-    public const int MaxLFOs = 4;
-    public const int MaxEnvelopes = 5;
+    public const int MaxLFOs = 2;
+    public const int MaxEnvelopes = 3;
     public float PortamentoTime = 0.0f;
     List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
     List<LFONode> LFOs = new List<LFONode>();
@@ -30,10 +30,7 @@ public class SynthPatch
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
 
-        //        BufferSize = bufferSize * Oversampling;
-        //SampleRate = sampleRate;
         freq = graph.CreateNode<ConstantNode>("Freq");
-
         var mix1 = graph.CreateNode<MixerNode>("Mix1");
         filterNode = graph.CreateNode<FilterNode>("MoogFilter");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");

@@ -10,7 +10,10 @@ namespace Synth
         private float p, k, r;
         private float x, y1, y2, y3, y4;
         private float oldx, oldy1, oldy2, oldy3;
-        private float drive = 1.0f; // Default drive
+        private float drive = 1.0f;
+        private float[] state = new float[4];
+        private float dcBlock1, dcBlock2;
+        private const int OVERSAMPLE = 2;
 
         public MoogFilter(float sampleFrequency = 44100.0f)
         {
@@ -21,12 +24,14 @@ namespace Synth
         private void init()
         {
             y1 = y2 = y3 = y4 = oldx = oldy1 = oldy2 = oldy3 = 0;
+            for (int i = 0; i < 4; i++) state[i] = 0;
+            dcBlock1 = dcBlock2 = 0;
             calc(CutOff);
         }
 
         private void calc(float cutOff)
         {
-            float f = (cutOff + cutOff) / fs; //[0 - 1]
+            float f = (cutOff + cutOff) / (fs * OVERSAMPLE);
             p = f * (1.8f - 0.8f * f);
             k = p + p - 1f;
 
@@ -35,31 +40,58 @@ namespace Synth
             r = res * (t2 + 6f * t) / (t2 - 6f * t);
         }
 
+        private float tanhApprox(float x)
+        {
+            float x2 = x * x;
+            return x * (27 + x2) / (27 + 9 * x2);
+        }
+
+        private float softClip(float x)
+        {
+            return x - 0.33333f * (x * x * x);
+        }
+
         public float Process(float input, float cutoff_mod = 1.0f)
         {
             calc(CutOff * cutoff_mod);
-            // Apply drive with soft clipping using tanh for a more analog-like distortion
-            //input = (float)Math.Tanh(input * drive);
-            // Process input through the Moog filter
-            x = input - r * y4;
+            float outputSum = 0;
 
-            // Four cascaded one-pole filters (bilinear transform)
-            y1 = x * p + oldx * p - k * y1;
-            y2 = y1 * p + oldy1 * p - k * y2;
-            y3 = y2 * p + oldy2 * p - k * y3;
-            y4 = y3 * p + oldy3 * p - k * y4;
+            for (int i = 0; i < OVERSAMPLE; i++)
+            {
+                float inputSample = i == 0 ? input : 0;  // Only use input for first iteration
 
-            // Clipper band limited sigmoid
-            y4 -= (y4 * y4 * y4) / 6f;
+                // Apply drive
+                inputSample = tanhApprox(inputSample * drive);
 
-            oldx = x;
-            oldy1 = y1;
-            oldy2 = y2;
-            oldy3 = y3;
+                // Feedback
+                x = inputSample - r * softClip(y4);
 
-            return y4;
+                // Four cascaded one-pole filters (bilinear transform)
+                y1 = x * p + oldx * p - k * y1;
+                y2 = y1 * p + oldy1 * p - k * y2;
+                y3 = y2 * p + oldy2 * p - k * y3;
+                y4 = y3 * p + oldy3 * p - k * y4;
+
+                // Clipper band limited sigmoid
+                y4 = softClip(y4);
+
+                oldx = x;
+                oldy1 = y1;
+                oldy2 = y2;
+                oldy3 = y3;
+
+                outputSum += y4;
+            }
+
+            outputSum /= OVERSAMPLE;
+
+            // DC blocker
+            float outputSample = outputSum - dcBlock1 + 0.995f * dcBlock2;
+            dcBlock1 = outputSum;
+            dcBlock2 = outputSample;
+
+            return outputSample;
         }
-
         public float Drive
         {
             get { return drive; }
@@ -71,7 +103,7 @@ namespace Synth
             get { return cutoff; }
             set
             {
-                cutoff = value;
+                cutoff = Math.Max(20, Math.Min(20000, value));
                 calc(cutoff);
             }
         }
@@ -81,7 +113,7 @@ namespace Synth
             get { return res; }
             set
             {
-                res = value;
+                res = Math.Max(0, Math.Min(1, value));
                 calc(CutOff);
             }
         }

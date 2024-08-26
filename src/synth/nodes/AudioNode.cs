@@ -34,6 +34,11 @@ namespace Synth
 		{
 			return (val + 100.0) % 1.0;
 		}
+
+		public ReadOnlySpan<float> GetBuffer() => buffer;
+		public ReadOnlySpan<float> GetLeftBuffer() => LeftBuffer;
+		public ReadOnlySpan<float> GetRightBuffer() => RightBuffer;
+
 		public Tuple<float, float> GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
 		{
 

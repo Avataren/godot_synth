@@ -1,7 +1,7 @@
 [gd_scene load_steps=23 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
-[ext_resource type="Script" path="res://src/synth/AudioOutputNode.cs" id="2_5you6"]
+[ext_resource type="Script" path="res://src/synth/nodes/AudioOutputNode.cs" id="2_suqit"]
 [ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="3_fpync"]
 [ext_resource type="PackedScene" uid="uid://cbymyl68u2edq" path="res://scenes/oscillator.tscn" id="3_p4jms"]
 [ext_resource type="Texture2D" uid="uid://df7mck8vnomus" path="res://assets/brushedsteel4.jpg" id="4_101k7"]
@@ -54,7 +54,7 @@ metadata/_edit_vertical_guides_ = [-573.0]
 unique_name_in_owner = true
 stream = SubResource("AudioStreamGenerator_whm0j")
 bus = &"New Bus"
-script = ExtResource("2_5you6")
+script = ExtResource("2_suqit")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 

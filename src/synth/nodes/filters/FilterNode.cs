@@ -1,12 +1,13 @@
 using System;
+using Godot;
 
 namespace Synth
 {
-    public class MoogFilterNode : AudioNode
+    public class FilterNode : AudioNode
     {
         private MoogFilter leftFilter;
         private MoogFilter rightFilter;
-        public MoogFilterNode() : base()
+        public FilterNode() : base()
         {
             leftFilter = new MoogFilter(SampleRate);
             rightFilter = new MoogFilter(SampleRate);
@@ -40,13 +41,29 @@ namespace Synth
             }
         }
 
+        public static double TransformToCutoff(double input, double minCutoff, double maxCutoff)
+        {
+            if (input < 0 || input > 1)
+                throw new ArgumentOutOfRangeException(nameof(input), "Input must be between 0 and 1.");
+
+            // Use an exponential mapping to make the transformation feel more natural
+            double exponent = 3.0; // You can adjust this exponent for more or less nonlinearity
+            double transformedValue = Math.Pow(input, exponent);
+
+            // Map the transformed value to the cutoff frequency range
+            double cutoffFrequency = minCutoff + transformedValue * (maxCutoff - minCutoff);
+
+            return cutoffFrequency;
+        }
+
         public float CutOff
         {
             get { return leftFilter.CutOff; }
             set
             {
-                leftFilter.CutOff = value;
-                rightFilter.CutOff = value; // Assuming both channels have the same cutoff
+                leftFilter.CutOff = (float)TransformToCutoff(value, 0.0, 20000.0);
+                GD.Print("Cutoff: " + leftFilter.CutOff);
+                rightFilter.CutOff = (float)TransformToCutoff(value,  0.0, 20000.0);
             }
         }
 

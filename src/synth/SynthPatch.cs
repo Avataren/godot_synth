@@ -18,7 +18,7 @@ public class SynthPatch
     ConstantNode freq;
     DelayEffectNode delayEffectNode;
     ReverbEffectNode reverbEffectNode;
-    MoogFilterNode moogFilterNode;
+    FilterNode moogFilterNode;
     PassThroughNode speakerNode;
     public NoiseNode noiseNode;
     public FuzzNode fuzzNode;
@@ -35,7 +35,7 @@ public class SynthPatch
         freq = graph.CreateNode<ConstantNode>("Freq");
 
         var mix1 = graph.CreateNode<MixerNode>("Mix1");
-        moogFilterNode = graph.CreateNode<MoogFilterNode>("MoogFilter");
+        moogFilterNode = graph.CreateNode<FilterNode>("MoogFilter");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
@@ -87,7 +87,6 @@ public class SynthPatch
             }
         }
 #endif
-
 
         for (int i = 0; i < MaxLFOs; i++)
         {

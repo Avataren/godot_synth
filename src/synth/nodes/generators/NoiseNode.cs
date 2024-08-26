@@ -97,20 +97,20 @@ namespace Synth
             // ApplyEnvelope(buffer);
         }
 
-        private void ApplyEnvelope(Span<float> samples)
-        {
-            // Simple linear fade in/out to avoid clicks
-            int fadeLength = Math.Min(100, samples.Length / 2);
-            for (int i = 0; i < fadeLength; i++)
-            {
-                float fadeIn = i / (float)fadeLength;
-                float fadeOut = 1 - fadeIn;
-                samples[i] *= fadeIn;
-                samples[samples.Length - 1 - i] *= fadeOut;
-            }
-        }
+        // private void ApplyEnvelope(Span<float> samples)
+        // {
+        //     // Simple linear fade in/out to avoid clicks
+        //     int fadeLength = Math.Min(100, samples.Length / 2);
+        //     for (int i = 0; i < fadeLength; i++)
+        //     {
+        //         float fadeIn = i / (float)fadeLength;
+        //         float fadeOut = 1 - fadeIn;
+        //         samples[i] *= fadeIn;
+        //         samples[samples.Length - 1 - i] *= fadeOut;
+        //     }
+        // }
 
-        public ReadOnlySpan<float> GetBuffer() => buffer;
+        
     }
 
     public enum NoiseType

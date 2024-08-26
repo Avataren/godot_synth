@@ -39,7 +39,7 @@ namespace Synth
         {
             calc(CutOff * env_gain);
             // Apply drive with soft clipping using tanh for a more analog-like distortion
-            input = (float)Math.Tanh(input * drive);
+            //input = (float)Math.Tanh(input * drive);
             // Process input through the Moog filter
             x = input - r * y4;
 

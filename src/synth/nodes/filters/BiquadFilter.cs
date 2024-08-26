@@ -137,9 +137,22 @@ namespace Synth
             a2 = float.IsNaN(a2) || float.IsInfinity(a2) ? 0 : a2;
         }
 
+
+
+        private float previousCutoffModParam = 1f;
+        private const float modulationSmoothingFactor = 0.5f; // Adjust for desired smoothness
+
+        public float SmoothModulation(float cutoff_mod_param)
+        {
+            previousCutoffModParam += modulationSmoothingFactor * (cutoff_mod_param - previousCutoffModParam);
+            return previousCutoffModParam;
+        }
+
         public float Process(float input, float cutoff_mod_param)
         {
-            CalculateCoefficients(frequency * cutoff_mod_param);
+            float smoothedCutoffModParam = Mathf.Max(0.01f, SmoothModulation(cutoff_mod_param));
+            CalculateCoefficients(frequency * smoothedCutoffModParam);
+
             float output = b0 * input + b1 * prevInput1 + b2 * prevInput2
                            - a1 * prevOutput1 - a2 * prevOutput2;
 
@@ -200,9 +213,13 @@ namespace Synth
 
         public void SetFilterType(FilterType value)
         {
-            GD.Print("Setting filter type to " + value);
-            type = value;
-            CalculateCoefficients(frequency);
+            if (type != value)
+            {
+                GD.Print("Setting filter type to " + value);
+                type = value;
+                Reset(); // Reset the filter state when changing types
+                CalculateCoefficients(frequency);
+            }
         }
 
         // Existing SampleRate property

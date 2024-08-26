@@ -35,9 +35,9 @@ namespace Synth
             r = res * (t2 + 6f * t) / (t2 - 6f * t);
         }
 
-        public float Process(float input, float env_gain = 1.0f)
+        public float Process(float input, float cutoff_mod = 1.0f)
         {
-            calc(CutOff * env_gain);
+            calc(CutOff * cutoff_mod);
             // Apply drive with soft clipping using tanh for a more analog-like distortion
             //input = (float)Math.Tanh(input * drive);
             // Process input through the Moog filter

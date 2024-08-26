@@ -281,7 +281,7 @@ namespace Synth
             if (forceCloseFirst)
             {
                 _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time);
-                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time + 1 / SampleRate);
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time + 2 / SampleRate);
             }
             else
             {

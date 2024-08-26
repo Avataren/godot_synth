@@ -34,9 +34,9 @@ namespace Synth
                     float sampleL = node.LeftBuffer[i];
                     float sampleR = node.RightBuffer[i];
 
-                    float gain = cutoff_mod_param.Item2;
-                    LeftBuffer[i] = leftFilter.Process(sampleL, gain);
-                    RightBuffer[i] = rightFilter.Process(sampleR, gain);
+                    float co = cutoff_mod_param.Item2;
+                    LeftBuffer[i] = leftFilter.Process(sampleL, co);
+                    RightBuffer[i] = rightFilter.Process(sampleR, co);
                 }
             }
         }

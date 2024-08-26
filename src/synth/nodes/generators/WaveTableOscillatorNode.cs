@@ -48,7 +48,8 @@ namespace Synth
 				lock (_lock)
 				{
 					_waveTableMemory = value;
-					UpdateWaveTableFrequency(440.0f);
+					//UpdateWaveTableFrequency(440.0f);
+					InvalidateWaveform();
 				}
 			}
 		}
@@ -153,6 +154,11 @@ namespace Synth
 		}
 		bool _isGateOpen = false;
 		int gateNum = 0;
+
+		public void InvalidateWaveform()
+		{
+			_lastFrequency = -1f;
+		}
 
 		public override void Process(double increment)
 		{

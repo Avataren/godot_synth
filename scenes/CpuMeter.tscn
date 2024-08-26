@@ -5,7 +5,7 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8o40t"]
 shader = ExtResource("1_hewdl")
-shader_parameter/cpu_usage = 1.0
+shader_parameter/cpu_usage = 0.512
 shader_parameter/frame_color = Vector4(1, 1, 1, 1)
 shader_parameter/frame_thickness = 0.05
 

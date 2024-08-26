@@ -10,19 +10,22 @@ void fragment() {
     int current_dot = int(UV.x / dot_width); // Determine which dot is being rendered
     int visible_dots = int(cpu_usage * float(num_dots)); // Calculate the threshold for visible dots based on CPU usage
 
-    // Adjusting the green color brightness down by about 25%
+    // Define colors
     vec4 start_color = vec4(0.0, 0.75, 0.0, 1.0); // Green
     vec4 mid_color = vec4(1.0, 1.0, 0.0, 1.0); // Yellow
     vec4 end_color = vec4(1.0, 0.0, 0.0, 1.0); // Red
 
     // Calculate color based on the position in the gradient
+    float t = float(current_dot) / float(num_dots);
     vec4 color;
-    if (current_dot < num_dots / 2) {
-        float t = float(current_dot) / float(num_dots / 2);
-        color = mix(start_color, mid_color, t);
+    if (t < 0.75) {
+        // Interpolate between green and yellow from 0 to 0.75
+        float t_adjusted = t / 0.75; // Normalize t to the 0 to 0.75 range
+        color = mix(start_color, mid_color, t_adjusted);
     } else {
-        float t = float(current_dot - num_dots / 2) / float(num_dots / 2);
-        color = mix(mid_color, end_color, t);
+        // Interpolate between yellow and red from 0.75 to 1
+        float t_adjusted = (t - 0.75) / 0.25; // Normalize t to the 0.75 to 1 range
+        color = mix(mid_color, end_color, t_adjusted);
     }
 
     // Determine if within frame
@@ -30,7 +33,14 @@ void fragment() {
     bool in_frame = (UV.x < frame_thickness_adjusted || UV.x > 1.0 - frame_thickness_adjusted || UV.y < frame_thickness_adjusted || UV.y > 1.0 - frame_thickness_adjusted);
 
     if (in_frame) {
-        COLOR = frame_color; // Frame color
+		if (cpu_usage > 0.75)
+		{
+			COLOR = vec4(1,0,0,1);
+		}
+		else
+		{
+        	COLOR = frame_color; // Frame color
+		}
     } else if (current_dot < visible_dots) {
         COLOR = vec4(color.rgb, 1.0); // Fully opaque for visible dots
     } else {

@@ -6,7 +6,7 @@ namespace Synth
 
     public class MixerNode : AudioNode
     {
-        public float Gain = 1.0f;
+        public float Gain = 0.5f;
         public MixerNode()
         {
             RightBuffer = new float[NumSamples];

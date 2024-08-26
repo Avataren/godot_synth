@@ -33,7 +33,7 @@ step = 0.01
 sensitivity = 0.2
 title = "Gain"
 nonlinear_factor = 2.0
-current_value = 1.0
+current_value = 0.5
 
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/PortamentoKnob" to="." method="_on_portamento_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/GainKnob" to="." method="_on_gain_knob_value_changed"]

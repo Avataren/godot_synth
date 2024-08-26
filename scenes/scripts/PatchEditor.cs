@@ -347,6 +347,7 @@ public partial class PatchEditor : Node2D
 	private void _on_octave_select_item_selected(int index)
 	{
 		AudioOutputNode.BaseOctave = index;
+		AudioOutputNode.ClearKeyStack();
 	}
 
 	private void _on_delay_delay_enabled(bool enabled)

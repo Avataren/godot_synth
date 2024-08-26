@@ -6,6 +6,7 @@ namespace Synth
 
     public class MixerNode : AudioNode
     {
+        public float Gain = 1.0f;
         public MixerNode()
         {
             RightBuffer = new float[NumSamples];
@@ -47,8 +48,8 @@ namespace Synth
                     float rightVolume = balance > 0 ? 1.0f : 1.0f + balance;
 
                     // Mix into left and right buffers
-                    LeftBuffer[i] += leftVolume * sample;
-                    RightBuffer[i] += rightVolume * sample;
+                    LeftBuffer[i] += leftVolume * sample * Gain;
+                    RightBuffer[i] += rightVolume * sample * Gain;
                 }
             }
         }

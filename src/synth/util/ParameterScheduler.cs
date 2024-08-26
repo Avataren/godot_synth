@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Godot;
 
@@ -29,6 +30,7 @@ namespace Synth
         {
             _bufferSize = bufferSize;
             _sampleRate = sampleRate;
+            Clear();
         }
 
         public void SetCurrentTimeInSeconds(double timeInSeconds)
@@ -68,25 +70,57 @@ namespace Synth
 
         public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
         {
+            // GD.Print($"### ScheduleValueAtTime called: Node={node}, Param={param}, Value={value}, Time={timeInSeconds}");
+
             _nodeLocks[node].EnterWriteLock();
             try
             {
                 double sampleTime = timeInSeconds * _sampleRate;
                 var events = _nodeEventDictionary[node][param];
+
+                // GD.Print($"### Before clearing conflicts: EventCount={events.Count}");
                 ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
+                // GD.Print($"### After clearing conflicts: EventCount={events.Count}");
+
                 var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
                 events.Add(newEvent);
+                // GD.Print($"### New event added: SampleTime={newEvent.SampleTime}, Value={newEvent.Value}");
 
                 if (sampleTime <= _currentSample)
                 {
                     _nodeLastScheduledValues[node][param] = value;
+                    // GD.Print($"### Updated last scheduled value: {value}");
                 }
+
+                // GD.Print($"### Final event count: {events.Count}");
             }
             finally
             {
                 _nodeLocks[node].ExitWriteLock();
             }
         }
+
+        // public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
+        // {
+        //     _nodeLocks[node].EnterWriteLock();
+        //     try
+        //     {
+        //         double sampleTime = timeInSeconds * _sampleRate;
+        //         var events = _nodeEventDictionary[node][param];
+        //         ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
+        //         var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
+        //         events.Add(newEvent);
+
+        //         if (sampleTime <= _currentSample)
+        //         {
+        //             _nodeLastScheduledValues[node][param] = value;
+        //         }
+        //     }
+        //     finally
+        //     {
+        //         _nodeLocks[node].ExitWriteLock();
+        //     }
+        // }
 
         // public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
         // {
@@ -369,41 +403,110 @@ namespace Synth
             }
         }
 
-        private void ClearConflictingEvents(ConcurrentDictionary<AudioParam, SortedSet<ScheduleEvent>> eventsDictionary, AudioParam param, double newEventTime)
+        public void ClearConflictingEvents(ConcurrentDictionary<AudioParam, SortedSet<ScheduleEvent>> eventsDictionary, AudioParam param, double newEventTime)
         {
+            // GD.Print($"### ClearConflictingEvents called for param: {param}, newEventTime: {newEventTime}");
+
             if (eventsDictionary.TryGetValue(param, out var events))
             {
+                // GD.Print($"### Current events count for param {param}: {events.Count}");
+
+                // foreach (var ev in events)
+                // {
+                //     GD.Print($"### Existing event: Start={ev.SampleTime}, End={ev.EndSampleTime}, Value={ev.Value}, Target={ev.TargetValue}, IsExponential={ev.IsExponential}, IsSetValueAtTime={ev.IsSetValueAtTime}");
+                // }
+
                 var conflictingEvents = new List<ScheduleEvent>();
                 foreach (var existingEvent in events)
                 {
-                    // Check if the existingEvent overlaps with the new event time
-                    if (newEventTime > existingEvent.SampleTime && (existingEvent.EndSampleTime == null || newEventTime <= existingEvent.EndSampleTime))
+                    bool isConflicting;
+                    if (existingEvent.EndSampleTime == null)
+                    {
+                        // For instant events, only consider it conflicting if it's at the exact same time
+                        isConflicting = Math.Abs(newEventTime - existingEvent.SampleTime) < TIME_EPSILON;
+                    }
+                    else
+                    {
+                        // For events with duration, use the original logic
+                        isConflicting = newEventTime > existingEvent.SampleTime && newEventTime <= existingEvent.EndSampleTime;
+                    }
+
+                    // GD.Print($"### Checking event: Start={existingEvent.SampleTime}, End={existingEvent.EndSampleTime}, IsConflicting={isConflicting}");
+
+                    if (isConflicting)
                     {
                         conflictingEvents.Add(existingEvent);
                     }
                 }
 
+                // GD.Print($"### Found {conflictingEvents.Count} conflicting events");
+
                 foreach (var existingEvent in conflictingEvents)
                 {
                     if (existingEvent.EndSampleTime != null && newEventTime < existingEvent.EndSampleTime)
                     {
-                        // Calculate truncated value at the sample right before newEventTime
-                        double clippedTime = newEventTime - 1 / _sampleRate;  // One sample before the new event
+                        // GD.Print($"### Truncating conflicting event: Start={existingEvent.SampleTime}, OriginalEnd={existingEvent.EndSampleTime}");
+                        double clippedTime = newEventTime - 1 / _sampleRate;
                         double truncatedValue = CalculateValueAtTime(existingEvent, clippedTime);
 
-                        // Modify the existing event to end right before the new event
                         existingEvent.EndSampleTime = clippedTime;
                         existingEvent.TargetValue = truncatedValue;
+                        // GD.Print($"### Event truncated: NewEnd={existingEvent.EndSampleTime}, NewTarget={existingEvent.TargetValue}");
                     }
                     else
                     {
-                        // Remove the event completely if it cannot be truncated properly
+                        // GD.Print($"### Removing conflicting event: Start={existingEvent.SampleTime}, End={existingEvent.EndSampleTime}");
                         events.Remove(existingEvent);
                         _eventPool.Return(existingEvent);
                     }
                 }
+
+                // GD.Print($"### Final events count for param {param}: {events.Count}");
+            }
+            else
+            {
+                // GD.Print($"### No events found for param {param}");
             }
         }
+
+        // private void ClearConflictingEvents(ConcurrentDictionary<AudioParam, SortedSet<ScheduleEvent>> eventsDictionary, AudioParam param, double newEventTime)
+        // {
+        //     if (eventsDictionary.TryGetValue(param, out var events))
+        //     {
+        //         var conflictingEvents = new List<ScheduleEvent>();
+        //         foreach (var existingEvent in events)
+        //         {
+        //             //GD.Print ("### checking event: " + existingEvent.SampleTime + " " + existingEvent.EndSampleTime);
+        //             // Check if the existingEvent overlaps with the new event time
+        //             if (newEventTime > existingEvent.SampleTime && (existingEvent.EndSampleTime == null || newEventTime <= existingEvent.EndSampleTime))
+        //             {
+        //                 conflictingEvents.Add(existingEvent);
+        //             }
+        //         }
+
+        //         foreach (var existingEvent in conflictingEvents)
+        //         {
+        //             if (existingEvent.EndSampleTime != null && newEventTime < existingEvent.EndSampleTime)
+        //             {
+        //                 GD.Print("##### Truncating conflicting event");
+        //                 // Calculate truncated value at the sample right before newEventTime
+        //                 double clippedTime = newEventTime - 1 / _sampleRate;  // One sample before the new event
+        //                 double truncatedValue = CalculateValueAtTime(existingEvent, clippedTime);
+
+        //                 // Modify the existing event to end right before the new event
+        //                 existingEvent.EndSampleTime = clippedTime;
+        //                 existingEvent.TargetValue = truncatedValue;
+        //             }
+        //             else
+        //             {
+        //                 GD.Print("##### Removing conflicting event");
+        //                 // Remove the event completely if it cannot be truncated properly
+        //                 events.Remove(existingEvent);
+        //                 _eventPool.Return(existingEvent);
+        //             }
+        //         }
+        //     }
+        // }
 
 
         public void Dispose()

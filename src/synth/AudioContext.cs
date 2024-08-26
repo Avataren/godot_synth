@@ -4,9 +4,9 @@ namespace Synth
 {
     public class AudioContext
     {
-        static int _bufferSize = 512;
-        static int _sampleRate = 44100;
         public static int Oversampling = 1;
+        private static int _sampleRate = 44100;
+        static int _bufferSize = 512 * Oversampling;
 
         public static int BufferSize
         {

@@ -22,7 +22,7 @@ public class SynthPatch
     PassThroughNode speakerNode;
     public NoiseNode noiseNode;
     public FuzzNode fuzzNode;
-
+    MixerNode mix1;
 
     //Dictionary<int, float> NoteVelocityRegister = new Dictionary<int, float>();
     Stack<int> NoteVelocityRegister = new Stack<int>();
@@ -31,7 +31,7 @@ public class SynthPatch
     {
 
         freq = graph.CreateNode<ConstantNode>("Freq");
-        var mix1 = graph.CreateNode<MixerNode>("Mix1");
+        mix1 = graph.CreateNode<MixerNode>("Mix1");
         filterNode = graph.CreateNode<FilterNode>("MoogFilter");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
@@ -108,7 +108,7 @@ public class SynthPatch
             graph.SetNodeEnabled(oscillators[i], false);
         }
         this.waveTableBank = waveTableBank;
-
+        //graph.SetNodeEnabled(filterNode, false);
         graph.SetNodeEnabled(noiseNode, false);
         graph.SetNodeEnabled(fuzzNode, false);
         graph.SetNodeEnabled(reverbEffectNode, false);
@@ -117,7 +117,8 @@ public class SynthPatch
 
     public void SetMasterGain(float gain)
     {
-        speakerNode.Gain = gain;
+        //speakerNode.Gain = gain;
+        mix1.Gain = gain;
     }
 
     public float[] CreateWaveform(WaveTableWaveType waveType, int bufSize)
@@ -592,6 +593,28 @@ public class SynthPatch
         for (int idx = 0; idx < oscillators.Count; idx++)
         {
             oscillators[idx].DetuneCents = detuneCents;
+        }
+    }
+
+    public void ClearKeyStack()
+    {
+        GD.Print("Clearing key stack");
+        lock (_lock)
+        {
+            NoteVelocityRegister.Clear();
+            var now = AudioContext.Instance.CurrentTimeInSeconds;
+
+            foreach (var env in envelopes)
+            {
+                if (env.Enabled)
+                {
+                    env.ScheduleGateClose(now);  // Open with full envelope
+                }
+            }
+            foreach (var osc in oscillators)
+            {
+                osc.ScheduleGateClose(now);  // Open oscillator gates
+            }
         }
     }
 

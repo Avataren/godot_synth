@@ -192,6 +192,11 @@ public partial class AudioOutputNode : AudioStreamPlayer
 		//CurrentPatch.graph.TopologicalSortWorkingGraph();
 	}
 
+	public void ClearKeyStack()
+	{
+		CurrentPatch.ClearKeyStack();
+	}
+
 	public void Connect(string srcName, string dstName, string param, ModulationType modType, float strength = 1.0f)
 	{
 		// Print("Connecting " + srcName + " to " + dstName + " with param " + param);
@@ -257,13 +262,13 @@ public partial class AudioOutputNode : AudioStreamPlayer
 				audioData[i][1] = right * repr;
 
 				// Mix buffer average directly in the same loop
-				buffer_copy[i] = (mix.LeftBuffer[i] + mix.RightBuffer[i]) / 2;
+				buffer_copy[i] = (left + right) * repr / 2;
 			}
 			var timestamp_process_done = Time.GetTicksUsec();
 			// Avoid tight loop and sleep
 			while (!_playback.CanPushBuffer(num_samples))
 			{
-				Thread.Sleep(1);
+				Thread.Sleep(0);
 			}
 			//AvailableFrames = _playback.GetFramesAvailable();
 			_playback.PushBuffer(audioData);

@@ -215,6 +215,45 @@ public partial class PatchEditor : Node2D
 		}
 	}
 
+	private void _on_moog_filter_filter_type_changed(string type)
+	{
+		FilterType ftype = FilterType.MoogLowPass;
+		switch (type)
+		{
+			case "MoogLP":
+				ftype = FilterType.MoogLowPass;
+				break;
+			case "LowPass":
+				ftype = FilterType.LowPass;
+				break;
+			case "HighPass":
+				ftype = FilterType.HighPass;
+				break;
+			case "BandPass":
+				ftype = FilterType.BandPass;
+				break;
+			case "Notch":
+				ftype = FilterType.Notch;
+				break;
+			case "Peak":
+				ftype = FilterType.Peak;
+				break;
+			case "AllPass":
+				ftype = FilterType.AllPass;
+				break;
+			case "Peaking":
+				ftype = FilterType.Peaking;
+				break;
+			case "LowShelf":
+				ftype = FilterType.LowShelf;
+				break;
+			case "HighShelf":
+				ftype = FilterType.HighShelf;
+				break;
+		}
+		AudioOutputNode.CurrentPatch.filterNode.SetFilterType(ftype);
+	}
+
 	private void _on_panel_container_enabled_changed(bool enabled)
 	{
 		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.noiseNode, enabled);

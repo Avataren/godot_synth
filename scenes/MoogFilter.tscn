@@ -1,29 +1,51 @@
-[gd_scene load_steps=3 format=3 uid="uid://brjdceq6gabsc"]
+[gd_scene load_steps=4 format=3 uid="uid://brjdceq6gabsc"]
 
 [ext_resource type="Script" path="res://scenes/moog_filter.gd" id="1_rjgqa"]
 [ext_resource type="PackedScene" uid="uid://dvokuf8gpcq1q" path="res://scenes/knob.tscn" id="1_xspoo"]
 
-[node name="MoogFilter" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[sub_resource type="ButtonGroup" id="ButtonGroup_f7rf1"]
+
+[node name="MoogFilter" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 40.0
 mouse_filter = 1
 script = ExtResource("1_rjgqa")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer"]
 layout_mode = 2
 text = "LP Filter"
 horizontal_alignment = 1
 
-[node name="CutoffKnob" parent="VBoxContainer" instance=ExtResource("1_xspoo")]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 15
+
+[node name="FrequencyKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1.0
+step = 0.001
+sensitivity = 0.25
+title = "Res"
+
+[node name="DriveKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = 1.0
+max_value = 20.0
+step = 0.01
+sensitivity = 0.1
+title = "Drive"
+current_value = 1.0
+
+[node name="CutoffKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
@@ -33,24 +55,68 @@ sensitivity = 0.2
 title = "Cutoff"
 current_value = 20000.0
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 15
-
-[node name="FrequencyKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 1.0
-step = 0.001
-sensitivity = 0.25
-title = "Res"
+columns = 3
 
-[node name="DriveKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
-unique_name_in_owner = true
+[node name="Button2" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-step = 0.01
-sensitivity = 0.1
-title = "Drive"
-current_value = 1.0
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "LowPass"
+
+[node name="Button3" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "HighPass"
+
+[node name="Button4" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "BandPass"
+
+[node name="Button5" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "Notch"
+
+[node name="Button6" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "Peak"
+
+[node name="Button7" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "AllPass"
+
+[node name="Button8" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "Peaking"
+
+[node name="Button9" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "LowShelf"
+
+[node name="Button10" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "HighShelf"
+
+[node name="Button" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "MoogLP"

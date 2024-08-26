@@ -18,7 +18,7 @@ public class SynthPatch
     ConstantNode freq;
     DelayEffectNode delayEffectNode;
     ReverbEffectNode reverbEffectNode;
-    FilterNode moogFilterNode;
+    public FilterNode filterNode;
     PassThroughNode speakerNode;
     public NoiseNode noiseNode;
     public FuzzNode fuzzNode;
@@ -35,7 +35,7 @@ public class SynthPatch
         freq = graph.CreateNode<ConstantNode>("Freq");
 
         var mix1 = graph.CreateNode<MixerNode>("Mix1");
-        moogFilterNode = graph.CreateNode<FilterNode>("MoogFilter");
+        filterNode = graph.CreateNode<FilterNode>("MoogFilter");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
@@ -94,10 +94,10 @@ public class SynthPatch
         }
         graph.Connect(noiseNode, mix1, AudioParam.Input, ModulationType.Add);
         graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
-        graph.Connect(fuzzNode, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(fuzzNode, filterNode, AudioParam.StereoInput, ModulationType.Add);
 
         //graph.Connect(mix1, moogFilterNode, AudioParam.StereoInput, ModulationType.Add);
-        graph.Connect(moogFilterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(filterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
 
@@ -192,16 +192,16 @@ public class SynthPatch
 
     public void SetDrive(float drive)
     {
-        moogFilterNode.Drive = drive;
+        filterNode.Drive = drive;
     }
 
     public void SetCutoff(float cutoff)
     {
-        moogFilterNode.CutOff = cutoff;
+        filterNode.CutOff = cutoff;
     }
     public void SetResonance(float resonance)
     {
-        moogFilterNode.Resonance = resonance;
+        filterNode.Resonance = resonance;
     }
     public void SetAttack(float attack, int oscillatorIndex = 0)
     {

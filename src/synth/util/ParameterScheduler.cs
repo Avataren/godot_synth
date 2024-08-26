@@ -73,6 +73,7 @@ namespace Synth
             {
                 double sampleTime = timeInSeconds * _sampleRate;
                 var events = _nodeEventDictionary[node][param];
+                ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
                 var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
                 events.Add(newEvent);
 
@@ -86,6 +87,27 @@ namespace Synth
                 _nodeLocks[node].ExitWriteLock();
             }
         }
+
+        // public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
+        // {
+        //     _nodeLocks[node].EnterWriteLock();
+        //     try
+        //     {
+        //         double sampleTime = timeInSeconds * _sampleRate;
+        //         var events = _nodeEventDictionary[node][param];
+        //         var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
+        //         events.Add(newEvent);
+
+        //         if (sampleTime <= _currentSample)
+        //         {
+        //             _nodeLastScheduledValues[node][param] = value;
+        //         }
+        //     }
+        //     finally
+        //     {
+        //         _nodeLocks[node].ExitWriteLock();
+        //     }
+        // }
 
         public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
@@ -347,6 +369,43 @@ namespace Synth
             }
         }
 
+        private void ClearConflictingEvents(ConcurrentDictionary<AudioParam, SortedSet<ScheduleEvent>> eventsDictionary, AudioParam param, double newEventTime)
+        {
+            if (eventsDictionary.TryGetValue(param, out var events))
+            {
+                var conflictingEvents = new List<ScheduleEvent>();
+                foreach (var existingEvent in events)
+                {
+                    // Check if the existingEvent overlaps with the new event time
+                    if (newEventTime > existingEvent.SampleTime && (existingEvent.EndSampleTime == null || newEventTime <= existingEvent.EndSampleTime))
+                    {
+                        conflictingEvents.Add(existingEvent);
+                    }
+                }
+
+                foreach (var existingEvent in conflictingEvents)
+                {
+                    if (existingEvent.EndSampleTime != null && newEventTime < existingEvent.EndSampleTime)
+                    {
+                        // Calculate truncated value at the sample right before newEventTime
+                        double clippedTime = newEventTime - 1 / _sampleRate;  // One sample before the new event
+                        double truncatedValue = CalculateValueAtTime(existingEvent, clippedTime);
+
+                        // Modify the existing event to end right before the new event
+                        existingEvent.EndSampleTime = clippedTime;
+                        existingEvent.TargetValue = truncatedValue;
+                    }
+                    else
+                    {
+                        // Remove the event completely if it cannot be truncated properly
+                        events.Remove(existingEvent);
+                        _eventPool.Return(existingEvent);
+                    }
+                }
+            }
+        }
+
+
         public void Dispose()
         {
             _globalLock.Dispose();
@@ -362,10 +421,10 @@ namespace Synth
             {
                 int timeComparison = x.SampleTime.CompareTo(y.SampleTime);
                 if (timeComparison != 0) return timeComparison;
-                
+
                 if (x.IsSetValueAtTime && !y.IsSetValueAtTime) return -1;
                 if (!x.IsSetValueAtTime && y.IsSetValueAtTime) return 1;
-                
+
                 return 0;
             }
         }
@@ -412,6 +471,8 @@ namespace Synth
                 }
             }
 
+
+
             public void Reset(double sampleTime, double value, double? endSampleTime = null, double targetValue = 0.0, bool isExponential = false, bool isSetValueAtTime = false)
             {
                 SampleTime = sampleTime;
@@ -439,6 +500,7 @@ namespace Synth
                     }
                 }
             }
+
         }
 
         public class ScheduleEventPool

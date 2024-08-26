@@ -25,7 +25,13 @@ func _on_destination_option_item_selected(index: int) -> void:
 	elif itemName.begins_with("Filter"):
 		print("populating filter params")
 		_populate_filter_Parameters()
+	elif itemName.begins_with("Noise"):
+		print("populating noise params")
+		_populate_noise_Paramters()
 
+func _populate_noise_Paramters():
+	%DestinationParameterOption.add_item("Gain")
+	
 func _populate_oscillator_Parameters():
 	%DestinationParameterOption.add_item("Gain")
 	%DestinationParameterOption.add_item("Pitch")

@@ -48,7 +48,9 @@ namespace Synth
 
             // Clipper band limited sigmoid
             y4 -= (y4 * y4 * y4) / 6.0f;
-
+            // Apply a soft limiter to prevent blow-up
+            y4 = Math.Max(-1.0f, Math.Min(1.0f, y4)); 
+            //y4 = (float)Math.Tanh(y4);
             oldx = x; oldy1 = y1; oldy2 = y2; oldy3 = y3;
 
             return y4;

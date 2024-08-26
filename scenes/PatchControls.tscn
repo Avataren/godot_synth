@@ -18,9 +18,9 @@ layout_mode = 2
 [node name="PortamentoKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_t87t7")]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 0.5
+max_value = 1.0
 step = 0.001
-sensitivity = 0.1
+sensitivity = 0.085
 label_unit = "s"
 title = "Portamento"
 nonlinear_factor = 0.5

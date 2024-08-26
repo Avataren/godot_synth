@@ -62,6 +62,10 @@ func get_node_name_from_textbox_entry(node_name) -> String:
 				return "Osc3"
 			"Oscillator 5":
 				return "Osc4"
+			"Filter":
+				return "MoogFilter"
+			"Noise":
+				return "Noise"
 			"LFO 1":
 				return "LFO0"
 			"LFO 2":
@@ -80,8 +84,6 @@ func get_node_name_from_textbox_entry(node_name) -> String:
 				return "Envelope4"
 			"Envelope 5":
 				return "Envelope5"								
-			"Filter":
-				return "MoogFilter"
 		return "unknown"
 
 func _on_add_connection_button_pressed() -> void:

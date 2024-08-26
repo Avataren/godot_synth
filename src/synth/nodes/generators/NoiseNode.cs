@@ -83,34 +83,20 @@ namespace Synth
             {
                 for (int i = 0; i < bufferSize; i++)
                 {
-                    buffer[i] = GetWhiteNoise() * amplitude + dcOffset;
+                    var gainParam = GetParameter(AudioParam.Gain, i);
+                    buffer[i] = (GetWhiteNoise()+gainParam.Item1) * amplitude * gainParam.Item2 + dcOffset;
                 }
             }
             else // Pink noise
             {
                 for (int i = 0; i < bufferSize; i++)
                 {
-                    buffer[i] = GetPinkNoise() * amplitude + dcOffset;
+                    var gainParam = GetParameter(AudioParam.Gain, i);
+                    buffer[i] = (GetPinkNoise()+gainParam.Item1) * amplitude * gainParam.Item2 + dcOffset;
                 }
             }
 
-            // ApplyEnvelope(buffer);
         }
-
-        // private void ApplyEnvelope(Span<float> samples)
-        // {
-        //     // Simple linear fade in/out to avoid clicks
-        //     int fadeLength = Math.Min(100, samples.Length / 2);
-        //     for (int i = 0; i < fadeLength; i++)
-        //     {
-        //         float fadeIn = i / (float)fadeLength;
-        //         float fadeOut = 1 - fadeIn;
-        //         samples[i] *= fadeIn;
-        //         samples[samples.Length - 1 - i] *= fadeOut;
-        //     }
-        // }
-
-        
     }
 
     public enum NoiseType

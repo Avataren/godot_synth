@@ -160,15 +160,19 @@ namespace Synth
 			_lastFrequency = -1f;
 		}
 
+		private int _crossfadeCounter = 0;
+		private int _crossfadeFrames = 256; // Adjust this based on desired crossfade duration
+		private double _previousPhase = 0.0;
+		private double _newPhase = 0.0;
+
 		public override void Process(double increment)
 		{
 			var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 			UpdateDetuneFactor();
 			double phase = Phase;
-
 			double phaseIncrement = _lastFrequency * increment;
-			double modulatedPhase;
 			double freqLastSample = _lastFrequency;
+
 			for (int i = 0; i < NumSamples; i++)
 			{
 				UpdateParameters(i);
@@ -179,32 +183,65 @@ namespace Synth
 					currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 				}
 				freqLastSample = _lastFrequency;
-				// double gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
-				// if (!_isGateOpen && gateValue > 0.5)
-				// {
-				// 	gateNum++;
-				// 	GD.Print("Gate open osc sampleNum: " + i + " gateNum: " + gateNum);
-				// 	_isGateOpen = true;
-				// 	_previousSample = 0.0f;
-				// 	if (HardSync)
-				// 	{
-				// 		Phase = 0.0;
-				// 	}
-				// }
-				// else if (_isGateOpen && gateValue < 0.5)
-				// {
-				// 	_isGateOpen = false;
-				// }
-				modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
-				_previousSample = GetSamplePWM(currentWaveTable, modulatedPhase);
-				buffer[i] = _previousSample * Amplitude * Gain;
+				double gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
 
-				phase += phaseIncrement;
+				if (!_isGateOpen && gateValue > 0.5)
+				{
+					gateNum++;
+					_isGateOpen = true;
+					_previousSample = 0.0f;
+
+					if (HardSync)
+					{
+						// Start crossfade when hard sync occurs
+						_crossfadeCounter = _crossfadeFrames;
+						_previousPhase = phase;
+						_newPhase = 0.0; // Reset new phase
+					}
+				}
+				else if (_isGateOpen && gateValue < 0.5)
+				{
+					_isGateOpen = false;
+				}
+
+				// During crossfade, blend old and new phases
+				if (_crossfadeCounter > 0)
+				{
+					double fadeAmount = 1.0 - (double)_crossfadeCounter / _crossfadeFrames;
+					_crossfadeCounter--;
+
+					// Continue evolving both phases
+					_previousPhase += phaseIncrement;  // Continue the previous phase
+					_newPhase += phaseIncrement;       // Start from the new phase
+
+					double modulatedOldPhase = CalculateModulatedPhase(_previousPhase, PhaseOffset, _previousSample, SelfModulationStrength);
+					double modulatedNewPhase = CalculateModulatedPhase(_newPhase, PhaseOffset, _previousSample, SelfModulationStrength);
+
+					float oldSample = GetSamplePWM(currentWaveTable, modulatedOldPhase);
+					float newSample = GetSamplePWM(currentWaveTable, modulatedNewPhase);
+
+					// Blend the old and new samples based on fadeAmount
+					buffer[i] = (float)(((1.0 - fadeAmount) * oldSample + fadeAmount * newSample) * Amplitude * Gain);
+
+					// After the crossfade, continue with the new phase
+					if (_crossfadeCounter == 0)
+					{
+						phase = _newPhase;  // Set phase to the new phase after crossfade
+					}
+				}
+				else
+				{
+					// After crossfade, continue with the new phase
+					double modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
+					float currentSample = GetSamplePWM(currentWaveTable, modulatedPhase);
+					buffer[i] = currentSample * Amplitude * Gain;
+					_previousSample = currentSample;
+					phase += phaseIncrement;
+				}
 			}
 
 			Phase = ModuloOne(phase);
 		}
-
 		private void UpdateParameters(int sampleIndex)
 		{
 			var pitchParam = GetParameter(AudioParam.Pitch, sampleIndex);
@@ -249,7 +286,7 @@ namespace Synth
 			if (forceCloseFirst)
 			{
 				_scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time);
-				_scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time + 1/SampleRate);
+				_scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time + 4 / SampleRate);
 			}
 			else
 			{

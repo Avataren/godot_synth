@@ -276,12 +276,12 @@ namespace Synth
             return visualBuffer;
         }
 
-        public void ScheduleGateOpen(double time, bool forceCloseFirst = false)
+        public void ScheduleGateOpen(double time, bool forceCloseFirst = true)
         {
             if (forceCloseFirst)
             {
                 _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time);
-                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time + 2 / SampleRate);
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time + 4 / SampleRate);
             }
             else
             {

@@ -47,6 +47,7 @@ current_value = 20000.0
 
 [node name="DriveKnob" parent="VBoxContainer/VBoxContainer/HBoxContainer" instance=ExtResource("1_xspoo")]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 min_value = 1.0
 max_value = 20.0
@@ -58,12 +59,18 @@ current_value = 1.0
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 3
+columns = 2
+
+[node name="Button" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+button_group = SubResource("ButtonGroup_f7rf1")
+text = "MoogLP"
 
 [node name="Button2" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
 toggle_mode = true
-button_pressed = true
 button_group = SubResource("ButtonGroup_f7rf1")
 text = "LowPass"
 
@@ -84,9 +91,3 @@ layout_mode = 2
 toggle_mode = true
 button_group = SubResource("ButtonGroup_f7rf1")
 text = "Notch"
-
-[node name="Button" type="Button" parent="VBoxContainer/VBoxContainer/GridContainer"]
-layout_mode = 2
-toggle_mode = true
-button_group = SubResource("ButtonGroup_f7rf1")
-text = "MoogLP"

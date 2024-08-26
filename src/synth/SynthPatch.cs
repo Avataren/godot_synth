@@ -192,7 +192,8 @@ public class SynthPatch
 
     public void SetDrive(float drive)
     {
-        filterNode.Drive = drive;
+        //filterNode.Drive = drive;
+        GD.Print("Not implemented");
     }
 
     public void SetCutoff(float cutoff)

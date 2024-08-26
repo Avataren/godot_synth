@@ -11,7 +11,7 @@ namespace Synth
         private BiquadFilter leftBiQuadFilter;
         private BiquadFilter rightBiQuadFilter;
 
-        private FilterType filterType = FilterType.LowPass;
+        private FilterType filterType = FilterType.MoogLowPass;
 
         public FilterNode() : base()
         {
@@ -98,14 +98,14 @@ namespace Synth
 
         public float CutOff
         {
-            get { return leftFilter.CutOff; }
+            get { return leftFilter.Cutoff; }
             set
             {
-                leftFilter.CutOff = (float)TransformToCutoff(value, 0.0, 20000.0);
-                GD.Print("Cutoff: " + leftFilter.CutOff);
-                rightFilter.CutOff = (float)TransformToCutoff(value, 0.0, 20000.0);
-                leftBiQuadFilter.SetFrequency((float)TransformToCutoff(value, 0.0, 20000.0));
-                rightBiQuadFilter.SetFrequency((float)TransformToCutoff(value, 0.0, 20000.0));
+                leftFilter.Cutoff = (float)TransformToCutoff(value, 0.0, SampleRate / 2.0);
+                GD.Print("Cutoff: " + leftFilter.Cutoff);
+                rightFilter.Cutoff = (float)TransformToCutoff(value, 0.0, SampleRate / 2.0);
+                leftBiQuadFilter.SetFrequency((float)TransformToCutoff(value, 0.0, SampleRate / 2.0));
+                rightBiQuadFilter.SetFrequency((float)TransformToCutoff(value, 0.0, SampleRate / 2.0));
             }
         }
 
@@ -122,17 +122,17 @@ namespace Synth
             }
         }
 
-        public float Drive
-        {
-            get { return leftFilter.Drive; }
-            set
-            {
-                leftFilter.Drive = value;
-                rightFilter.Drive = value; // Assuming both channels have the same drive
-                leftBiQuadFilter.SetDbGain(MapDriveTodBGain(value));
-                rightBiQuadFilter.SetDbGain(MapDriveTodBGain(value));
-            }
-        }
+        // public float Drive
+        // {
+        //     get { return leftFilter.Drive; }
+        //     set
+        //     {
+        //         leftFilter.Drive = value;
+        //         rightFilter.Drive = value; // Assuming both channels have the same drive
+        //         leftBiQuadFilter.SetDbGain(MapDriveTodBGain(value));
+        //         rightBiQuadFilter.SetDbGain(MapDriveTodBGain(value));
+        //     }
+        // }
 
         private float MapDriveTodBGain(double drive)
         {

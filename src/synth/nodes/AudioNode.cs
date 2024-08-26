@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Synth
 {
@@ -39,6 +40,7 @@ namespace Synth
 		public ReadOnlySpan<float> GetLeftBuffer() => LeftBuffer;
 		public ReadOnlySpan<float> GetRightBuffer() => RightBuffer;
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public Tuple<float, float> GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
 		{
 

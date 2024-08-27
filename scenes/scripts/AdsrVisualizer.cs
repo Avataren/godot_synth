@@ -15,21 +15,21 @@ public partial class AdsrVisualizer : PanelContainer
 	ShaderMaterial node_shader_material;
 
 	[Signal]
-	public delegate void AttackUpdatedEventHandler (float attackTime);
+	public delegate void AttackUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void DecayUpdatedEventHandler (float attackTime);
+	public delegate void DecayUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void SustainUpdatedEventHandler (float attackTime);
+	public delegate void SustainUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void ReleaseUpdatedEventHandler (float attackTime);			
+	public delegate void ReleaseUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void AttackCoeffEventHandler (float attackTime);			
+	public delegate void AttackCoeffEventHandler(float attackTime);
 	[Signal]
-	public delegate void DecayCoeffEventHandler (float attackTime);			
+	public delegate void DecayCoeffEventHandler(float attackTime);
 	[Signal]
-	public delegate void ReleaseCoeffEventHandler (float attackTime);
+	public delegate void ReleaseCoeffEventHandler(float attackTime);
 	[Signal]
-	public delegate void TimeScaleUpdateEventHandler (float attackTime);			
+	public delegate void TimeScaleUpdateEventHandler(float attackTime);
 
 
 	float TimeScale = 1.0f;
@@ -67,7 +67,7 @@ public partial class AdsrVisualizer : PanelContainer
 		var envelopeIndex = int.Parse(button.Name.ToString().Substring(14)) - 1;
 		if (envelopeIndex >= MaxEnvelopes || envelopeIndex < 0)
 		{
-			GD.PrintErr("Envelope index out of range!");
+			GD.PrintErr("Envelope index out of range!", envelopeIndex);
 			return;
 		}
 		GD.Print("Button " + envelopeIndex + " pressed!");
@@ -85,7 +85,7 @@ public partial class AdsrVisualizer : PanelContainer
 		EmitSignal(SignalName.DecayCoeff, currentEnvelopeNode.DecayCtrl);
 		EmitSignal(SignalName.ReleaseCoeff, currentEnvelopeNode.ReleaseCtrl);
 		EmitSignal(SignalName.TimeScaleUpdate, currentEnvelopeNode.TimeScale);
-		
+
 
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
@@ -126,7 +126,7 @@ public partial class AdsrVisualizer : PanelContainer
 		currentEnvelopeNode.TimeScale = val;
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
-        node_shader_material.SetShaderParameter("total_time", TimeScale * 3.0f);
+		node_shader_material.SetShaderParameter("total_time", TimeScale * 3.0f);
 	}
 
 	private void _on_attack_c_knob_value_changed(float val)
@@ -143,7 +143,7 @@ public partial class AdsrVisualizer : PanelContainer
 		if (Mathf.Abs(val) < 0.0015)
 			val = 0.0015f;
 		currentEnvelopeNode.DecayCtrl = val;
-		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512,  3.0f);
+		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 
@@ -152,14 +152,14 @@ public partial class AdsrVisualizer : PanelContainer
 		if (Mathf.Abs(val) < 0.0015)
 			val = 0.0015f;
 		currentEnvelopeNode.ReleaseCtrl = val;
-		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512,  3.0f);
+		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 
 	private void _on_attack_knob_value_changed(float val)
 	{
 		currentEnvelopeNode.AttackTime = val;
-		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512,  3.0f);
+		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 
@@ -173,7 +173,7 @@ public partial class AdsrVisualizer : PanelContainer
 	private void _on_sustain_knob_value_changed(float val)
 	{
 		currentEnvelopeNode.SustainLevel = val;
-		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512,  3.0f);
+		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 

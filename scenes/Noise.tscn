@@ -61,7 +61,7 @@ unique_name_in_owner = true
 layout_mode = 2
 min_value = -1.0
 max_value = 1.0
-step = 0.001
+step = 0.01
 sensitivity = 0.1
 title = "Offset"
 current_value = 0.0
@@ -70,8 +70,8 @@ current_value = 0.0
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 1.0
-step = 0.001
-sensitivity = 0.2
+step = 0.01
+sensitivity = 0.1
 title = "Gain"
 current_value = 0.5
 
@@ -82,7 +82,7 @@ min_value = -1.0
 max_value = 1.0
 step = 0.01
 sensitivity = 0.1
-title = "Slope"
+title = "Cutoff"
 current_value = 0.0
 
 [connection signal="toggled" from="VBoxContainer/EnabledCheckBox" to="." method="_on_enabled_check_box_toggled"]

@@ -31,6 +31,7 @@ func _on_destination_option_item_selected(index: int) -> void:
 
 func _populate_noise_Paramters():
 	%DestinationParameterOption.add_item("Gain")
+	%DestinationParameterOption.add_item("Cutoff")
 	
 func _populate_oscillator_Parameters():
 	%DestinationParameterOption.add_item("Gain")

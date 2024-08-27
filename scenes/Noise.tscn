@@ -78,12 +78,11 @@ current_value = 0.5
 [node name="SlopeKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_s7kww")]
 unique_name_in_owner = true
 layout_mode = 2
-min_value = -1.0
 max_value = 1.0
 step = 0.01
 sensitivity = 0.1
-title = "Cutoff"
-current_value = 0.0
+title = "Filter"
+current_value = 1.0
 
 [connection signal="toggled" from="VBoxContainer/EnabledCheckBox" to="." method="_on_enabled_check_box_toggled"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer2/WhiteNoiseButton" to="." method="_on_white_noise_button_pressed"]

@@ -248,7 +248,7 @@ public partial class PatchEditor : Node2D
 
 	private void _on_panel_container_slope_changed(float value)
 	{
-		AudioOutputNode.CurrentPatch.noiseNode.FrequencySlope = value;
+		AudioOutputNode.CurrentPatch.noiseNode.Cutoff = value;
 	}
 
 	private void _on_panel_container_noisetype_changed(string noiseType)

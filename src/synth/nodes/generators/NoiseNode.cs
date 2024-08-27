@@ -12,12 +12,11 @@ namespace Synth
         private float dcOffset = 0.0f;
         private const int seed = 123;
 
-        private float targetFrequencySlope;
-        private float currentFrequencySlope;
-        private const float SlopeSmoothing = 0.1f;
+        private float targetCutoff;
+        private float currentCutoff;
+        private const float CutoffSmoothing = 0.1f;
 
         private float previousOutput = 0.0f;
-        private float previousInput = 0.0f;
         private float filterCoeff = 0.0f;
 
         private float[] pinkNoiseState;
@@ -27,17 +26,17 @@ namespace Synth
         {
             currentNoiseType = NoiseType.White;
             SetSeed(seed);
-            targetFrequencySlope = 0.0f;
-            currentFrequencySlope = 0.0f;
+            targetCutoff = 1.0f;
+            currentCutoff = 1.0f;
             UpdateFilterCoefficient();
             pinkNoiseState = new float[7];
             brownNoiseState = 0f;
         }
 
-        public float FrequencySlope
+        public float Cutoff
         {
-            get => targetFrequencySlope;
-            set => targetFrequencySlope = Math.Clamp(value, -1f, 1f);
+            get => targetCutoff;
+            set => targetCutoff = Math.Clamp(value, 0f, 1f);
         }
 
         public void SetSeed(int seed)
@@ -59,33 +58,20 @@ namespace Synth
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateFilterCoefficient()
+        private void UpdateFilterCoefficient(float cutoffMod = 1.0f)
         {
-            currentFrequencySlope += (targetFrequencySlope - currentFrequencySlope) * SlopeSmoothing;
-
-            if (Math.Abs(currentFrequencySlope) < 1e-6f)
-            {
-                filterCoeff = 1.0f;
-                return;
-            }
+            currentCutoff += (targetCutoff * cutoffMod - currentCutoff) * CutoffSmoothing;
 
             float minFrequency = 20f;
             float maxFrequency = SampleRate / 2f;
 
-            float cutoffFrequency;
-            if (currentFrequencySlope < 0)
-            {
-                cutoffFrequency = maxFrequency * (float)Math.Pow(minFrequency / maxFrequency, -currentFrequencySlope);
-            }
-            else
-            {
-                cutoffFrequency = minFrequency * (float)Math.Pow(maxFrequency / minFrequency, currentFrequencySlope);
-            }
+            // Exponential curve for cutoff frequency
+            float cutoffFrequency = minFrequency * MathF.Pow(maxFrequency / minFrequency, currentCutoff);
             cutoffFrequency = Math.Clamp(cutoffFrequency, minFrequency, maxFrequency);
 
-            float rc = 1.0f / (2.0f * (float)Math.PI * cutoffFrequency);
+            float rc = 1.0f / (2.0f * MathF.PI * cutoffFrequency);
             float dt = 1.0f / SampleRate;
-            filterCoeff = rc / (rc + dt);
+            filterCoeff = dt / (rc + dt);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -112,7 +98,6 @@ namespace Synth
             }
             return new Vector<float>(noiseValues);
         }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float GetPinkNoise()
@@ -167,21 +152,7 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float ApplyFilter(float inputNoise)
         {
-            float output;
-            if (currentFrequencySlope < 0)
-            {
-                output = filterCoeff * previousOutput + (1 - filterCoeff) * inputNoise;
-            }
-            else if (currentFrequencySlope > 0)
-            {
-                output = filterCoeff * (previousOutput + inputNoise - previousInput);
-            }
-            else
-            {
-                output = inputNoise;
-            }
-
-            previousInput = inputNoise;
+            float output = filterCoeff * inputNoise + (1 - filterCoeff) * previousOutput;
             previousOutput = output;
             return output;
         }
@@ -189,31 +160,14 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Vector<float> ApplyFilterVector(Vector<float> inputNoise)
         {
-            Vector<float> output;
-            if (currentFrequencySlope < 0)
-            {
-                output = Vector<float>.One * filterCoeff * previousOutput +
-                         (Vector<float>.One - Vector<float>.One * filterCoeff) * inputNoise;
-            }
-            else if (currentFrequencySlope > 0)
-            {
-                output = Vector<float>.One * filterCoeff *
-                         (Vector<float>.One * previousOutput + inputNoise - Vector<float>.One * previousInput);
-            }
-            else
-            {
-                output = inputNoise;
-            }
-
-            previousInput = inputNoise[Vector<float>.Count - 1];
+            Vector<float> output = Vector<float>.One * filterCoeff * inputNoise +
+                                   (Vector<float>.One - Vector<float>.One * filterCoeff) * new Vector<float>(previousOutput);
             previousOutput = output[Vector<float>.Count - 1];
             return output;
         }
 
         public override void Process(double increment)
         {
-            UpdateFilterCoefficient();
-
             int bufferSize = buffer.Length;
             int vectorSize = Vector<float>.Count;
             int i = 0;
@@ -224,6 +178,8 @@ namespace Synth
             for (; i <= bufferSize - vectorSize; i += vectorSize)
             {
                 Vector<float> gainVector = new Vector<float>(GetParameter(AudioParam.Gain, i).Item2);
+                UpdateFilterCoefficient(GetParameter(AudioParam.CutOffMod, i).Item2);
+                
                 Vector<float> noiseVector = currentNoiseType switch
                 {
                     NoiseType.White => GetWhiteNoiseVector(),
@@ -242,6 +198,7 @@ namespace Synth
             for (; i < bufferSize; i++)
             {
                 var gainParam = GetParameter(AudioParam.Gain, i);
+                UpdateFilterCoefficient(GetParameter(AudioParam.CutOffMod, i).Item2);
                 float noiseValue = currentNoiseType switch
                 {
                     NoiseType.White => GetWhiteNoise(),

@@ -95,6 +95,18 @@ namespace Synth
 			//double phaseIndex = adjustedPhase * length;
 			// Retrieve the sample using linear interpolation
 			return GetCubicInterpolatedSample(currentWaveTable, (float)adjustedPhase);
+			//return GetSampleLinear(currentWaveTable, (float)adjustedPhase);
+		}
+
+		private float GetSampleLinear(WaveTable currentWaveTable, double phase)
+		{
+			int length = currentWaveTable.WaveTableData.Length;
+			double position = phase * length;
+			int index = (int)position;
+			float frac = (float)(position - index);
+			int nextIndex = (index + 1) % length;
+
+			return currentWaveTable.WaveTableData[index] + frac * (currentWaveTable.WaveTableData[nextIndex] - currentWaveTable.WaveTableData[index]);
 		}
 
 		protected float GetSample(WaveTable currentWaveTable, double phase)
@@ -103,24 +115,6 @@ namespace Synth
 			return GetCubicInterpolatedSample(currentWaveTable, (float)position);
 		}
 
-		private float GetLinearlyInterpolatedSample(WaveTable currentWaveTable, float phaseIndex)
-		{
-			int length = currentWaveTable.WaveTableData.Length;
-
-			// Get the integer part and fractional part of the phase index
-			int index = (int)phaseIndex;
-			float frac = phaseIndex - index;
-
-			// Get the indices of the current and next sample
-			int nextIndex = (index + 1) % length;
-
-			// Retrieve the sample values from the wavetable
-			float sample1 = currentWaveTable.WaveTableData[index];
-			float sample2 = currentWaveTable.WaveTableData[nextIndex];
-
-			// Linear interpolation
-			return sample1 + frac * (sample2 - sample1);
-		}
 
 		private float GetCubicInterpolatedSample(WaveTable table, float position)
 		{

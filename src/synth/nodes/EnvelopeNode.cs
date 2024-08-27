@@ -7,48 +7,48 @@ namespace Synth
     public class EnvelopeNode : AudioNode
     {
         // Constants
-        private const double DefaultDecayTime = 0.0;
-        private const double MinimumReleaseTime = 0.0045;
-        private const double MinimumAttackTime = 0.005;
-        private const double DefaultSustainLevel = 1.0;
-        private const double DefaultAttackTime = MinimumAttackTime;
-        private const double DefaultReleaseTime = MinimumReleaseTime;
+        private const float DefaultDecayTime = 0.0f;
+        private const float MinimumReleaseTime = 0.0045f;
+        private const float MinimumAttackTime = 0.005f;
+        private const float DefaultSustainLevel = 1.0f;
+        private const float DefaultAttackTime = MinimumAttackTime;
+        private const float DefaultReleaseTime = MinimumReleaseTime;
         private const int BufferSize = 256;
 
         // Private fields
-        private double _envelopePosition = 0.0;
-        private double _releaseStartPosition = 0.0;
+        private float _envelopePosition = 0.0f;
+        private float _releaseStartPosition = 0.0f;
         private bool _isGateOpen = false;
-        private double _attackTime = DefaultAttackTime;
-        private double _decayTime = DefaultDecayTime;
-        private double _sustainLevel = DefaultSustainLevel;
-        private double _releaseTime = DefaultReleaseTime;
-        private double _timeScale = 1.0;
+        private float _attackTime = DefaultAttackTime;
+        private float _decayTime = DefaultDecayTime;
+        private float _sustainLevel = DefaultSustainLevel;
+        private float _releaseTime = DefaultReleaseTime;
+        private float _timeScale = 1.0f;
 
-        private double _currentAmplitude = 0.0;
-        private double _attackStartAmplitude = 0.0;
-        private double _releaseStartAmplitude = 0.0;
+        private float _currentAmplitude = 0.0f;
+        private float _attackStartAmplitude = 0.0f;
+        private float _releaseStartAmplitude = 0.0f;
 
-        private double _attackCtrl = 2.0;
-        private double _decayCtrl = -3.0;
-        private double _releaseCtrl = -3.5;
+        private float _attackCtrl = 2.0f;
+        private float _decayCtrl = -3.0f;
+        private float _releaseCtrl = -3.5f;
 
-        private double _expBaseAttack;
-        private double _expBaseDecay;
-        private double _expBaseRelease;
+        private float _expBaseAttack;
+        private float _expBaseDecay;
+        private float _expBaseRelease;
 
-        private readonly double[] _attackBuffer = new double[BufferSize];
-        private readonly double[] _decayBuffer = new double[BufferSize];
-        private readonly double[] _releaseBuffer = new double[BufferSize];
+        private readonly float[] _attackBuffer = new float[BufferSize];
+        private readonly float[] _decayBuffer = new float[BufferSize];
+        private readonly float[] _releaseBuffer = new float[BufferSize];
 
         // Properties
-        public double TimeScale
+        public float TimeScale
         {
             get => _timeScale;
-            set => _timeScale = Math.Max(value, 0.1);
+            set => _timeScale = Mathf.Max(value, 0.1f);
         }
 
-        public double AttackTime
+        public float AttackTime
         {
             get => _attackTime * TimeScale;
             set
@@ -58,7 +58,7 @@ namespace Synth
             }
         }
 
-        public double DecayTime
+        public float DecayTime
         {
             get => _decayTime * TimeScale;
             set
@@ -68,17 +68,17 @@ namespace Synth
             }
         }
 
-        public double SustainLevel
+        public float SustainLevel
         {
             get => _sustainLevel;
             set
             {
-                _sustainLevel = Math.Clamp(value, 0.0, 1.0);
+                _sustainLevel = Mathf.Clamp(value, 0.0f, 1.0f);
                 CalculateDecayBuffer();
             }
         }
 
-        public double ReleaseTime
+        public float ReleaseTime
         {
             get => _releaseTime * TimeScale;
             set
@@ -88,7 +88,7 @@ namespace Synth
             }
         }
 
-        public double AttackCtrl
+        public float AttackCtrl
         {
             get => _attackCtrl;
             set
@@ -99,7 +99,7 @@ namespace Synth
             }
         }
 
-        public double DecayCtrl
+        public float DecayCtrl
         {
             get => _decayCtrl;
             set
@@ -110,7 +110,7 @@ namespace Synth
             }
         }
 
-        public double ReleaseCtrl
+        public float ReleaseCtrl
         {
             get => _releaseCtrl;
             set
@@ -134,9 +134,9 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateExponentialCurves()
         {
-            _expBaseAttack = Math.Pow(2.0, _attackCtrl) - 1.0;
-            _expBaseDecay = Math.Pow(2.0, _decayCtrl) - 1.0;
-            _expBaseRelease = Math.Pow(2.0, _releaseCtrl) - 1.0;
+            _expBaseAttack = Mathf.Pow(2.0f, _attackCtrl) - 1.0f;
+            _expBaseDecay = Mathf.Pow(2.0f, _decayCtrl) - 1.0f;
+            _expBaseRelease = Mathf.Pow(2.0f, _releaseCtrl) - 1.0f;
         }
 
         // Buffer calculations
@@ -144,7 +144,7 @@ namespace Synth
         {
             for (int i = 0; i < BufferSize; i++)
             {
-                double normalizedTime = i / (double)(BufferSize - 1);
+                float normalizedTime = i / (float)(BufferSize - 1);
                 _attackBuffer[i] = ExponentialCurve(normalizedTime, _attackCtrl, _expBaseAttack);
             }
         }
@@ -153,8 +153,8 @@ namespace Synth
         {
             for (int i = 0; i < BufferSize; i++)
             {
-                double normalizedTime = i / (double)(BufferSize - 1);
-                _decayBuffer[i] = 1.0 - ExponentialCurve(normalizedTime, _decayCtrl, _expBaseDecay) * (1.0 - _sustainLevel);
+                float normalizedTime = i / (float)(BufferSize - 1);
+                _decayBuffer[i] = 1.0f - ExponentialCurve(normalizedTime, _decayCtrl, _expBaseDecay) * (1.0f - _sustainLevel);
             }
         }
 
@@ -162,22 +162,22 @@ namespace Synth
         {
             for (int i = 0; i < BufferSize; i++)
             {
-                double normalizedTime = i / (double)(BufferSize - 1);
-                _releaseBuffer[i] = 1.0 - ExponentialCurve(normalizedTime, _releaseCtrl, _expBaseRelease);
+                float normalizedTime = i / (float)(BufferSize - 1);
+                _releaseBuffer[i] = 1.0f - ExponentialCurve(normalizedTime, _releaseCtrl, _expBaseRelease);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double ExponentialCurve(double x, double c, double precomputedBase)
+        private float ExponentialCurve(float x, float c, float precomputedBase)
         {
-            return (Math.Pow(2, c * x) - 1) / precomputedBase;
+            return (Mathf.Pow(2, c * x) - 1.0f) / precomputedBase;
         }
 
         public override void OpenGate()
         {
             _isGateOpen = true;
             _attackStartAmplitude = _currentAmplitude;
-            _envelopePosition = 0.0;
+            _envelopePosition = 0.0f;
         }
 
         public override void CloseGate()
@@ -191,7 +191,7 @@ namespace Synth
         {
             for (int i = 0; i < NumSamples; i++)
             {
-                double gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
+                float gateValue = (float)_scheduler.GetValueAtSample(this, AudioParam.Gate, i);
 
                 if (!_isGateOpen && gateValue > 0.5)
                 {
@@ -201,29 +201,28 @@ namespace Synth
                 {
                     CloseGate();
                 }
-
                 _currentAmplitude = GetEnvelopeValue(_envelopePosition);
                 buffer[i] = (float)_currentAmplitude;
-                _envelopePosition += increment;
+                _envelopePosition += (float)increment;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private double GetEnvelopeValue(double position)
+        private float GetEnvelopeValue(float position)
         {
             if (_isGateOpen)
             {
                 if (position < AttackTime)
                 {
-                    double normalizedTime = position / AttackTime;
+                    float normalizedTime = position / AttackTime;
                     int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                    return _attackStartAmplitude + (_attackBuffer[bufferIndex] * (1.0 - _attackStartAmplitude));
+                    return _attackStartAmplitude + (_attackBuffer[bufferIndex] * (1.0f - _attackStartAmplitude));
                 }
                 else if (position < (AttackTime + DecayTime))
                 {
-                    double normalizedTime = (position - AttackTime) / DecayTime;
+                    float normalizedTime = (position - AttackTime) / DecayTime;
                     int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                    return 1.0 + (_decayBuffer[bufferIndex] - 1.0) * (1.0 - SustainLevel);
+                    return _decayBuffer[bufferIndex];
                 }
                 else
                 {
@@ -234,21 +233,21 @@ namespace Synth
             {
                 if (ReleaseTime > 0)
                 {
-                    double normalizedTime = Math.Min((position - _releaseStartPosition) / ReleaseTime, 1.0);
+                    float normalizedTime = Mathf.Min((position - _releaseStartPosition) / ReleaseTime, 1.0f);
                     int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
                     return _releaseStartAmplitude * _releaseBuffer[bufferIndex];
                 }
                 else
                 {
-                    return 0.0;
+                    return 0.0f;
                 }
             }
         }
 
-        public float[] GetVisualBuffer(int numSamples, double visualizationDuration = 3.0)
+        public float[] GetVisualBuffer(int numSamples, float visualizationDuration = 3.0f)
         {
             float[] visualBuffer = new float[numSamples];
-            double sampleRate = numSamples / visualizationDuration;
+            float sampleRate = numSamples / visualizationDuration;
             int attackSamples = (int)(AttackTime * sampleRate);
             int decaySamples = (int)(DecayTime * sampleRate);
             int releaseSamples = (int)(ReleaseTime * sampleRate);
@@ -256,15 +255,15 @@ namespace Synth
 
             for (int i = 0; i < numSamples; i++)
             {
-                double targetAmplitude = 0.0;
+                float targetAmplitude = 0.0f;
                 if (i < attackSamples)
                 {
-                    double normalizedTime = (double)i / attackSamples;
+                    float normalizedTime = (float)i / attackSamples;
                     targetAmplitude = _attackBuffer[(int)(normalizedTime * (BufferSize - 1))];
                 }
                 else if (i < attackSamples + decaySamples)
                 {
-                    double normalizedTime = (double)(i - attackSamples) / decaySamples;
+                    float normalizedTime = (float)(i - attackSamples) / decaySamples;
                     targetAmplitude = _decayBuffer[(int)(normalizedTime * (BufferSize - 1))];
                 }
                 else if (i < attackSamples + decaySamples + sustainSamples)
@@ -273,7 +272,7 @@ namespace Synth
                 }
                 else
                 {
-                    double normalizedTime = (double)(i - (attackSamples + decaySamples + sustainSamples)) / releaseSamples;
+                    float normalizedTime = (float)(i - (attackSamples + decaySamples + sustainSamples)) / releaseSamples;
                     targetAmplitude = _releaseBuffer[(int)(normalizedTime * (BufferSize - 1))] * SustainLevel;
                 }
                 visualBuffer[i] = (float)targetAmplitude;
@@ -281,18 +280,18 @@ namespace Synth
             return visualBuffer;
         }
 
-        public double GetEnvelopeBufferPosition(double visualizationDuration = 3.0)
+        public float GetEnvelopeBufferPosition(float visualizationDuration = 3.0f)
         {
-            double nonSustainDuration = AttackTime + DecayTime + ReleaseTime;
-            double sustainDuration = Math.Max(0.0, visualizationDuration - nonSustainDuration);
-            double totalDuration = nonSustainDuration + sustainDuration;
-            double currentPosition = _envelopePosition;
+            float nonSustainDuration = AttackTime + DecayTime + ReleaseTime;
+            float sustainDuration = Mathf.Max(0.0f, visualizationDuration - nonSustainDuration);
+            float totalDuration = nonSustainDuration + sustainDuration;
+            float currentPosition = _envelopePosition;
 
             if (!_isGateOpen)
             {
                 currentPosition = _releaseStartPosition + (currentPosition - _releaseStartPosition) * (ReleaseTime / (totalDuration - _releaseStartPosition));
             }
-            return Math.Clamp(currentPosition / totalDuration, 0.0, 1.0);
+            return Mathf.Clamp(currentPosition / totalDuration, 0.0f, 1.0f);
         }
 
         public void ScheduleGateOpen(double time, bool forceCloseFirst = true)

@@ -121,7 +121,6 @@ namespace Synth
             }
         }
 
-        // Constructor
         public EnvelopeNode() : base()
         {
             _scheduler.RegisterNode(this, [AudioParam.Gate]);
@@ -173,6 +172,7 @@ namespace Synth
             return (Mathf.Pow(2, c * x) - 1.0f) / precomputedBase;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OpenGate()
         {
             _isGateOpen = true;
@@ -180,6 +180,7 @@ namespace Synth
             _envelopePosition = 0.0f;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void CloseGate()
         {
             _releaseStartPosition = _envelopePosition;
@@ -201,8 +202,9 @@ namespace Synth
                 {
                     CloseGate();
                 }
+
                 _currentAmplitude = GetEnvelopeValue(_envelopePosition);
-                buffer[i] = (float)_currentAmplitude;
+                buffer[i] = _currentAmplitude;
                 _envelopePosition += (float)increment;
             }
         }
@@ -215,14 +217,12 @@ namespace Synth
                 if (position < AttackTime)
                 {
                     float normalizedTime = position / AttackTime;
-                    int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                    return _attackStartAmplitude + (_attackBuffer[bufferIndex] * (1.0f - _attackStartAmplitude));
+                    return _attackStartAmplitude + (LinearInterpolatedBufferValue(normalizedTime, 1.0f, _attackBuffer) * (1.0f - _attackStartAmplitude));
                 }
                 else if (position < (AttackTime + DecayTime))
                 {
                     float normalizedTime = (position - AttackTime) / DecayTime;
-                    int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                    return _decayBuffer[bufferIndex];
+                    return LinearInterpolatedBufferValue(normalizedTime, 1.0f, _decayBuffer);
                 }
                 else
                 {
@@ -234,8 +234,7 @@ namespace Synth
                 if (ReleaseTime > 0)
                 {
                     float normalizedTime = Mathf.Min((position - _releaseStartPosition) / ReleaseTime, 1.0f);
-                    int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                    return _releaseStartAmplitude * _releaseBuffer[bufferIndex];
+                    return _releaseStartAmplitude * LinearInterpolatedBufferValue(normalizedTime, 1.0f, _releaseBuffer);
                 }
                 else
                 {
@@ -244,38 +243,93 @@ namespace Synth
             }
         }
 
+        /*
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                private float GetEnvelopeValue(float position)
+                {
+                    if (_isGateOpen)
+                    {
+                        if (position < AttackTime)
+                        {
+                            float normalizedTime = position / AttackTime;
+                            int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
+                            return _attackStartAmplitude + (_attackBuffer[bufferIndex] * (1.0f - _attackStartAmplitude));
+                        }
+                        else if (position < (AttackTime + DecayTime))
+                        {
+                            float normalizedTime = (position - AttackTime) / DecayTime;
+                            int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
+                            return _decayBuffer[bufferIndex];
+                        }
+                        else
+                        {
+                            return SustainLevel;
+                        }
+                    }
+                    else
+                    {
+                        if (ReleaseTime > 0)
+                        {
+                            float normalizedTime = Mathf.Min((position - _releaseStartPosition) / ReleaseTime, 1.0f);
+                            int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
+                            return _releaseStartAmplitude * _releaseBuffer[bufferIndex];
+                        }
+                        else
+                        {
+                            return 0.0f;
+                        }
+                    }
+                }
+        */
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private float LinearInterpolatedBufferValue(float normalizedTime, float phaseDuration, float[] buffer)
+        {
+            float floatIndex = normalizedTime * (BufferSize - 1);
+            int index = (int)floatIndex;
+            if (index >= BufferSize - 1) return buffer[BufferSize - 1];
+            float frac = floatIndex - index;
+            return buffer[index] * (1 - frac) + buffer[index + 1] * frac;
+        }
+
         public float[] GetVisualBuffer(int numSamples, float visualizationDuration = 3.0f)
         {
             float[] visualBuffer = new float[numSamples];
             float sampleRate = numSamples / visualizationDuration;
-            int attackSamples = (int)(AttackTime * sampleRate);
-            int decaySamples = (int)(DecayTime * sampleRate);
-            int releaseSamples = (int)(ReleaseTime * sampleRate);
-            int sustainSamples = numSamples - (attackSamples + decaySamples + releaseSamples);
+            float attackSamples = AttackTime * sampleRate;
+            float decaySamples = DecayTime * sampleRate;
+            float releaseSamples = ReleaseTime * sampleRate;
+            float sustainSamples = numSamples - (attackSamples + decaySamples + releaseSamples);
+
+            float currentAmplitude;
+            float releaseStartAmplitude = SustainLevel; // Assume release starts from sustain level
 
             for (int i = 0; i < numSamples; i++)
             {
-                float targetAmplitude = 0.0f;
-                if (i < attackSamples)
+                float position = i / sampleRate;
+
+                if (position < AttackTime)
                 {
-                    float normalizedTime = (float)i / attackSamples;
-                    targetAmplitude = _attackBuffer[(int)(normalizedTime * (BufferSize - 1))];
+                    float normalizedTime = position / AttackTime;
+                    currentAmplitude = LinearInterpolatedBufferValue(normalizedTime, 1.0f, _attackBuffer);
                 }
-                else if (i < attackSamples + decaySamples)
+                else if (position < AttackTime + DecayTime)
                 {
-                    float normalizedTime = (float)(i - attackSamples) / decaySamples;
-                    targetAmplitude = _decayBuffer[(int)(normalizedTime * (BufferSize - 1))];
+                    float normalizedTime = (position - AttackTime) / DecayTime;
+                    currentAmplitude = LinearInterpolatedBufferValue(normalizedTime, 1.0f, _decayBuffer);
                 }
-                else if (i < attackSamples + decaySamples + sustainSamples)
+                else if (position < AttackTime + DecayTime + sustainSamples / sampleRate)
                 {
-                    targetAmplitude = SustainLevel;
+                    currentAmplitude = SustainLevel;
                 }
                 else
                 {
-                    float normalizedTime = (float)(i - (attackSamples + decaySamples + sustainSamples)) / releaseSamples;
-                    targetAmplitude = _releaseBuffer[(int)(normalizedTime * (BufferSize - 1))] * SustainLevel;
+                    float releasePosition = position - (AttackTime + DecayTime + sustainSamples / sampleRate);
+                    float normalizedTime = Mathf.Min(releasePosition / ReleaseTime, 1.0f);
+                    currentAmplitude = releaseStartAmplitude * LinearInterpolatedBufferValue(normalizedTime, 1.0f, _releaseBuffer);
                 }
-                visualBuffer[i] = (float)targetAmplitude;
+
+                visualBuffer[i] = currentAmplitude;
             }
             return visualBuffer;
         }

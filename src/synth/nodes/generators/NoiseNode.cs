@@ -1,24 +1,49 @@
 using System;
 using System.Runtime.CompilerServices;
+
 namespace Synth
 {
     public class NoiseNode : AudioNode
     {
         private uint x, y, z, w;
         private NoiseType currentNoiseType;
-        private const int PinkNoiseMaxOctaves = 5;
-        private float[] pinkNoiseValues;
-        private int pinkNoiseIndex;
+        private const int PinkNoiseNumRows = 16;
+        private float[] pinkRows;
+        private float pinkRunningSum;
+        private int pinkIndexMask;
+        private uint pinkCount;
         private float amplitude = 1.0f;
         private float dcOffset = 0.0f;
         private const int seed = 123;
+
+        private float targetFrequencySlope;
+        private float currentFrequencySlope;
+        private const float SlopeSmoothing = 0.1f;  // Adjust this value to change smoothing speed
+
+        private float previousOutput = 0.0f;
+        private float previousInput = 0.0f;
+        private float filterCoeff = 0.0f;
 
         public NoiseNode() : base()
         {
             currentNoiseType = NoiseType.White;
             SetSeed(seed);
-            pinkNoiseValues = new float[PinkNoiseMaxOctaves];
-            pinkNoiseIndex = 0;
+            pinkRows = new float[PinkNoiseNumRows];
+            pinkIndexMask = (1 << PinkNoiseNumRows) - 1; // mask for the index
+            pinkCount = 0;
+            pinkRunningSum = 0;
+            targetFrequencySlope = 0.0f;
+            currentFrequencySlope = 0.0f;
+            UpdateFilterCoefficient();
+        }
+
+        public float FrequencySlope
+        {
+            get => targetFrequencySlope;
+            set
+            {
+                targetFrequencySlope = Math.Clamp(value, -1f, 1f);
+            }
         }
 
         public void SetSeed(int seed)
@@ -40,6 +65,41 @@ namespace Synth
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void UpdateFilterCoefficient()
+        {
+            // Smoothly update the current frequency slope
+            currentFrequencySlope += (targetFrequencySlope - currentFrequencySlope) * SlopeSmoothing;
+
+            if (Math.Abs(currentFrequencySlope) < 1e-6f)
+            {
+                filterCoeff = 1.0f;  // No filtering
+                return;
+            }
+
+            float minFrequency = 20f;
+            float maxFrequency = SampleRate / 2f;
+            
+            // Exponential mapping of frequencySlope to cutoff frequency
+            float cutoffFrequency;
+            if (currentFrequencySlope < 0)
+            {
+                // For low-pass, we want the cutoff to decrease as the slope goes from 0 to -1
+                cutoffFrequency = maxFrequency * (float)Math.Pow(minFrequency / maxFrequency, -currentFrequencySlope);
+            }
+            else
+            {
+                // For high-pass, we want the cutoff to increase as the slope goes from 0 to 1
+                cutoffFrequency = minFrequency * (float)Math.Pow(maxFrequency / minFrequency, currentFrequencySlope);
+            }
+            cutoffFrequency = Math.Clamp(cutoffFrequency, minFrequency, maxFrequency);
+
+            // Calculate the filter coefficient
+            float rc = 1.0f / (2.0f * (float)Math.PI * cutoffFrequency);
+            float dt = 1.0f / SampleRate;
+            filterCoeff = rc / (rc + dt);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private uint Next()
         {
             uint t = x ^ (x << 11);
@@ -56,18 +116,31 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float GetPinkNoise()
         {
-            float white = GetWhiteNoise();
-            float pink = 0;
+            // Voss-McCartney algorithm implementation
+            pinkCount++;
+            int lastZeroBit = (int)(pinkCount & -pinkCount); // isolate the rightmost 1-bit and cast to int
+            int rowIndex = 0;
 
-            pinkNoiseIndex = (pinkNoiseIndex + 1) % PinkNoiseMaxOctaves;
-            pinkNoiseValues[pinkNoiseIndex] = white;
-
-            for (int i = 0; i < PinkNoiseMaxOctaves; i++)
+            while ((lastZeroBit >>= 1) != 0)
             {
-                pink += pinkNoiseValues[(pinkNoiseIndex - i + PinkNoiseMaxOctaves) % PinkNoiseMaxOctaves];
+                rowIndex++;
             }
 
-            return pink / PinkNoiseMaxOctaves;
+            if (rowIndex < PinkNoiseNumRows)
+            {
+                pinkRunningSum -= pinkRows[rowIndex];
+                pinkRows[rowIndex] = GetWhiteNoise();
+                pinkRunningSum += pinkRows[rowIndex];
+            }
+
+            return pinkRunningSum / PinkNoiseNumRows;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private float GetBrownianNoise()
+        {
+            previousOutput += GetWhiteNoise() * 0.1f; // Brownian noise is cumulative white noise
+            return Math.Clamp(previousOutput, -1f, 1f);
         }
 
         public void SetNoiseType(NoiseType noiseType)
@@ -75,33 +148,56 @@ namespace Synth
             currentNoiseType = noiseType;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private float ApplyFilter(float inputNoise)
+        {
+            float output;
+            if (currentFrequencySlope < 0)
+            {
+                // Low-pass filter
+                output = filterCoeff * previousOutput + (1 - filterCoeff) * inputNoise;
+            }
+            else if (currentFrequencySlope > 0)
+            {
+                // High-pass filter
+                output = filterCoeff * (previousOutput + inputNoise - previousInput);
+            }
+            else
+            {
+                // No filtering
+                output = inputNoise;
+            }
+
+            previousInput = inputNoise;
+            previousOutput = output;
+            return output;
+        }
+
         public override void Process(double increment)
         {
+            UpdateFilterCoefficient();  // Update the filter coefficient for each buffer
+
             int bufferSize = buffer.Length;
-
-            if (currentNoiseType == NoiseType.White)
+            for (int i = 0; i < bufferSize; i++)
             {
-                for (int i = 0; i < bufferSize; i++)
+                var gainParam = GetParameter(AudioParam.Gain, i);
+                float noiseValue = currentNoiseType switch
                 {
-                    var gainParam = GetParameter(AudioParam.Gain, i);
-                    buffer[i] = (GetWhiteNoise()+gainParam.Item1) * amplitude * gainParam.Item2 + dcOffset;
-                }
-            }
-            else // Pink noise
-            {
-                for (int i = 0; i < bufferSize; i++)
-                {
-                    var gainParam = GetParameter(AudioParam.Gain, i);
-                    buffer[i] = (GetPinkNoise()+gainParam.Item1) * amplitude * gainParam.Item2 + dcOffset;
-                }
-            }
+                    NoiseType.White => GetWhiteNoise(),
+                    NoiseType.Pink => GetPinkNoise(),
+                    NoiseType.Brownian => GetBrownianNoise(),
+                    _ => GetWhiteNoise(),
+                };
 
+                buffer[i] = (ApplyFilter(noiseValue) * amplitude * gainParam.Item2) + dcOffset + gainParam.Item1;
+            }
         }
     }
 
     public enum NoiseType
     {
         White,
-        Pink
+        Pink,
+        Brownian
     }
 }

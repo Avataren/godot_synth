@@ -44,6 +44,14 @@ toggle_mode = true
 button_group = SubResource("ButtonGroup_b6a3m")
 text = "Pink"
 
+[node name="BrownianNoiseButton" type="Button" parent="VBoxContainer/HBoxContainer2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+button_group = SubResource("ButtonGroup_b6a3m")
+text = "Brown"
+
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
@@ -67,7 +75,20 @@ sensitivity = 0.2
 title = "Gain"
 current_value = 0.5
 
+[node name="SlopeKnob" parent="VBoxContainer/HBoxContainer" instance=ExtResource("1_s7kww")]
+unique_name_in_owner = true
+layout_mode = 2
+min_value = -1.0
+max_value = 1.0
+step = 0.01
+sensitivity = 0.1
+title = "Slope"
+current_value = 0.0
+
 [connection signal="toggled" from="VBoxContainer/EnabledCheckBox" to="." method="_on_enabled_check_box_toggled"]
-[connection signal="toggled" from="VBoxContainer/HBoxContainer2/WhiteNoiseButton" to="." method="_on_white_noise_button_toggled"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/WhiteNoiseButton" to="." method="_on_white_noise_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/PinkNoiseButton" to="." method="_on_pink_noise_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/BrownianNoiseButton" to="." method="_on_brownian_noise_button_pressed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/DCOffsetKnob" to="." method="_on_dc_offset_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/HBoxContainer/GainKnob" to="." method="_on_gain_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/SlopeKnob" to="." method="_on_slope_knob_value_changed"]

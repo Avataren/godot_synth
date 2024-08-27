@@ -246,6 +246,11 @@ public partial class PatchEditor : Node2D
 		AudioOutputNode.CurrentPatch.noiseNode.SetAmplitude(value);
 	}
 
+	private void _on_panel_container_slope_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.noiseNode.FrequencySlope = value;
+	}
+
 	private void _on_panel_container_noisetype_changed(string noiseType)
 	{
 		if (noiseType == "white")
@@ -255,6 +260,10 @@ public partial class PatchEditor : Node2D
 		else if (noiseType == "pink")
 		{
 			AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.Pink);
+		}
+		else if (noiseType == "brown")
+		{
+			AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.Brownian);
 		}
 	}
 

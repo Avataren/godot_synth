@@ -287,6 +287,7 @@ size_flags_vertical = 4
 [connection signal="gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_gain_changed"]
 [connection signal="noisetype_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_noisetype_changed"]
 [connection signal="offset_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_offset_changed"]
+[connection signal="slope_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_slope_changed"]
 [connection signal="delay_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_delay_changed"]
 [connection signal="delay_enabled" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_delay_enabled"]
 [connection signal="drymix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_drymix_changed"]

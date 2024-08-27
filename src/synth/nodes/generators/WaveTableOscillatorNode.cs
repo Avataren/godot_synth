@@ -249,7 +249,7 @@ namespace Synth
 			Gain = gainParam.Item2;
 			float phase_modulation = phaseParam.Item1;
 			_smoothModulationStrength = phase_modulation * ModulationStrength * pmodParam.Item1;
-			_lastFrequency = pitchParam.Item1 * _detuneFactor;
+			_lastFrequency = pitchParam.Item1 * pitchParam.Item2 * _detuneFactor;
 		}
 
 		private double CalculateModulatedPhase(double basePhase, double phaseOffset, float previousSample, float selfModulationStrength)

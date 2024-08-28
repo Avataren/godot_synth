@@ -56,7 +56,7 @@ namespace Synth
             return numTables;
         }
 
-        public static float MakeWaveTable(WaveTableMemory mem, int len, double[] ar, double[] ai, double scale, double topFreq, double phase = 0.0, bool invert = false)
+        public static SynthType MakeWaveTable(WaveTableMemory mem, int len, double[] ar, double[] ai, double scale, double topFreq, double phase = 0.0, bool invert = false)
         {
             FFT.fft(len, ar, ai); // Apply FFT (now ar is cosine, ai is sine)
 
@@ -72,10 +72,10 @@ namespace Synth
                 scale = 1.0 / max * 0.999;
             }
 
-            float[] wave = new float[len];
+            SynthType[] wave = new SynthType[len];
             for (int idx = 0; idx < len; idx++)
             {
-                wave[idx] = (float)(ar[idx] * scale); // Output real part (cosine component)
+                wave[idx] = (SynthType)(ar[idx] * scale); // Output real part (cosine component)
             }
 
             if (phase > 0.0)
@@ -83,7 +83,7 @@ namespace Synth
                 phase *= 0.5;
                 phase = (phase + 1.0) % 1.0;
                 int offset = (int)(phase * len);
-                float[] temp = new float[len];
+                SynthType[] temp = new SynthType[len];
                 for (int idx = 0; idx < len; idx++)
                 {
                     temp[idx] = wave[(idx + offset) % len];
@@ -104,7 +104,7 @@ namespace Synth
                 scale = 0.0;
             }
 
-            return (float)scale;
+            return (SynthType)scale;
         }
 
 

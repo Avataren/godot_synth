@@ -6,7 +6,7 @@ public struct WaveTable
 {
 	public double TopFreq;
 	public int WaveTableLen;
-	public float[] WaveTableData;
+	public SynthType[] WaveTableData;
 
 };
 
@@ -24,7 +24,7 @@ public class WaveTableMemory
 	{
 		for (int idx = 0; idx < MaxWaveTableSlots; idx++)
 		{
-			WaveTables[idx] = new WaveTable { TopFreq = 0, WaveTableLen = 0, WaveTableData = Array.Empty<float>() };
+			WaveTables[idx] = new WaveTable { TopFreq = 0, WaveTableLen = 0, WaveTableData = Array.Empty<SynthType>() };
 		}
 	}
 
@@ -37,12 +37,12 @@ public class WaveTableMemory
 	//
 	// returns 0 upon success, or the number of wavetables if no more room is available
 	//
-	public int AddWaveTable(int len, float[] waveTableIn, double topFreq)
+	public int AddWaveTable(int len, SynthType[] waveTableIn, double topFreq)
 	{
 		if (NumWaveTables < MaxWaveTableSlots)
 		{
 			WaveTables[NumWaveTables].WaveTableLen = len + 1;
-			WaveTables[NumWaveTables].WaveTableData = new float[len + 1];
+			WaveTables[NumWaveTables].WaveTableData = new SynthType[len + 1];
 			// fill in wave
 			Array.Copy(waveTableIn, WaveTables[NumWaveTables].WaveTableData, len);
 			WaveTables[NumWaveTables].TopFreq = topFreq;

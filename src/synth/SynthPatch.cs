@@ -121,7 +121,7 @@ public class SynthPatch
         mix1.Gain = gain;
     }
 
-    public float[] CreateWaveform(WaveTableWaveType waveType, int bufSize)
+    public SynthType[] CreateWaveform(WaveTableWaveType waveType, int bufSize)
     {
         return waveTableBank.GenerateFullWaveform(waveType, bufSize);
     }

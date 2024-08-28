@@ -43,19 +43,19 @@ namespace Synth
 			AddWave(WaveTableWaveType.PIANO, WaveTableRepository.PeriodicWaveOsc(PeriodicWaves.PianoReal, PeriodicWaves.PianoImag));
 		}
 
-		public float[] GenerateFullWaveform(WaveTableWaveType type, int tableLen)
+		public SynthType[] GenerateFullWaveform(WaveTableWaveType type, int tableLen)
 		{
 			var wave = GetWave(type);
 			var waveData = wave.GetWaveTable(0);
 
-			var fullWave = new float[tableLen];
+			var fullWave = new SynthType[tableLen];
 			for (int idx = 0; idx < tableLen; idx++)
 			{
 				var floatWaveIdx = idx / (float)fullWave.Length * waveData.WaveTableData.Length;
 				int waveIdx = (int)floatWaveIdx;
-				float frac = floatWaveIdx - waveIdx;
+				SynthType frac = floatWaveIdx - waveIdx;
 				int nextWaveIdx = (waveIdx + 1) % waveData.WaveTableData.Length;
-				fullWave[idx] = (1 - frac) * waveData.WaveTableData[waveIdx] + frac * waveData.WaveTableData[nextWaveIdx];
+				fullWave[idx] = (SynthTypeHelper.One - frac) * waveData.WaveTableData[waveIdx] + frac * waveData.WaveTableData[nextWaveIdx];
 			}
 			return fullWave;
 		}

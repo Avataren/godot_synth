@@ -42,7 +42,7 @@ public partial class PatchEditor : Node2D
 	private Control gdLFONode;
 	// Called when the node enters the scene tree for the first time.
 
-	private Dictionary<String, float[]> waveforms = new Dictionary<String, float[]>();
+	private Dictionary<String, SynthType[]> waveforms = new Dictionary<String, SynthType[]>();
 	public override void _Ready()
 	{
 		//lfoContainer = GetNode<Control>("%LFOContainer");
@@ -128,7 +128,7 @@ public partial class PatchEditor : Node2D
 
 	}
 
-	public float[] GetWaveformData(String name)
+	public SynthType[] GetWaveformData(String name)
 	{
 		if (waveforms.ContainsKey(name))
 		{

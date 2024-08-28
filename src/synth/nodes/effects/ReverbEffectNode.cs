@@ -16,7 +16,7 @@ namespace Synth
             RightBuffer = new SynthType[NumSamples];
             LeftBufferTmp = new SynthType[NumSamples];
             RightBufferTmp = new SynthType[NumSamples];
-            reverbModel = new ReverbModel(8, 4);
+            reverbModel = new ReverbModel(12, 4);
         }
 
         public override void Process(double increment)

@@ -165,32 +165,28 @@ namespace Synth
 			UpdateDetuneFactor();
 			SynthType phase = Phase;
 			SynthType phaseIncrement = _lastFrequency * (SynthType)increment;
-			SynthType freqLastSample = _lastFrequency;
 
 			for (int i = 0; i < NumSamples; i++)
 			{
 				UpdateParameters(i);
-				if (freqLastSample != _lastFrequency)
+
+				// Update frequency and wavetable if needed
+				if (Math.Abs(_lastFrequency - phaseIncrement / increment) > FrequencyChangeThreshold)
 				{
 					phaseIncrement = _lastFrequency * (SynthType)increment;
 					UpdateWaveTableFrequency(_lastFrequency);
 					currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 				}
-				freqLastSample = _lastFrequency;
+
 				SynthType gateValue = (SynthType)_scheduler.GetValueAtSample(this, AudioParam.Gate, i);
 
+				// Handle gate changes
 				if (!_isGateOpen && gateValue > 0.5)
 				{
-					gateNum++;
 					_isGateOpen = true;
-					_previousSample = SynthTypeHelper.Zero;
-
 					if (HardSync)
 					{
-						// Start crossfade when hard sync occurs
-						_crossfadeCounter = _crossfadeFrames;
-						_previousPhase = phase;
-						_newPhase = SynthTypeHelper.Zero; // Reset new phase
+						phase = SynthTypeHelper.Zero;
 					}
 				}
 				else if (_isGateOpen && gateValue < SynthTypeHelper.Half)
@@ -198,43 +194,27 @@ namespace Synth
 					_isGateOpen = false;
 				}
 
-				// During crossfade, blend old and new phases
-				if (_crossfadeCounter > 0)
-				{
-					SynthType fadeAmount = SynthTypeHelper.One - (SynthType)_crossfadeCounter / _crossfadeFrames;
-					_crossfadeCounter--;
+				// Calculate modulated phase
+				SynthType modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
 
-					// Continue evolving both phases
-					_previousPhase += phaseIncrement;  // Continue the previous phase
-					_newPhase += phaseIncrement;       // Start from the new phase
+				// Get sample and apply gain
+				SynthType currentSample = GetSamplePWM(currentWaveTable, modulatedPhase);
+				buffer[i] = currentSample * Amplitude * Gain;
 
-					SynthType modulatedOldPhase = CalculateModulatedPhase(_previousPhase, PhaseOffset, _previousSample, SelfModulationStrength);
-					SynthType modulatedNewPhase = CalculateModulatedPhase(_newPhase, PhaseOffset, _previousSample, SelfModulationStrength);
+				// Update previous sample for next iteration
+				_previousSample = currentSample;
 
-					SynthType oldSample = GetSamplePWM(currentWaveTable, modulatedOldPhase);
-					SynthType newSample = GetSamplePWM(currentWaveTable, modulatedNewPhase);
-
-					// Blend the old and new samples based on fadeAmount
-					buffer[i] = ((SynthTypeHelper.One - fadeAmount) * oldSample + fadeAmount * newSample) * Amplitude * Gain;
-
-					// After the crossfade, continue with the new phase
-					if (_crossfadeCounter == 0)
-					{
-						phase = _newPhase;  // Set phase to the new phase after crossfade
-					}
-				}
-				else
-				{
-					// After crossfade, continue with the new phase
-					SynthType modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
-					SynthType currentSample = GetSamplePWM(currentWaveTable, modulatedPhase);
-					buffer[i] = currentSample * Amplitude * Gain;
-					_previousSample = currentSample;
-					phase += phaseIncrement;
-				}
+				// Increment phase
+				phase = SynthTypeHelper.ModuloOne(phase + phaseIncrement);
 			}
 
-			Phase = SynthTypeHelper.ModuloOne(phase);
+			Phase = phase;
+		}
+
+		private SynthType CalculateModulatedPhase(SynthType basePhase, SynthType phaseOffset, SynthType previousSample, SynthType selfModulationStrength)
+		{
+			var offset = phaseOffset + _smoothModulationStrength + previousSample * selfModulationStrength;
+			return SynthTypeHelper.ModuloOne(basePhase + offset);
 		}
 		private void UpdateParameters(int sampleIndex)
 		{
@@ -250,13 +230,6 @@ namespace Synth
 			SynthType phase_modulation = phaseParam.Item1;
 			_smoothModulationStrength = phase_modulation * ModulationStrength * pmodParam.Item1;
 			_lastFrequency = pitchParam.Item1 * pitchParam.Item2 * _detuneFactor;
-		}
-
-		private SynthType CalculateModulatedPhase(SynthType basePhase, SynthType phaseOffset, SynthType previousSample, SynthType selfModulationStrength)
-		{
-			var offset = phaseOffset + _smoothModulationStrength + previousSample * selfModulationStrength;
-			return SynthTypeHelper.ModuloOne(basePhase + offset);
-			//(basePhase + offset + 100.0) % 1.0;
 		}
 
 		private void UpdateWaveTableFrequency(SynthType freq)

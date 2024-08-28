@@ -199,11 +199,12 @@ namespace Synth
         private void OpenGate(int sampleOffset)
         {
             _isGateOpen = true;
-            _attackStartAmplitude = SynthTypeHelper.Zero; // Start from 0 for consistency
+            _attackStartAmplitude = _currentAmplitude;  // Start from current amplitude
             _envelopePosition = sampleOffset / SampleRate;
             _crossfadePosition = SynthTypeHelper.Zero;
             _previousAmplitude = _currentAmplitude;
         }
+
 
         private void CloseGate(int sampleOffset)
         {

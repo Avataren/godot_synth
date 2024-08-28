@@ -59,7 +59,7 @@ namespace Synth
         }
 
         // Flag to prevent recursive calls when restoring oscillator connections
-        private bool _restoringOscillatorConnection = false;
+        // private bool _restoringOscillatorConnection = false;
 
         public void Connect(AudioNode source, AudioNode destination, AudioParam param, ModulationType modType, float strength = 1.0f)
         {

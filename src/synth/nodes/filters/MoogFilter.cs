@@ -68,7 +68,7 @@ namespace Synth
             set
             {
                 SynthType normalizedCutoff = value / (sampleRate / 2); // Normalize cutoff to 0-1
-                cutoff = SynthTypeHelper.Max(SynthTypeHelper.Zero, SynthTypeHelper.Min(SynthTypeHelper.One, normalizedCutoff)); // Clamp to [0,1]
+                cutoff = SynthType.Max(SynthTypeHelper.Zero, SynthType.Min(SynthTypeHelper.One, normalizedCutoff)); // Clamp to [0,1]
                 Calc(cutoff);
             }
         }

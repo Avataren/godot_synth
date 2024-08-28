@@ -88,7 +88,7 @@ namespace Synth
 
             // Use an exponential mapping to make the transformation feel more natural
             SynthType exponent = 3.0f; // You can adjust this exponent for more or less nonlinearity
-            SynthType transformedValue = SynthTypeHelper.Pow(input, exponent);
+            SynthType transformedValue = SynthType.Pow(input, exponent);
 
             // Map the transformed value to the cutoff frequency range
             var cutoffFrequency = minCutoff + transformedValue * (maxCutoff - minCutoff);

@@ -39,19 +39,19 @@ namespace Synth
         private SynthType MapQ(SynthType userQ)
         {
             // Map 0-1 to BaselineQ-MaxQ exponentially
-            return BaselineQ * SynthTypeHelper.Pow(MaxQ / BaselineQ, userQ);
+            return BaselineQ * SynthType.Pow(MaxQ / BaselineQ, userQ);
         }
 
         private void CalculateCoefficients(SynthType frequency)
         {
             var mappedQ = MapQ(userQ);
-            var A = SynthTypeHelper.Pow(10, dbGain / 40);
-            var omega = 2 * SynthTypeHelper.Pi * frequency / sampleRate;
-            var sinOmega = SynthTypeHelper.Sin(omega);
-            var cosOmega = SynthTypeHelper.Cos(omega);
+            var A = SynthType.Pow(10, dbGain / 40);
+            var omega = 2 * SynthType.Pi * frequency / sampleRate;
+            var sinOmega = SynthType.Sin(omega);
+            var cosOmega = SynthType.Cos(omega);
 
             var alpha = sinOmega / (2 * mappedQ);
-            var beta = SynthTypeHelper.Sqrt(A + A);
+            var beta = SynthType.Sqrt(A + A);
 
             switch (type)
             {
@@ -150,7 +150,7 @@ namespace Synth
 
         public SynthType Process(SynthType input, SynthType cutoff_mod_param)
         {
-            var smoothedCutoffModParam = SynthTypeHelper.Max(0.01f, SmoothModulation(cutoff_mod_param));
+            var smoothedCutoffModParam = SynthType.Max(0.01f, SmoothModulation(cutoff_mod_param));
             CalculateCoefficients(frequency * smoothedCutoffModParam);
 
             var output = b0 * input + b1 * prevInput1 + b2 * prevInput2
@@ -162,7 +162,7 @@ namespace Synth
             prevOutput1 = output;
 
             // Prevent denormals
-            if (SynthTypeHelper.Abs(output) < MinFloat)
+            if (SynthType.Abs(output) < MinFloat)
                 output = 0;
 
             return output;

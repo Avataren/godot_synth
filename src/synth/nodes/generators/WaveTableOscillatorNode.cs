@@ -69,7 +69,7 @@ namespace Synth
 
 		private SynthType ExponentialInterpolation(SynthType current, SynthType target, SynthType alpha)
 		{
-			return current + (target - current) * (1 - SynthTypeHelper.Exp(-alpha));
+			return current + (target - current) * (1 - SynthType.Exp(-alpha));
 		}
 
 		public void UpdateSampleFunction()

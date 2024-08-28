@@ -101,13 +101,13 @@ namespace Synth
         // Sine wave function
         private static SynthType GetSineWave(SynthType normalizedPhase)
         {
-            return SynthTypeHelper.Sin(normalizedPhase * 2.0f * SynthTypeHelper.Pi);
+            return SynthType.Sin(normalizedPhase * 2.0f * SynthTypeHelper.Pi);
         }
 
         // Triangle wave function
         private static SynthType GetTriangleWave(SynthType normalizedPhase)
         {
-            return 2.0f * SynthTypeHelper.Abs(normalizedPhase * 2.0f - SynthTypeHelper.One) - SynthTypeHelper.One;
+            return 2.0f * SynthType.Abs(normalizedPhase * 2.0f - SynthTypeHelper.One) - SynthTypeHelper.One;
         }
 
         // Saw wave function

@@ -92,9 +92,9 @@ namespace Synth
         {
             const SynthType threshold = (SynthType)0.6;
             if (input > threshold)
-                return threshold + (input - threshold) / (SynthTypeHelper.One + SynthTypeHelper.Pow(input - threshold, 2));
+                return threshold + (input - threshold) / (SynthTypeHelper.One + SynthType.Pow(input - threshold, 2));
             else if (input < -threshold)
-                return -threshold + (input + threshold) / (SynthTypeHelper.One + SynthTypeHelper.Pow(-input - threshold, 2));
+                return -threshold + (input + threshold) / (SynthTypeHelper.One + SynthType.Pow(-input - threshold, 2));
             else
                 return input;
         }

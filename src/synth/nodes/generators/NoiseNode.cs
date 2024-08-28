@@ -36,7 +36,7 @@ namespace Synth
         public SynthType Cutoff
         {
             get => targetCutoff;
-            set => targetCutoff = SynthTypeHelper.Clamp(value, 0f, 1f);
+            set => targetCutoff = SynthType.Clamp(value, 0f, 1f);
         }
 
         public void SetSeed(int seed)
@@ -49,12 +49,12 @@ namespace Synth
 
         public void SetAmplitude(SynthType newAmplitude)
         {
-            amplitude = SynthTypeHelper.Clamp(newAmplitude, 0f, 1f);
+            amplitude = SynthType.Clamp(newAmplitude, 0f, 1f);
         }
 
         public void SetDCOffset(SynthType newOffset)
         {
-            dcOffset = SynthTypeHelper.Clamp(newOffset, -1f, 1f);
+            dcOffset = SynthType.Clamp(newOffset, -1f, 1f);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,8 +66,8 @@ namespace Synth
             SynthType maxFrequency = SampleRate / 2f;
 
             // Exponential curve for cutoff frequency
-            SynthType cutoffFrequency = minFrequency * SynthTypeHelper.Pow(maxFrequency / minFrequency, currentCutoff);
-            cutoffFrequency = SynthTypeHelper.Clamp(cutoffFrequency, minFrequency, maxFrequency);
+            SynthType cutoffFrequency = minFrequency * SynthType.Pow(maxFrequency / minFrequency, currentCutoff);
+            cutoffFrequency = SynthType.Clamp(cutoffFrequency, minFrequency, maxFrequency);
 
             SynthType rc = SynthTypeHelper.One / (2.0f * MathF.PI * cutoffFrequency);
             SynthType dt = SynthTypeHelper.One / SampleRate;

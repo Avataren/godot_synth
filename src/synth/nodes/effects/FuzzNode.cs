@@ -87,12 +87,12 @@ namespace Synth
 
         private SynthType SoftClipping(SynthType input)
         {
-            return input / (SynthTypeHelper.One + SynthTypeHelper.Abs(input));
+            return input / (SynthTypeHelper.One + SynthType.Abs(input));
         }
 
         private SynthType AsymmetricSoftClipping(SynthType input)
         {
-            return input >= 0 ? input / (1.0f + 0.5f * input) : input / (1.0f + 0.8f * Math.Abs(input));
+            return input >= 0 ? input / (1.0f + 0.5f * input) : input / (1.0f + 0.8f * SynthType.Abs(input));
         }
 
         private SynthType PolynomialShaping(SynthType input)
@@ -103,7 +103,7 @@ namespace Synth
         private SynthType ComplexWaveshaping(SynthType input)
         {
             // A combination of sine shaping and further polynomial shaping
-            SynthType sineShaped = SynthTypeHelper.Sin(input * SynthTypeHelper.Pi * SynthTypeHelper.Half);
+            SynthType sineShaped = SynthType.Sin(input * SynthTypeHelper.Pi * SynthTypeHelper.Half);
             return sineShaped - 0.2f * sineShaped * sineShaped * sineShaped;
         }
 

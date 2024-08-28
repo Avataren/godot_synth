@@ -45,8 +45,7 @@ namespace Synth
         private int activeStages;
         private readonly double[] moogStage;
         private readonly double[] moogDelay;
-        private double moogAlpha, moogBeta, moogGamma, moogEpsilon, moogFeedback;
-
+        private double moogAlpha, moogBeta, moogGamma;
         private double cutoffStart, cutoffEnd;
         private double resonanceStart, resonanceEnd;
         private double saturationStart, saturationEnd;

@@ -14,6 +14,46 @@ public static class SynthTypeHelper
     public const SynthType One = 1.0f;
     public const SynthType NegativeOne = 1.0f;
     public const SynthType Half = 0.5f;
+    public static SynthType Clamp(SynthType val, SynthType min, SynthType max)
+    {
+        return Mathf.Max(min, Mathf.Min(max, val));
+    }
+    public static SynthType Max(SynthType a, SynthType b)
+    {
+        return Mathf.Max(a, b);
+    }
+    public static SynthType Min(SynthType a, SynthType b)
+    {
+        return Mathf.Min(a, b);
+    }
+    public static SynthType Exp(SynthType val)
+    {
+        return Mathf.Exp(val);
+    }
+    public static SynthType Pow(SynthType val, SynthType exp)
+    {
+        return Mathf.Pow(val, exp);
+    }
+    public static SynthType Abs(SynthType val)
+    {
+        return Mathf.Abs(val);
+    }
+    public static SynthType Sin(SynthType val)
+    {
+        return Mathf.Sin(val);
+    }
+    public static SynthType Cos(SynthType val)
+    {
+        return Mathf.Cos(val);
+    }
+    public static SynthType Sqrt(SynthType val)
+    {
+        return Mathf.Sqrt(val);
+    }
+    public static SynthType Log(SynthType val)
+    {
+        return Mathf.Log(val);
+    }
     public const SynthType Pi = Mathf.Pi;
 }
 #else

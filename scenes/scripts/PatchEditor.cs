@@ -243,7 +243,7 @@ public partial class PatchEditor : Node2D
 
 	private void _on_panel_container_gain_changed(float value)
 	{
-		AudioOutputNode.CurrentPatch.noiseNode.SetAmplitude(value);
+		AudioOutputNode.CurrentPatch.noiseNode.Amplitude = value;
 	}
 
 	private void _on_panel_container_slope_changed(float value)
@@ -269,7 +269,7 @@ public partial class PatchEditor : Node2D
 
 	private void _on_panel_container_offset_changed(float value)
 	{
-		AudioOutputNode.CurrentPatch.noiseNode.SetDCOffset(value);
+		AudioOutputNode.CurrentPatch.noiseNode.DCOffset = value;
 	}
 
 	private void _on_distortion_bias_changed(float value)

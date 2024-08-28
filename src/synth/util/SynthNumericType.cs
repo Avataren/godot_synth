@@ -17,12 +17,12 @@ public static class SynthTypeHelper
     public static SynthType Clamp(SynthType val, SynthType min, SynthType max)
     {
         return Mathf.Max(min, Mathf.Min(max, val));
-    }    
-    public static SynthType Max (SynthType a, SynthType b)
+    }
+    public static SynthType Max(SynthType a, SynthType b)
     {
         return Mathf.Max(a, b);
     }
-    public static SynthType Min (SynthType a, SynthType b)
+    public static SynthType Min(SynthType a, SynthType b)
     {
         return Mathf.Min(a, b);
     }

@@ -28,7 +28,7 @@ namespace Synth
         {
 
             p = cutoff * (1.8f - 0.8f * cutoff);
-            k = 2.0f * Math.Sin(cutoff * SynthTypeHelper.Pi * SynthTypeHelper.Half) - SynthTypeHelper.One;
+            k = 2.0f * SynthType.Sin(cutoff * SynthTypeHelper.Pi * SynthTypeHelper.Half) - SynthTypeHelper.One;
 
             SynthType t1 = (1.0f - p) * 1.386249f;
             SynthType t2 = 12.0f + t1 * t1;
@@ -49,7 +49,7 @@ namespace Synth
             // Clipper band limited sigmoid
             y4 -= (y4 * y4 * y4) / 6.0f;
             // Apply a soft limiter to prevent blow-up
-            y4 = Math.Max(-3.0f, Math.Min(3.0f, y4));
+            y4 = SynthType.Max(-3.0f, Math.Min(3.0f, y4));
             //y4 = (float)Math.Tanh(y4);
             oldx = x; oldy1 = y1; oldy2 = y2; oldy3 = y3;
 

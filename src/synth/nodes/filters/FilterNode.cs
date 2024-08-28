@@ -87,7 +87,7 @@ namespace Synth
                 throw new ArgumentOutOfRangeException(nameof(input), "Input must be between 0 and 1.");
 
             // Use an exponential mapping to make the transformation feel more natural
-            SynthType exponent = 3.0; // You can adjust this exponent for more or less nonlinearity
+            SynthType exponent = 3.0f; // You can adjust this exponent for more or less nonlinearity
             SynthType transformedValue = SynthTypeHelper.Pow(input, exponent);
 
             // Map the transformed value to the cutoff frequency range

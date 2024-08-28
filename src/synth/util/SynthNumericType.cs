@@ -12,7 +12,6 @@ public static class SynthTypeHelper
     }
     public const SynthType Zero = 0.0f;
     public const SynthType One = 1.0f;
-    public const SynthType NegativeOne = 1.0f;
     public const SynthType Half = 0.5f;
     public const SynthType Pi = Mathf.Pi;
 }
@@ -27,7 +26,6 @@ public static class SynthTypeHelper
     }
     public const SynthType Zero = 0.0;
     public const SynthType One = 1.0;
-    public const SynthType NegativeOne = -1.0;
     public const SynthType Half = 0.5;
     public const SynthType Pi = Math.PI;
 

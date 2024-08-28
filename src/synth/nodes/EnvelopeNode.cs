@@ -7,88 +7,46 @@ namespace Synth
     public class EnvelopeNode : AudioNode
     {
         // Constants
-        private const float DefaultDecayTime = 0.0f;
-        private const float MinimumReleaseTime = 0.0045f;
-        private const float MinimumAttackTime = 0.005f;
-        private const float DefaultSustainLevel = 1.0f;
-        private const float DefaultAttackTime = MinimumAttackTime;
-        private const float DefaultReleaseTime = MinimumReleaseTime;
+        private const SynthType DefaultDecayTime = 0.0;
+        private const SynthType MinimumReleaseTime = 0.0045;
+        private const SynthType MinimumAttackTime = 0.005;
+        private const SynthType DefaultSustainLevel = 1.0;
+        private const SynthType DefaultAttackTime = MinimumAttackTime;
+        private const SynthType DefaultReleaseTime = MinimumReleaseTime;
         private const int BufferSize = 256;
+        private const SynthType CrossfadeDuration = 0.005; // 5 ms crossfade
 
         // Private fields
-        private float _envelopePosition = 0.0f;
-        private float _releaseStartPosition = 0.0f;
+        private SynthType _envelopePosition = SynthTypeHelper.Zero;
+        private SynthType _releaseStartPosition = SynthTypeHelper.Zero;
         private bool _isGateOpen = false;
-        private float _attackTime = DefaultAttackTime;
-        private float _decayTime = DefaultDecayTime;
-        private float _sustainLevel = DefaultSustainLevel;
-        private float _releaseTime = DefaultReleaseTime;
-        private float _timeScale = 1.0f;
+        private SynthType _attackTime = DefaultAttackTime;
+        private SynthType _decayTime = DefaultDecayTime;
+        private SynthType _sustainLevel = DefaultSustainLevel;
+        private SynthType _releaseTime = DefaultReleaseTime;
+        private SynthType _timeScale = SynthTypeHelper.One;
 
-        private float _currentAmplitude = 0.0f;
-        private float _attackStartAmplitude = 0.0f;
-        private float _releaseStartAmplitude = 0.0f;
+        private SynthType _currentAmplitude = SynthTypeHelper.Zero;
+        private SynthType _attackStartAmplitude = SynthTypeHelper.Zero;
+        private SynthType _releaseStartAmplitude = SynthTypeHelper.Zero;
 
-        private float _attackCtrl = 2.0f;
-        private float _decayCtrl = -3.0f;
-        private float _releaseCtrl = -3.5f;
+        private SynthType _attackCtrl = 2.0;
+        private SynthType _decayCtrl = -3.0;
+        private SynthType _releaseCtrl = -3.5;
 
-        private float _expBaseAttack;
-        private float _expBaseDecay;
-        private float _expBaseRelease;
+        private SynthType _expBaseAttack;
+        private SynthType _expBaseDecay;
+        private SynthType _expBaseRelease;
 
-        private readonly float[] _attackBuffer = new float[BufferSize];
-        private readonly float[] _decayBuffer = new float[BufferSize];
-        private readonly float[] _releaseBuffer = new float[BufferSize];
+        private readonly SynthType[] _attackBuffer = new SynthType[BufferSize];
+        private readonly SynthType[] _decayBuffer = new SynthType[BufferSize];
+        private readonly SynthType[] _releaseBuffer = new SynthType[BufferSize];
+
+        private SynthType _crossfadePosition = SynthTypeHelper.Zero;
+        private SynthType _previousAmplitude = SynthTypeHelper.Zero;
 
         // Properties
-        public float TimeScale
-        {
-            get => _timeScale;
-            set => _timeScale = Mathf.Max(value, 0.1f);
-        }
-
-        public float AttackTime
-        {
-            get => _attackTime * TimeScale;
-            set
-            {
-                _attackTime = Math.Max(value, MinimumAttackTime);
-                CalculateAttackBuffer();
-            }
-        }
-
-        public float DecayTime
-        {
-            get => _decayTime * TimeScale;
-            set
-            {
-                _decayTime = Math.Max(value, 0);
-                CalculateDecayBuffer();
-            }
-        }
-
-        public float SustainLevel
-        {
-            get => _sustainLevel;
-            set
-            {
-                _sustainLevel = Mathf.Clamp(value, 0.0f, 1.0f);
-                CalculateDecayBuffer();
-            }
-        }
-
-        public float ReleaseTime
-        {
-            get => _releaseTime * TimeScale;
-            set
-            {
-                _releaseTime = Math.Max(value, MinimumReleaseTime);
-                CalculateReleaseBuffer();
-            }
-        }
-
-        public float AttackCtrl
+        public SynthType AttackCtrl
         {
             get => _attackCtrl;
             set
@@ -99,7 +57,7 @@ namespace Synth
             }
         }
 
-        public float DecayCtrl
+        public SynthType DecayCtrl
         {
             get => _decayCtrl;
             set
@@ -110,13 +68,59 @@ namespace Synth
             }
         }
 
-        public float ReleaseCtrl
+        public SynthType ReleaseCtrl
         {
             get => _releaseCtrl;
             set
             {
                 _releaseCtrl = value;
                 UpdateExponentialCurves();
+                CalculateReleaseBuffer();
+            }
+        }
+
+        public SynthType TimeScale
+        {
+            get => _timeScale;
+            set => _timeScale = Math.Max(value, 0.1);
+        }
+
+        public SynthType AttackTime
+        {
+            get => _attackTime * TimeScale;
+            set
+            {
+                _attackTime = Math.Max(value, MinimumAttackTime);
+                CalculateAttackBuffer();
+            }
+        }
+
+        public SynthType DecayTime
+        {
+            get => _decayTime * TimeScale;
+            set
+            {
+                _decayTime = Math.Max(value, SynthTypeHelper.Zero);
+                CalculateDecayBuffer();
+            }
+        }
+
+        public SynthType SustainLevel
+        {
+            get => _sustainLevel;
+            set
+            {
+                _sustainLevel = Math.Clamp(value, SynthTypeHelper.Zero, SynthTypeHelper.One);
+                CalculateDecayBuffer();
+            }
+        }
+
+        public SynthType ReleaseTime
+        {
+            get => _releaseTime * TimeScale;
+            set
+            {
+                _releaseTime = Math.Max(value, MinimumReleaseTime);
                 CalculateReleaseBuffer();
             }
         }
@@ -133,17 +137,16 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateExponentialCurves()
         {
-            _expBaseAttack = Mathf.Pow(2.0f, _attackCtrl) - 1.0f;
-            _expBaseDecay = Mathf.Pow(2.0f, _decayCtrl) - 1.0f;
-            _expBaseRelease = Mathf.Pow(2.0f, _releaseCtrl) - 1.0f;
+            _expBaseAttack = Math.Pow(2.0, _attackCtrl) - 1.0;
+            _expBaseDecay = Math.Pow(2.0, _decayCtrl) - 1.0;
+            _expBaseRelease = Math.Pow(2.0, _releaseCtrl) - 1.0;
         }
 
-        // Buffer calculations
         private void CalculateAttackBuffer()
         {
             for (int i = 0; i < BufferSize; i++)
             {
-                float normalizedTime = i / (float)(BufferSize - 1);
+                SynthType normalizedTime = i / (SynthType)(BufferSize - 1);
                 _attackBuffer[i] = ExponentialCurve(normalizedTime, _attackCtrl, _expBaseAttack);
             }
         }
@@ -152,8 +155,8 @@ namespace Synth
         {
             for (int i = 0; i < BufferSize; i++)
             {
-                float normalizedTime = i / (float)(BufferSize - 1);
-                _decayBuffer[i] = 1.0f - ExponentialCurve(normalizedTime, _decayCtrl, _expBaseDecay) * (1.0f - _sustainLevel);
+                SynthType normalizedTime = i / (SynthType)(BufferSize - 1);
+                _decayBuffer[i] = SynthTypeHelper.One - (ExponentialCurve(normalizedTime, _decayCtrl, _expBaseDecay) * (SynthTypeHelper.One - _sustainLevel));
             }
         }
 
@@ -161,209 +164,186 @@ namespace Synth
         {
             for (int i = 0; i < BufferSize; i++)
             {
-                float normalizedTime = i / (float)(BufferSize - 1);
-                _releaseBuffer[i] = 1.0f - ExponentialCurve(normalizedTime, _releaseCtrl, _expBaseRelease);
+                SynthType normalizedTime = i / (SynthType)(BufferSize - 1);
+                _releaseBuffer[i] = SynthTypeHelper.One - ExponentialCurve(normalizedTime, _releaseCtrl, _expBaseRelease);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float ExponentialCurve(float x, float c, float precomputedBase)
+        private SynthType ExponentialCurve(SynthType x, SynthType c, SynthType precomputedBase)
         {
-            return (Mathf.Pow(2, c * x) - 1.0f) / precomputedBase;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void OpenGate()
-        {
-            _isGateOpen = true;
-            _attackStartAmplitude = _currentAmplitude;
-            _envelopePosition = 0.0f;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void CloseGate()
-        {
-            _releaseStartPosition = _envelopePosition;
-            _releaseStartAmplitude = _currentAmplitude;
-            _isGateOpen = false;
+            return (Math.Pow(2.0, c * x) - 1.0) / precomputedBase;
         }
 
         public override void Process(double increment)
         {
             for (int i = 0; i < NumSamples; i++)
             {
-                float gateValue = (float)_scheduler.GetValueAtSample(this, AudioParam.Gate, i);
+                SynthType gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
 
-                if (!_isGateOpen && gateValue > 0.5)
+                if (!_isGateOpen && gateValue > SynthTypeHelper.Half)
                 {
-                    OpenGate();
+                    OpenGate(i);
                 }
-                else if (_isGateOpen && gateValue <= 0.5)
+                else if (_isGateOpen && gateValue <= SynthTypeHelper.Half)
                 {
-                    CloseGate();
+                    CloseGate(i);
                 }
 
                 _currentAmplitude = GetEnvelopeValue(_envelopePosition);
                 buffer[i] = _currentAmplitude;
-                _envelopePosition += (float)increment;
+                _envelopePosition += (SynthType)increment;
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetEnvelopeValue(float position)
+        private void OpenGate(int sampleOffset)
         {
+            _isGateOpen = true;
+            _attackStartAmplitude = SynthTypeHelper.Zero; // Start from 0 for consistency
+            _envelopePosition = sampleOffset / SampleRate;
+            _crossfadePosition = SynthTypeHelper.Zero;
+            _previousAmplitude = _currentAmplitude;
+        }
+
+        private void CloseGate(int sampleOffset)
+        {
+            _releaseStartPosition = _envelopePosition;
+            _releaseStartAmplitude = _currentAmplitude;
+            _isGateOpen = false;
+        }
+
+        private SynthType GetEnvelopeValue(SynthType position)
+        {
+            SynthType newValue;
             if (_isGateOpen)
             {
                 if (position < AttackTime)
                 {
-                    float normalizedTime = position / AttackTime;
-                    return _attackStartAmplitude + (LinearInterpolatedBufferValue(normalizedTime, 1.0f, _attackBuffer) * (1.0f - _attackStartAmplitude));
+                    SynthType normalizedTime = position / AttackTime;
+                    newValue = _attackStartAmplitude + (CubicInterpolation(_attackBuffer, normalizedTime * (BufferSize - 1)) * (SynthTypeHelper.One - _attackStartAmplitude));
                 }
                 else if (position < (AttackTime + DecayTime))
                 {
-                    float normalizedTime = (position - AttackTime) / DecayTime;
-                    return LinearInterpolatedBufferValue(normalizedTime, 1.0f, _decayBuffer);
+                    SynthType normalizedTime = (position - AttackTime) / DecayTime;
+                    SynthType attackEndValue = CubicInterpolation(_attackBuffer, BufferSize - 1);
+                    SynthType decayValue = CubicInterpolation(_decayBuffer, normalizedTime * (BufferSize - 1));
+                    newValue = attackEndValue + (decayValue - attackEndValue) * normalizedTime;
                 }
                 else
                 {
-                    return SustainLevel;
+                    newValue = SustainLevel;
                 }
             }
             else
             {
-                if (ReleaseTime > 0)
+                if (ReleaseTime > SynthTypeHelper.Zero)
                 {
-                    float normalizedTime = Mathf.Min((position - _releaseStartPosition) / ReleaseTime, 1.0f);
-                    return _releaseStartAmplitude * LinearInterpolatedBufferValue(normalizedTime, 1.0f, _releaseBuffer);
+                    SynthType normalizedTime = Math.Min((position - _releaseStartPosition) / ReleaseTime, SynthTypeHelper.One);
+                    newValue = _releaseStartAmplitude * CubicInterpolation(_releaseBuffer, normalizedTime * (BufferSize - 1));
                 }
                 else
                 {
-                    return 0.0f;
+                    newValue = SynthTypeHelper.Zero;
                 }
             }
+
+            if (_crossfadePosition < CrossfadeDuration)
+            {
+                SynthType crossfadeFactor = _crossfadePosition / CrossfadeDuration;
+                newValue = _previousAmplitude + (newValue - _previousAmplitude) * crossfadeFactor;
+                _crossfadePosition += SynthTypeHelper.One / SampleRate;
+            }
+
+            return newValue;
         }
 
-        /*
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                private float GetEnvelopeValue(float position)
-                {
-                    if (_isGateOpen)
-                    {
-                        if (position < AttackTime)
-                        {
-                            float normalizedTime = position / AttackTime;
-                            int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                            return _attackStartAmplitude + (_attackBuffer[bufferIndex] * (1.0f - _attackStartAmplitude));
-                        }
-                        else if (position < (AttackTime + DecayTime))
-                        {
-                            float normalizedTime = (position - AttackTime) / DecayTime;
-                            int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                            return _decayBuffer[bufferIndex];
-                        }
-                        else
-                        {
-                            return SustainLevel;
-                        }
-                    }
-                    else
-                    {
-                        if (ReleaseTime > 0)
-                        {
-                            float normalizedTime = Mathf.Min((position - _releaseStartPosition) / ReleaseTime, 1.0f);
-                            int bufferIndex = (int)(normalizedTime * (BufferSize - 1));
-                            return _releaseStartAmplitude * _releaseBuffer[bufferIndex];
-                        }
-                        else
-                        {
-                            return 0.0f;
-                        }
-                    }
-                }
-        */
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float LinearInterpolatedBufferValue(float normalizedTime, float phaseDuration, float[] buffer)
+        private SynthType CubicInterpolation(SynthType[] buffer, SynthType index)
         {
-            float floatIndex = normalizedTime * (BufferSize - 1);
-            int index = (int)floatIndex;
-            if (index >= BufferSize - 1) return buffer[BufferSize - 1];
-            float frac = floatIndex - index;
-            return buffer[index] * (1 - frac) + buffer[index + 1] * frac;
+            int i = (int)index;
+            SynthType t = index - i;
+
+            SynthType y0 = i > 0 ? buffer[i - 1] : buffer[i];
+            SynthType y1 = buffer[i];
+            SynthType y2 = i < buffer.Length - 1 ? buffer[i + 1] : y1;
+            SynthType y3 = i < buffer.Length - 2 ? buffer[i + 2] : y2;
+
+            SynthType a0 = y3 - y2 - y0 + y1;
+            SynthType a1 = y0 - y1 - a0;
+            SynthType a2 = y2 - y0;
+            SynthType a3 = y1;
+
+            return a0 * t * t * t + a1 * t * t + a2 * t + a3;
         }
 
         public float[] GetVisualBuffer(int numSamples, float visualizationDuration = 3.0f)
         {
             float[] visualBuffer = new float[numSamples];
             float sampleRate = numSamples / visualizationDuration;
-            float attackSamples = AttackTime * sampleRate;
-            float decaySamples = DecayTime * sampleRate;
-            float releaseSamples = ReleaseTime * sampleRate;
+            float attackSamples = (float)AttackTime * sampleRate;
+            float decaySamples = (float)DecayTime * sampleRate;
+            float releaseSamples = (float)ReleaseTime * sampleRate;
             float sustainSamples = numSamples - (attackSamples + decaySamples + releaseSamples);
 
-            float currentAmplitude;
-            float releaseStartAmplitude = SustainLevel; // Assume release starts from sustain level
+            float releaseStartAmplitude = (float)SustainLevel; // Assume release starts from sustain level
 
             for (int i = 0; i < numSamples; i++)
             {
                 float position = i / sampleRate;
 
-                if (position < AttackTime)
+                if (position < (float)AttackTime)
                 {
-                    float normalizedTime = position / AttackTime;
-                    currentAmplitude = LinearInterpolatedBufferValue(normalizedTime, 1.0f, _attackBuffer);
+                    float normalizedTime = position / (float)AttackTime;
+                    visualBuffer[i] = (float)CubicInterpolation(_attackBuffer, normalizedTime * (BufferSize - 1));
                 }
-                else if (position < AttackTime + DecayTime)
+                else if (position < (float)(AttackTime + DecayTime))
                 {
-                    float normalizedTime = (position - AttackTime) / DecayTime;
-                    currentAmplitude = LinearInterpolatedBufferValue(normalizedTime, 1.0f, _decayBuffer);
+                    float normalizedTime = (position - (float)AttackTime) / (float)DecayTime;
+                    visualBuffer[i] = (float)CubicInterpolation(_decayBuffer, normalizedTime * (BufferSize - 1));
                 }
-                else if (position < AttackTime + DecayTime + sustainSamples / sampleRate)
+                else if (position < (float)(AttackTime + DecayTime + sustainSamples / sampleRate))
                 {
-                    currentAmplitude = SustainLevel;
+                    visualBuffer[i] = (float)SustainLevel;
                 }
                 else
                 {
-                    float releasePosition = position - (AttackTime + DecayTime + sustainSamples / sampleRate);
-                    float normalizedTime = Mathf.Min(releasePosition / ReleaseTime, 1.0f);
-                    currentAmplitude = releaseStartAmplitude * LinearInterpolatedBufferValue(normalizedTime, 1.0f, _releaseBuffer);
+                    float releasePosition = position - (float)(AttackTime + DecayTime + sustainSamples / sampleRate);
+                    float normalizedTime = Math.Min(releasePosition / (float)ReleaseTime, 1.0f);
+                    visualBuffer[i] = releaseStartAmplitude * (float)CubicInterpolation(_releaseBuffer, normalizedTime * (BufferSize - 1));
                 }
-
-                visualBuffer[i] = currentAmplitude;
             }
             return visualBuffer;
         }
 
         public float GetEnvelopeBufferPosition(float visualizationDuration = 3.0f)
         {
-            float nonSustainDuration = AttackTime + DecayTime + ReleaseTime;
-            float sustainDuration = Mathf.Max(0.0f, visualizationDuration - nonSustainDuration);
+            float nonSustainDuration = (float)AttackTime + (float)DecayTime + (float)ReleaseTime;
+            float sustainDuration = Math.Max(0.0f, visualizationDuration - nonSustainDuration);
             float totalDuration = nonSustainDuration + sustainDuration;
-            float currentPosition = _envelopePosition;
+            float currentPosition = (float)_envelopePosition;
 
             if (!_isGateOpen)
             {
-                currentPosition = _releaseStartPosition + (currentPosition - _releaseStartPosition) * (ReleaseTime / (totalDuration - _releaseStartPosition));
+                currentPosition = (float)_releaseStartPosition + (currentPosition - (float)_releaseStartPosition) * ((float)ReleaseTime / (totalDuration - (float)_releaseStartPosition));
             }
-            return Mathf.Clamp(currentPosition / totalDuration, 0.0f, 1.0f);
+            return Math.Clamp(currentPosition / totalDuration, 0.0f, 1.0f);
         }
 
         public void ScheduleGateOpen(double time, bool forceCloseFirst = true)
         {
             if (forceCloseFirst)
             {
-                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time);
-                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time + 4 / SampleRate);
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, SynthTypeHelper.Zero, time);
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, SynthTypeHelper.One, time + 4 / SampleRate);
             }
             else
             {
-                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 1.0, time);
+                _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, SynthTypeHelper.One, time);
             }
         }
 
         public void ScheduleGateClose(double time)
         {
-            _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, 0.0, time);
+            _scheduler.ScheduleValueAtTime(this, AudioParam.Gate, SynthTypeHelper.Zero, time);
         }
     }
 }

@@ -6,22 +6,22 @@ namespace Synth
 
     public class Comb
     {
-        private float feedback;
-        private float filterStore;
-        private float damp1;
-        private float damp2;
-        private float[] buffer;
+        private SynthType feedback;
+        private SynthType filterStore;
+        private SynthType damp1;
+        private SynthType damp2;
+        private SynthType[] buffer;
         private int bufSize;
         private int bufIdx;
 
         public Comb(int combSize)
         {
-            Buffer = new float[combSize];
-            filterStore = 0.0f;
+            Buffer = new SynthType[combSize];
+            filterStore = SynthTypeHelper.Zero;
             bufIdx = 0;
         }
 
-        public float[] Buffer
+        public SynthType[] Buffer
         {
             get => buffer;
             set
@@ -31,17 +31,17 @@ namespace Synth
             }
         }
 
-        public float Damp
+        public SynthType Damp
         {
             get => damp1;
             set
             {
                 damp1 = value;
-                damp2 = 1.0f - value;
+                damp2 = SynthTypeHelper.One - value;
             }
         }
 
-        public float Feedback
+        public SynthType Feedback
         {
             get => feedback;
             set => feedback = value;
@@ -51,13 +51,13 @@ namespace Synth
         {
             for (int i = 0; i < bufSize; i++)
             {
-                buffer[i] = 0.0f;
+                buffer[i] = SynthTypeHelper.Zero;
             }
         }
 
-        public float Process(float input)
+        public SynthType Process(SynthType input)
         {
-            float output = buffer[bufIdx];
+            SynthType output = buffer[bufIdx];
             //Undenormaliser.Undenormalise(ref output);
 
             filterStore = (output * damp2) + (filterStore * damp1);

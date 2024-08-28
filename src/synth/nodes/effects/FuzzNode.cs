@@ -6,24 +6,24 @@ namespace Synth
 {
     public class FuzzNode : AudioNode
     {
-        public float InputGain { get; set; } = 10.0f;
-        public float OutputGain { get; set; } = 0.5f;
-        public float Mix { get; set; } = 0.8f;
-        public float LowPassCutoff { get; set; } = 0.3f;
-        public float Bias { get; set; } = 0.1f;
-        public float FeedbackAmount { get; set; } = 0.2f;
-        public float StereoSpread { get; set; } = 0.02f;  // Amount of stereo spread effect
+        public SynthType InputGain { get; set; } = 10.0f;
+        public SynthType OutputGain { get; set; } = 0.5f;
+        public SynthType Mix { get; set; } = 0.8f;
+        public SynthType LowPassCutoff { get; set; } = 0.3f;
+        public SynthType Bias { get; set; } = 0.1f;
+        public SynthType FeedbackAmount { get; set; } = 0.2f;
+        public SynthType StereoSpread { get; set; } = 0.02f;  // Amount of stereo spread effect
 
-        private float _previousFilteredSampleLeft = 0.0f;
-        private float _previousFilteredSampleRight = 0.0f;
-        private float _feedbackLeft = 0.0f;
-        private float _feedbackRight = 0.0f;
+        private SynthType _previousFilteredSampleLeft = 0.0f;
+        private SynthType _previousFilteredSampleRight = 0.0f;
+        private SynthType _feedbackLeft = 0.0f;
+        private SynthType _feedbackRight = 0.0f;
 
         public FuzzNode() : base()
         {
             AcceptedInputType = InputType.Stereo;
-            LeftBuffer = new float[NumSamples];
-            RightBuffer = new float[NumSamples];
+            LeftBuffer = new SynthType[NumSamples];
+            RightBuffer = new SynthType[NumSamples];
         }
 
         public override void Process(double increment)
@@ -34,18 +34,18 @@ namespace Synth
                 return;
             }
 
-            float[] inputLeftBuffer = node.LeftBuffer;
-            float[] inputRightBuffer = node.RightBuffer;
+            SynthType[] inputLeftBuffer = node.LeftBuffer;
+            SynthType[] inputRightBuffer = node.RightBuffer;
 
             for (int i = 0; i < NumSamples; i++)
             {
                 // Process left and right channels with stereo spread
-                float leftInputSample = inputLeftBuffer[i];
-                float rightInputSample = inputRightBuffer[i];
+                var leftInputSample = inputLeftBuffer[i];
+                var rightInputSample = inputRightBuffer[i];
 
                 // Apply stereo spread by slightly altering the left and right channels
-                float spreadedLeft = leftInputSample * (1.0f - StereoSpread);
-                float spreadedRight = rightInputSample * (1.0f + StereoSpread);
+                var spreadedLeft = leftInputSample * (1.0f - StereoSpread);
+                var spreadedRight = rightInputSample * (1.0f + StereoSpread);
 
                 // Process the left and right channels
                 LeftBuffer[i] = ProcessSample(spreadedLeft, ref _previousFilteredSampleLeft, ref _feedbackLeft);
@@ -53,31 +53,31 @@ namespace Synth
             }
         }
 
-        private float ProcessSample(float inputSample, ref float previousFilteredSample, ref float feedback)
+        private SynthType ProcessSample(SynthType inputSample, ref SynthType previousFilteredSample, ref SynthType feedback)
         {
             // Apply initial input gain and feedback
-            float boostedSignal = (inputSample + feedback * FeedbackAmount) * InputGain;
+            var boostedSignal = (inputSample + feedback * FeedbackAmount) * InputGain;
 
             // Apply dynamic bias
             boostedSignal += Bias * Mathf.Sin(Time.GetTicksMsec() * 0.001f);
 
             // Multi-stage distortion
-            float stage1 = SoftClipping(boostedSignal);
-            float stage2 = AsymmetricSoftClipping(stage1);
-            float stage3 = PolynomialShaping(stage2);
+            var stage1 = SoftClipping(boostedSignal);
+            var stage2 = AsymmetricSoftClipping(stage1);
+            var stage3 = PolynomialShaping(stage2);
 
             // Advanced waveshaping for added complexity
-            float shapedSignal = ComplexWaveshaping(stage3);
+            var shapedSignal = ComplexWaveshaping(stage3);
 
             // Low-pass filter to smooth out harsh frequencies
-            float filteredSignal = lowPassFilter(shapedSignal, previousFilteredSample, LowPassCutoff);
+            var filteredSignal = lowPassFilter(shapedSignal, previousFilteredSample, LowPassCutoff);
             previousFilteredSample = filteredSignal;
 
             // Apply output gain
-            float finalSignal = filteredSignal * OutputGain;
+            var finalSignal = filteredSignal * OutputGain;
 
             // Mix dry and wet signals
-            float mixedSignal = (1.0f - Mix) * inputSample + Mix * finalSignal;
+            var mixedSignal = (1.0f - Mix) * inputSample + Mix * finalSignal;
 
             // Update feedback
             feedback = mixedSignal * FeedbackAmount; // Controlled feedback
@@ -85,32 +85,32 @@ namespace Synth
             return mixedSignal;
         }
 
-        private float SoftClipping(float input)
+        private SynthType SoftClipping(SynthType input)
         {
-            return input / (1.0f + Mathf.Abs(input));
+            return input / (SynthTypeHelper.One + SynthTypeHelper.Abs(input));
         }
 
-        private float AsymmetricSoftClipping(float input)
+        private SynthType AsymmetricSoftClipping(SynthType input)
         {
             return input >= 0 ? input / (1.0f + 0.5f * input) : input / (1.0f + 0.8f * Math.Abs(input));
         }
 
-        private float PolynomialShaping(float input)
+        private SynthType PolynomialShaping(SynthType input)
         {
             return input - 0.3f * input * input * input + 0.1f * input * input * input * input * input;
         }
 
-        private float ComplexWaveshaping(float input)
+        private SynthType ComplexWaveshaping(SynthType input)
         {
             // A combination of sine shaping and further polynomial shaping
-            float sineShaped = Mathf.Sin(input * Mathf.Pi * 0.5f);
+            SynthType sineShaped = SynthTypeHelper.Sin(input * SynthTypeHelper.Pi * SynthTypeHelper.Half);
             return sineShaped - 0.2f * sineShaped * sineShaped * sineShaped;
         }
 
-        private float lowPassFilter(float input, float previousOutput, float cutoffFrequency)
+        private SynthType lowPassFilter(SynthType input, SynthType previousOutput, SynthType cutoffFrequency)
         {
-            float alpha = cutoffFrequency / (cutoffFrequency + 1.0f);
-            return alpha * input + (1 - alpha) * previousOutput;
+            SynthType alpha = cutoffFrequency / (cutoffFrequency + SynthTypeHelper.One);
+            return alpha * input + (SynthTypeHelper.One - alpha) * previousOutput;
         }
     }
 }

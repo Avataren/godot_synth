@@ -8,19 +8,19 @@ namespace Synth
     {
         private uint x, y, z, w;
         private NoiseType currentNoiseType;
-        private float amplitude = 1.0f;
-        private float dcOffset = 0.0f;
+        private SynthType amplitude = 1.0f;
+        private SynthType dcOffset = 0.0f;
         private const int seed = 123;
 
-        private float targetCutoff;
-        private float currentCutoff;
-        private const float CutoffSmoothing = 0.1f;
+        private SynthType targetCutoff;
+        private SynthType currentCutoff;
+        private const SynthType CutoffSmoothing = 0.1f;
 
-        private float previousOutput = 0.0f;
-        private float filterCoeff = 0.0f;
+        private SynthType previousOutput = 0.0f;
+        private SynthType filterCoeff = 0.0f;
 
-        private float[] pinkNoiseState;
-        private float brownNoiseState;
+        private SynthType[] pinkNoiseState;
+        private SynthType brownNoiseState;
 
         public NoiseNode() : base()
         {
@@ -29,14 +29,14 @@ namespace Synth
             targetCutoff = 1.0f;
             currentCutoff = 1.0f;
             UpdateFilterCoefficient();
-            pinkNoiseState = new float[7];
+            pinkNoiseState = new SynthType[7];
             brownNoiseState = 0f;
         }
 
-        public float Cutoff
+        public SynthType Cutoff
         {
             get => targetCutoff;
-            set => targetCutoff = Math.Clamp(value, 0f, 1f);
+            set => targetCutoff = SynthTypeHelper.Clamp(value, 0f, 1f);
         }
 
         public void SetSeed(int seed)
@@ -47,30 +47,30 @@ namespace Synth
             w = 88675123;
         }
 
-        public void SetAmplitude(float newAmplitude)
+        public void SetAmplitude(SynthType newAmplitude)
         {
-            amplitude = Math.Clamp(newAmplitude, 0f, 1f);
+            amplitude = SynthTypeHelper.Clamp(newAmplitude, 0f, 1f);
         }
 
-        public void SetDCOffset(float newOffset)
+        public void SetDCOffset(SynthType newOffset)
         {
-            dcOffset = Math.Clamp(newOffset, -1f, 1f);
+            dcOffset = SynthTypeHelper.Clamp(newOffset, -1f, 1f);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateFilterCoefficient(float cutoffMod = 1.0f)
+        private void UpdateFilterCoefficient(SynthType cutoffMod = 1.0f)
         {
             currentCutoff += (targetCutoff * cutoffMod - currentCutoff) * CutoffSmoothing;
 
-            float minFrequency = 20f;
-            float maxFrequency = SampleRate / 2f;
+            SynthType minFrequency = 20f;
+            SynthType maxFrequency = SampleRate / 2f;
 
             // Exponential curve for cutoff frequency
-            float cutoffFrequency = minFrequency * MathF.Pow(maxFrequency / minFrequency, currentCutoff);
-            cutoffFrequency = Math.Clamp(cutoffFrequency, minFrequency, maxFrequency);
+            SynthType cutoffFrequency = minFrequency * SynthTypeHelper.Pow(maxFrequency / minFrequency, currentCutoff);
+            cutoffFrequency = SynthTypeHelper.Clamp(cutoffFrequency, minFrequency, maxFrequency);
 
-            float rc = 1.0f / (2.0f * MathF.PI * cutoffFrequency);
-            float dt = 1.0f / SampleRate;
+            SynthType rc = SynthTypeHelper.One / (2.0f * MathF.PI * cutoffFrequency);
+            SynthType dt = SynthTypeHelper.One / SampleRate;
             filterCoeff = dt / (rc + dt);
         }
 
@@ -83,26 +83,26 @@ namespace Synth
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetWhiteNoise()
+        private SynthType GetWhiteNoise()
         {
-            return Next() / (float)uint.MaxValue * 2 - 1;
+            return Next() / (SynthType)uint.MaxValue * 2 - 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector<float> GetWhiteNoiseVector()
+        private Vector<SynthType> GetWhiteNoiseVector()
         {
-            var noiseValues = new float[Vector<float>.Count];
-            for (int i = 0; i < Vector<float>.Count; i++)
+            var noiseValues = new SynthType[Vector<SynthType>.Count];
+            for (int i = 0; i < Vector<SynthType>.Count; i++)
             {
                 noiseValues[i] = GetWhiteNoise();
             }
-            return new Vector<float>(noiseValues);
+            return new Vector<SynthType>(noiseValues);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetPinkNoise()
+        private SynthType GetPinkNoise()
         {
-            float pink = 0f;
+            SynthType pink = 0f;
             pinkNoiseState[0] = 0.99886f * pinkNoiseState[0] + GetWhiteNoise() * 0.0555179f;
             pinkNoiseState[1] = 0.99332f * pinkNoiseState[1] + GetWhiteNoise() * 0.0750759f;
             pinkNoiseState[2] = 0.96900f * pinkNoiseState[2] + GetWhiteNoise() * 0.1538520f;
@@ -115,33 +115,33 @@ namespace Synth
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector<float> GetPinkNoiseVector()
+        private Vector<SynthType> GetPinkNoiseVector()
         {
-            var noiseValues = new float[Vector<float>.Count];
-            for (int i = 0; i < Vector<float>.Count; i++)
+            var noiseValues = new SynthType[Vector<SynthType>.Count];
+            for (int i = 0; i < Vector<SynthType>.Count; i++)
             {
                 noiseValues[i] = GetPinkNoise();
             }
-            return new Vector<float>(noiseValues);
+            return new Vector<SynthType>(noiseValues);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float GetBrownianNoise()
+        private SynthType GetBrownianNoise()
         {
-            float white = GetWhiteNoise();
+            var white = GetWhiteNoise();
             brownNoiseState = (brownNoiseState + (0.02f * white)) / 1.02f;
             return brownNoiseState * 3.5f;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector<float> GetBrownianNoiseVector()
+        private Vector<SynthType> GetBrownianNoiseVector()
         {
-            var noiseValues = new float[Vector<float>.Count];
-            for (int i = 0; i < Vector<float>.Count; i++)
+            var noiseValues = new SynthType[Vector<SynthType>.Count];
+            for (int i = 0; i < Vector<SynthType>.Count; i++)
             {
                 noiseValues[i] = GetBrownianNoise();
             }
-            return new Vector<float>(noiseValues);
+            return new Vector<SynthType>(noiseValues);
         }
 
         public void SetNoiseType(NoiseType noiseType)
@@ -150,37 +150,37 @@ namespace Synth
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float ApplyFilter(float inputNoise)
+        private SynthType ApplyFilter(SynthType inputNoise)
         {
-            float output = filterCoeff * inputNoise + (1 - filterCoeff) * previousOutput;
+            SynthType output = filterCoeff * inputNoise + (SynthTypeHelper.One - filterCoeff) * previousOutput;
             previousOutput = output;
             return output;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Vector<float> ApplyFilterVector(Vector<float> inputNoise)
+        private Vector<SynthType> ApplyFilterVector(Vector<SynthType> inputNoise)
         {
-            Vector<float> output = Vector<float>.One * filterCoeff * inputNoise +
-                                   (Vector<float>.One - Vector<float>.One * filterCoeff) * new Vector<float>(previousOutput);
-            previousOutput = output[Vector<float>.Count - 1];
+            Vector<SynthType> output = Vector<SynthType>.One * filterCoeff * inputNoise +
+                                   (Vector<SynthType>.One - Vector<SynthType>.One * filterCoeff) * new Vector<SynthType>(previousOutput);
+            previousOutput = output[Vector<SynthType>.Count - 1];
             return output;
         }
 
         public override void Process(double increment)
         {
             int bufferSize = buffer.Length;
-            int vectorSize = Vector<float>.Count;
+            int vectorSize = Vector<SynthType>.Count;
             int i = 0;
 
-            Vector<float> amplitudeVector = new Vector<float>(amplitude);
-            Vector<float> dcOffsetVector = new Vector<float>(dcOffset);
+            Vector<SynthType> amplitudeVector = new Vector<SynthType>(amplitude);
+            Vector<SynthType> dcOffsetVector = new Vector<SynthType>(dcOffset);
 
             for (; i <= bufferSize - vectorSize; i += vectorSize)
             {
-                Vector<float> gainVector = new Vector<float>(GetParameter(AudioParam.Gain, i).Item2);
+                Vector<SynthType> gainVector = new Vector<SynthType>(GetParameter(AudioParam.Gain, i).Item2);
                 UpdateFilterCoefficient(GetParameter(AudioParam.CutOffMod, i).Item2);
-                
-                Vector<float> noiseVector = currentNoiseType switch
+
+                Vector<SynthType> noiseVector = currentNoiseType switch
                 {
                     NoiseType.White => GetWhiteNoiseVector(),
                     NoiseType.Pink => GetPinkNoiseVector(),
@@ -188,9 +188,9 @@ namespace Synth
                     _ => GetWhiteNoiseVector(),
                 };
 
-                Vector<float> filteredNoise = ApplyFilterVector(noiseVector);
-                Vector<float> result = (filteredNoise * amplitudeVector * gainVector) + dcOffsetVector +
-                                       new Vector<float>(GetParameter(AudioParam.Gain, i).Item1);
+                Vector<SynthType> filteredNoise = ApplyFilterVector(noiseVector);
+                Vector<SynthType> result = (filteredNoise * amplitudeVector * gainVector) + dcOffsetVector +
+                                       new Vector<SynthType>(GetParameter(AudioParam.Gain, i).Item1);
 
                 result.CopyTo(buffer, i);
             }
@@ -199,7 +199,7 @@ namespace Synth
             {
                 var gainParam = GetParameter(AudioParam.Gain, i);
                 UpdateFilterCoefficient(GetParameter(AudioParam.CutOffMod, i).Item2);
-                float noiseValue = currentNoiseType switch
+                var noiseValue = currentNoiseType switch
                 {
                     NoiseType.White => GetWhiteNoise(),
                     NoiseType.Pink => GetPinkNoise(),

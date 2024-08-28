@@ -7,15 +7,15 @@ namespace Synth
     {
 
         ReverbModel reverbModel;
-        public float[] LeftBufferTmp;
-        public float[] RightBufferTmp;
+        public SynthType[] LeftBufferTmp;
+        public SynthType[] RightBufferTmp;
         public ReverbEffectNode() : base()
         {
             AcceptedInputType = InputType.Stereo;
-            LeftBuffer = new float[NumSamples];
-            RightBuffer = new float[NumSamples];
-            LeftBufferTmp = new float[NumSamples];
-            RightBufferTmp = new float[NumSamples];
+            LeftBuffer = new SynthType[NumSamples];
+            RightBuffer = new SynthType[NumSamples];
+            LeftBufferTmp = new SynthType[NumSamples];
+            RightBufferTmp = new SynthType[NumSamples];
             reverbModel = new ReverbModel(8, 4);
         }
 
@@ -45,7 +45,7 @@ namespace Synth
             reverbModel.Mute();
         }
 
-        public float RoomSize
+        public SynthType RoomSize
         {
             get => reverbModel.RoomSize;
             set
@@ -54,7 +54,7 @@ namespace Synth
             }
         }
 
-        public float Damp
+        public SynthType Damp
         {
             get => reverbModel.Damp;
             set
@@ -63,7 +63,7 @@ namespace Synth
             }
         }
 
-        public float Wet
+        public SynthType Wet
         {
             get => reverbModel.Wet;
             set
@@ -72,7 +72,7 @@ namespace Synth
             }
         }
 
-        public float Dry
+        public SynthType Dry
         {
             get => reverbModel.Dry;
             set
@@ -81,7 +81,7 @@ namespace Synth
             }
         }
 
-        public float Width
+        public SynthType Width
         {
             get => reverbModel.Width;
             set

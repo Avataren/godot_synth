@@ -5,17 +5,17 @@ namespace Synth
 {
     public class BiquadFilter
     {
-        private float a0, a1, a2, b0, b1, b2;
-        private float prevInput1, prevInput2, prevOutput1, prevOutput2;
+        private SynthType a0, a1, a2, b0, b1, b2;
+        private SynthType prevInput1, prevInput2, prevOutput1, prevOutput2;
         private int sampleRate;
-        private float frequency;
-        private float userQ; // Q value in 0-1 range
-        private float dbGain;
+        private SynthType frequency;
+        private SynthType userQ; // Q value in 0-1 range
+        private SynthType dbGain;
         private FilterType type;
 
-        private const float MinFloat = 1.175494351e-38f; // Minimum positive normalized float
-        private const float BaselineQ = 0.707f; // Butterworth response
-        private const float MaxQ = 10f; // Maximum Q value
+        private const SynthType MinFloat = 1.175494351e-38f; // Minimum positive normalized float
+        private const SynthType BaselineQ = 0.707f; // Butterworth response
+        private const SynthType MaxQ = 10f; // Maximum Q value
 
         public BiquadFilter(int sampleRate = 44100)
         {
@@ -28,30 +28,30 @@ namespace Synth
             CalculateCoefficients(frequency);
         }
 
-        public void SetParams(float frequency, float q, float dbGain)
+        public void SetParams(SynthType frequency, SynthType q, SynthType dbGain)
         {
-            this.frequency = Math.Clamp(frequency, 20, sampleRate / 2);
+            this.frequency = Mathf.Clamp(frequency, 20, sampleRate / 2);
             this.dbGain = dbGain;
-            userQ = Math.Clamp(q, 0f, 1f); // Clamp user Q to 0-1 range
+            userQ = Mathf.Clamp(q, 0f, 1f); // Clamp user Q to 0-1 range
             CalculateCoefficients(frequency);
         }
 
-        private float MapQ(float userQ)
+        private SynthType MapQ(SynthType userQ)
         {
             // Map 0-1 to BaselineQ-MaxQ exponentially
-            return BaselineQ * (float)Math.Pow(MaxQ / BaselineQ, userQ);
+            return BaselineQ * SynthTypeHelper.Pow(MaxQ / BaselineQ, userQ);
         }
 
-        private void CalculateCoefficients(float frequency)
+        private void CalculateCoefficients(SynthType frequency)
         {
-            float mappedQ = MapQ(userQ);
-            float A = (float)Math.Pow(10, dbGain / 40);
-            float omega = 2 * (float)Math.PI * frequency / sampleRate;
-            float sinOmega = (float)Math.Sin(omega);
-            float cosOmega = (float)Math.Cos(omega);
+            var mappedQ = MapQ(userQ);
+            var A = SynthTypeHelper.Pow(10, dbGain / 40);
+            var omega = 2 * SynthTypeHelper.Pi * frequency / sampleRate;
+            var sinOmega = SynthTypeHelper.Sin(omega);
+            var cosOmega = SynthTypeHelper.Cos(omega);
 
-            float alpha = sinOmega / (2 * mappedQ);
-            float beta = (float)Math.Sqrt(A + A);
+            var alpha = sinOmega / (2 * mappedQ);
+            var beta = SynthTypeHelper.Sqrt(A + A);
 
             switch (type)
             {
@@ -114,9 +114,9 @@ namespace Synth
             }
 
             // Normalize coefficients
-            if (Math.Abs(a0) > MinFloat)
+            if (SynthType.Abs(a0) > MinFloat)
             {
-                float invA0 = 1.0f / a0;
+                var invA0 = SynthTypeHelper.One / a0;
                 b0 *= invA0;
                 b1 *= invA0;
                 b2 *= invA0;
@@ -130,30 +130,30 @@ namespace Synth
             }
 
             // Ensure coefficients are not NaN or Infinity
-            b0 = float.IsNaN(b0) || float.IsInfinity(b0) ? 0 : b0;
-            b1 = float.IsNaN(b1) || float.IsInfinity(b1) ? 0 : b1;
-            b2 = float.IsNaN(b2) || float.IsInfinity(b2) ? 0 : b2;
-            a1 = float.IsNaN(a1) || float.IsInfinity(a1) ? 0 : a1;
-            a2 = float.IsNaN(a2) || float.IsInfinity(a2) ? 0 : a2;
+            b0 = SynthType.IsNaN(b0) || SynthType.IsInfinity(b0) ? 0 : b0;
+            b1 = SynthType.IsNaN(b1) || SynthType.IsInfinity(b1) ? 0 : b1;
+            b2 = SynthType.IsNaN(b2) || SynthType.IsInfinity(b2) ? 0 : b2;
+            a1 = SynthType.IsNaN(a1) || SynthType.IsInfinity(a1) ? 0 : a1;
+            a2 = SynthType.IsNaN(a2) || SynthType.IsInfinity(a2) ? 0 : a2;
         }
 
 
 
-        private float previousCutoffModParam = 1f;
-        private const float modulationSmoothingFactor = 0.5f; // Adjust for desired smoothness
+        private SynthType previousCutoffModParam = 1f;
+        private const SynthType modulationSmoothingFactor = 0.5f; // Adjust for desired smoothness
 
-        public float SmoothModulation(float cutoff_mod_param)
+        public SynthType SmoothModulation(SynthType cutoff_mod_param)
         {
             previousCutoffModParam += modulationSmoothingFactor * (cutoff_mod_param - previousCutoffModParam);
             return previousCutoffModParam;
         }
 
-        public float Process(float input, float cutoff_mod_param)
+        public SynthType Process(SynthType input, SynthType cutoff_mod_param)
         {
-            float smoothedCutoffModParam = Mathf.Max(0.01f, SmoothModulation(cutoff_mod_param));
+            var smoothedCutoffModParam = SynthTypeHelper.Max(0.01f, SmoothModulation(cutoff_mod_param));
             CalculateCoefficients(frequency * smoothedCutoffModParam);
 
-            float output = b0 * input + b1 * prevInput1 + b2 * prevInput2
+            var output = b0 * input + b1 * prevInput1 + b2 * prevInput2
                            - a1 * prevOutput1 - a2 * prevOutput2;
 
             prevInput2 = prevInput1;
@@ -162,7 +162,7 @@ namespace Synth
             prevOutput1 = output;
 
             // Prevent denormals
-            if (Math.Abs(output) < MinFloat)
+            if (SynthTypeHelper.Abs(output) < MinFloat)
                 output = 0;
 
             return output;
@@ -174,33 +174,33 @@ namespace Synth
         }
 
         // Getter and Setter for Frequency
-        public float GetFrequency()
+        public SynthType GetFrequency()
         {
             return frequency;
         }
 
-        public void SetFrequency(float value)
+        public void SetFrequency(SynthType value)
         {
             SetParams(value, userQ, dbGain);
         }
 
-        public float GetQ()
+        public SynthType GetQ()
         {
             return userQ;
         }
 
-        public void SetQ(float value)
+        public void SetQ(SynthType value)
         {
             SetParams(frequency, value, dbGain);
         }
 
         // Getter and Setter for DbGain
-        public float GetDbGain()
+        public SynthType GetDbGain()
         {
             return dbGain;
         }
 
-        public void SetDbGain(float value)
+        public void SetDbGain(SynthType value)
         {
             SetParams(frequency, userQ, value);
         }

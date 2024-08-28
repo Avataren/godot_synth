@@ -8,36 +8,36 @@ namespace Synth
 		private readonly object _lock = new object();
 		private WaveTableMemory _waveTableMemory;
 		private int _currentWaveTableIndex;
-		private float _lastFrequency = -1f;
-		private float _smoothModulationStrength;
-		private float _detuneFactor;
-		private float _previousSample;
+		private SynthType _lastFrequency = -1f;
+		private SynthType _smoothModulationStrength;
+		private SynthType _detuneFactor;
+		private SynthType _previousSample;
 
-		private const double TwoPi = Math.PI * 2.0;
-		private const float MinPWMDutyCycle = 0.001f;
-		private const float MaxPWMDutyCycle = 0.999f;
-		private const float FrequencyChangeThreshold = 0.000001f;
+		private const SynthType TwoPi = (SynthType)(Math.PI * 2.0);
+		private const SynthType MinPWMDutyCycle = 0.001f;
+		private const SynthType MaxPWMDutyCycle = 0.999f;
+		private const SynthType FrequencyChangeThreshold = 0.000001f;
 
-		public float DetuneCents { get; set; } = 0.0f;
-		public float DetuneSemitones { get; set; } = 0.0f;
-		public float DetuneOctaves { get; set; } = 0.0f;
-		public float ModulationStrength { get; set; } = 0.0f;
-		public float SelfModulationStrength { get; set; } = 0.0f;
-		public float PhaseOffset { get; set; } = 0.0f;
+		public SynthType DetuneCents { get; set; } = 0.0f;
+		public SynthType DetuneSemitones { get; set; } = 0.0f;
+		public SynthType DetuneOctaves { get; set; } = 0.0f;
+		public SynthType ModulationStrength { get; set; } = 0.0f;
+		public SynthType SelfModulationStrength { get; set; } = 0.0f;
+		public SynthType PhaseOffset { get; set; } = 0.0f;
 		public bool IsPWM { get; set; } = false;
-		public float Gain { get; set; } = 1.0f;
+		public SynthType Gain { get; set; } = 1.0f;
 
-		private float _pwmDutyCycle = 0.5f;
-		public float PWMDutyCycle
+		private SynthType _pwmDutyCycle = 0.5f;
+		public SynthType PWMDutyCycle
 		{
 			get => _pwmDutyCycle;
 			set => _pwmDutyCycle = Math.Clamp(value, MinPWMDutyCycle, MaxPWMDutyCycle);
 		}
 
-		private float PWMAdd { get; set; } = 0.0f;
-		private float PWMMultiply { get; set; } = 1.0f;
+		private SynthType PWMAdd { get; set; } = SynthTypeHelper.Zero;
+		private SynthType PWMMultiply { get; set; } = SynthTypeHelper.One;
 
-		public delegate float WaveTableFunction(WaveTable waveTable, double phase);
+		public delegate SynthType WaveTableFunction(WaveTable waveTable, SynthType phase);
 		public WaveTableFunction GetSampleFunction { get; private set; }
 
 		public WaveTableMemory WaveTableMemory
@@ -62,14 +62,14 @@ namespace Synth
 			UpdateSampleFunction();
 		}
 
-		public void ResetPhase(double startPhase = 0.0)
+		public void ResetPhase(SynthType startPhase = (SynthType)0.0)
 		{
 			Phase = startPhase;
 		}
 
-		private double ExponentialInterpolation(double current, double target, double alpha)
+		private SynthType ExponentialInterpolation(SynthType current, SynthType target, SynthType alpha)
 		{
-			return current + (target - current) * (1 - Math.Exp(-alpha));
+			return current + (target - current) * (1 - SynthTypeHelper.Exp(-alpha));
 		}
 
 		public void UpdateSampleFunction()
@@ -77,19 +77,19 @@ namespace Synth
 			GetSampleFunction = GetSamplePWM;// IsPWM ? GetSamplePWM : GetSample;
 		}
 
-		protected float GetSamplePWM(WaveTable currentWaveTable, double phase)
+		protected SynthType GetSamplePWM(WaveTable currentWaveTable, SynthType phase)
 		{
 			int length = currentWaveTable.WaveTableData.Length - 1;
-			double adjustedPhase;
+			SynthType adjustedPhase;
 			if (phase < PWMDutyCycle)
 			{
 				// Compress the first half
-				adjustedPhase = phase / PWMDutyCycle * 0.5;
+				adjustedPhase = phase / PWMDutyCycle * SynthTypeHelper.Half;
 			}
 			else
 			{
 				// Expand the second half
-				adjustedPhase = 0.5 + (phase - PWMDutyCycle) / (1.0 - PWMDutyCycle) * 0.5;
+				adjustedPhase = SynthTypeHelper.Half + (phase - PWMDutyCycle) / (SynthTypeHelper.One - PWMDutyCycle) * SynthTypeHelper.Half;
 			}
 			// Convert the adjusted phase to the wavetable index
 			//double phaseIndex = adjustedPhase * length;
@@ -98,25 +98,25 @@ namespace Synth
 			//return GetSampleLinear(currentWaveTable, (float)adjustedPhase);
 		}
 
-		private float GetSampleLinear(WaveTable currentWaveTable, double phase)
+		private SynthType GetSampleLinear(WaveTable currentWaveTable, SynthType phase)
 		{
 			int length = currentWaveTable.WaveTableData.Length;
 			double position = phase * length;
 			int index = (int)position;
-			float frac = (float)(position - index);
+			SynthType frac = (SynthType)(position - index);
 			int nextIndex = (index + 1) % length;
 
 			return currentWaveTable.WaveTableData[index] + frac * (currentWaveTable.WaveTableData[nextIndex] - currentWaveTable.WaveTableData[index]);
 		}
 
-		protected float GetSample(WaveTable currentWaveTable, double phase)
+		protected SynthType GetSample(WaveTable currentWaveTable, SynthType phase)
 		{
-			double position = phase * currentWaveTable.WaveTableData.Length;
-			return GetCubicInterpolatedSample(currentWaveTable, (float)position);
+			SynthType position = phase * currentWaveTable.WaveTableData.Length;
+			return GetCubicInterpolatedSample(currentWaveTable, (SynthType)position);
 		}
 
 
-		private float GetCubicInterpolatedSample(WaveTable table, float position)
+		private SynthType GetCubicInterpolatedSample(WaveTable table, SynthType position)
 		{
 			int length = table.WaveTableData.Length;
 
@@ -124,7 +124,7 @@ namespace Synth
 			position *= length - 1.0f;
 
 			int baseIndex = (int)position;
-			float frac = position - baseIndex;
+			SynthType frac = position - baseIndex;
 
 			// Ensure the indices wrap around correctly
 			int i0 = (baseIndex - 1 + length) % length;
@@ -133,16 +133,16 @@ namespace Synth
 			int i3 = (baseIndex + 2) % length;
 
 			// Retrieve the sample values from the wavetable
-			float sample0 = table.WaveTableData[i0];
-			float sample1 = table.WaveTableData[i1];
-			float sample2 = table.WaveTableData[i2];
-			float sample3 = table.WaveTableData[i3];
+			SynthType sample0 = table.WaveTableData[i0];
+			SynthType sample1 = table.WaveTableData[i1];
+			SynthType sample2 = table.WaveTableData[i2];
+			SynthType sample3 = table.WaveTableData[i3];
 
 			// Cubic interpolation formula
-			float a = sample3 - sample2 - sample0 + sample1;
-			float b = sample0 - sample1 - a;
-			float c = sample2 - sample0;
-			float d = sample1;
+			SynthType a = sample3 - sample2 - sample0 + sample1;
+			SynthType b = sample0 - sample1 - a;
+			SynthType c = sample2 - sample0;
+			SynthType d = sample1;
 
 			return a * frac * frac * frac + b * frac * frac + c * frac + d;
 		}
@@ -156,44 +156,44 @@ namespace Synth
 
 		private int _crossfadeCounter = 0;
 		private int _crossfadeFrames = 256; // Adjust this based on desired crossfade duration
-		private double _previousPhase = 0.0;
-		private double _newPhase = 0.0;
+		private SynthType _previousPhase = SynthTypeHelper.Zero;
+		private SynthType _newPhase = SynthTypeHelper.Zero;
 
 		public override void Process(double increment)
 		{
 			var currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 			UpdateDetuneFactor();
-			double phase = Phase;
-			double phaseIncrement = _lastFrequency * increment;
-			double freqLastSample = _lastFrequency;
+			SynthType phase = Phase;
+			SynthType phaseIncrement = _lastFrequency * (SynthType)increment;
+			SynthType freqLastSample = _lastFrequency;
 
 			for (int i = 0; i < NumSamples; i++)
 			{
 				UpdateParameters(i);
 				if (freqLastSample != _lastFrequency)
 				{
-					phaseIncrement = _lastFrequency * increment;
+					phaseIncrement = _lastFrequency * (SynthType)increment;
 					UpdateWaveTableFrequency(_lastFrequency);
 					currentWaveTable = WaveTableMemory.GetWaveTable(_currentWaveTableIndex);
 				}
 				freqLastSample = _lastFrequency;
-				double gateValue = _scheduler.GetValueAtSample(this, AudioParam.Gate, i);
+				SynthType gateValue = (SynthType)_scheduler.GetValueAtSample(this, AudioParam.Gate, i);
 
 				if (!_isGateOpen && gateValue > 0.5)
 				{
 					gateNum++;
 					_isGateOpen = true;
-					_previousSample = 0.0f;
+					_previousSample = SynthTypeHelper.Zero;
 
 					if (HardSync)
 					{
 						// Start crossfade when hard sync occurs
 						_crossfadeCounter = _crossfadeFrames;
 						_previousPhase = phase;
-						_newPhase = 0.0; // Reset new phase
+						_newPhase = SynthTypeHelper.Zero; // Reset new phase
 					}
 				}
-				else if (_isGateOpen && gateValue < 0.5)
+				else if (_isGateOpen && gateValue < SynthTypeHelper.Half)
 				{
 					_isGateOpen = false;
 				}
@@ -201,21 +201,21 @@ namespace Synth
 				// During crossfade, blend old and new phases
 				if (_crossfadeCounter > 0)
 				{
-					double fadeAmount = 1.0 - (double)_crossfadeCounter / _crossfadeFrames;
+					SynthType fadeAmount = SynthTypeHelper.One - (SynthType)_crossfadeCounter / _crossfadeFrames;
 					_crossfadeCounter--;
 
 					// Continue evolving both phases
 					_previousPhase += phaseIncrement;  // Continue the previous phase
 					_newPhase += phaseIncrement;       // Start from the new phase
 
-					double modulatedOldPhase = CalculateModulatedPhase(_previousPhase, PhaseOffset, _previousSample, SelfModulationStrength);
-					double modulatedNewPhase = CalculateModulatedPhase(_newPhase, PhaseOffset, _previousSample, SelfModulationStrength);
+					SynthType modulatedOldPhase = CalculateModulatedPhase(_previousPhase, PhaseOffset, _previousSample, SelfModulationStrength);
+					SynthType modulatedNewPhase = CalculateModulatedPhase(_newPhase, PhaseOffset, _previousSample, SelfModulationStrength);
 
-					float oldSample = GetSamplePWM(currentWaveTable, modulatedOldPhase);
-					float newSample = GetSamplePWM(currentWaveTable, modulatedNewPhase);
+					SynthType oldSample = GetSamplePWM(currentWaveTable, modulatedOldPhase);
+					SynthType newSample = GetSamplePWM(currentWaveTable, modulatedNewPhase);
 
 					// Blend the old and new samples based on fadeAmount
-					buffer[i] = (float)(((1.0 - fadeAmount) * oldSample + fadeAmount * newSample) * Amplitude * Gain);
+					buffer[i] = ((SynthTypeHelper.One - fadeAmount) * oldSample + fadeAmount * newSample) * Amplitude * Gain;
 
 					// After the crossfade, continue with the new phase
 					if (_crossfadeCounter == 0)
@@ -226,15 +226,15 @@ namespace Synth
 				else
 				{
 					// After crossfade, continue with the new phase
-					double modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
-					float currentSample = GetSamplePWM(currentWaveTable, modulatedPhase);
+					SynthType modulatedPhase = CalculateModulatedPhase(phase, PhaseOffset, _previousSample, SelfModulationStrength);
+					SynthType currentSample = GetSamplePWM(currentWaveTable, modulatedPhase);
 					buffer[i] = currentSample * Amplitude * Gain;
 					_previousSample = currentSample;
 					phase += phaseIncrement;
 				}
 			}
 
-			Phase = ModuloOne(phase);
+			Phase = SynthTypeHelper.ModuloOne(phase);
 		}
 		private void UpdateParameters(int sampleIndex)
 		{
@@ -247,21 +247,21 @@ namespace Synth
 			PWMAdd = pwmParam.Item1;
 			PWMMultiply = pwmParam.Item2;
 			Gain = gainParam.Item2;
-			float phase_modulation = phaseParam.Item1;
+			SynthType phase_modulation = phaseParam.Item1;
 			_smoothModulationStrength = phase_modulation * ModulationStrength * pmodParam.Item1;
 			_lastFrequency = pitchParam.Item1 * pitchParam.Item2 * _detuneFactor;
 		}
 
-		private double CalculateModulatedPhase(double basePhase, double phaseOffset, float previousSample, float selfModulationStrength)
+		private SynthType CalculateModulatedPhase(SynthType basePhase, SynthType phaseOffset, SynthType previousSample, SynthType selfModulationStrength)
 		{
 			var offset = phaseOffset + _smoothModulationStrength + previousSample * selfModulationStrength;
-			return ModuloOne(basePhase + offset);
+			return SynthTypeHelper.ModuloOne(basePhase + offset);
 			//(basePhase + offset + 100.0) % 1.0;
 		}
 
-		private void UpdateWaveTableFrequency(float freq)
+		private void UpdateWaveTableFrequency(SynthType freq)
 		{
-			float topFreq = freq / SampleRate;
+			SynthType topFreq = freq / SampleRate;
 			_currentWaveTableIndex = 0;
 
 			for (int i = 0; i < _waveTableMemory.NumWaveTables; i++)

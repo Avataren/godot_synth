@@ -6,33 +6,33 @@ namespace Synth
 {
     public class MixerNode : AudioNode
     {
-        public float Gain = 0.5f;
-        private readonly Vector<float> negOne = new Vector<float>(-1.0f);
-        private readonly Vector<float> posOne = new Vector<float>(1.0f);
+        public SynthType Gain = 0.5f;
+        private readonly Vector<SynthType> negOne = new Vector<SynthType>(-1.0f);
+        private readonly Vector<SynthType> posOne = new Vector<SynthType>(1.0f);
 
         // Pre-allocated arrays for parameter loading
-        private readonly float[] gainArray;
-        private readonly float[] balanceArray1;
-        private readonly float[] balanceArray2;
+        private readonly SynthType[] gainArray;
+        private readonly SynthType[] balanceArray1;
+        private readonly SynthType[] balanceArray2;
 
         // Vectorized accumulators
-        private readonly Vector<float>[] leftAccumulators;
-        private readonly Vector<float>[] rightAccumulators;
+        private readonly Vector<SynthType>[] leftAccumulators;
+        private readonly Vector<SynthType>[] rightAccumulators;
 
         public MixerNode()
         {
-            RightBuffer = new float[NumSamples];
-            LeftBuffer = new float[NumSamples];
+            RightBuffer = new SynthType[NumSamples];
+            LeftBuffer = new SynthType[NumSamples];
 
-            int vectorSize = Vector<float>.Count;
+            int vectorSize = Vector<SynthType>.Count;
             int numVectors = (NumSamples + vectorSize - 1) / vectorSize;
 
-            gainArray = new float[vectorSize];
-            balanceArray1 = new float[vectorSize];
-            balanceArray2 = new float[vectorSize];
+            gainArray = new SynthType[vectorSize];
+            balanceArray1 = new SynthType[vectorSize];
+            balanceArray2 = new SynthType[vectorSize];
 
-            leftAccumulators = new Vector<float>[numVectors];
-            rightAccumulators = new Vector<float>[numVectors];
+            leftAccumulators = new Vector<SynthType>[numVectors];
+            rightAccumulators = new Vector<SynthType>[numVectors];
         }
 
         public override void Process(double increment)
@@ -45,7 +45,7 @@ namespace Synth
                 return;
             }
 
-            int vectorSize = Vector<float>.Count;
+            int vectorSize = Vector<SynthType>.Count;
             int numVectors = leftAccumulators.Length;
 
             // Clear accumulators
@@ -72,22 +72,22 @@ namespace Synth
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessVectorizedSamples(int startIndex, AudioNode node, ref Vector<float> leftAccumulator, ref Vector<float> rightAccumulator)
+        private void ProcessVectorizedSamples(int startIndex, AudioNode node, ref Vector<SynthType> leftAccumulator, ref Vector<SynthType> rightAccumulator)
         {
-            Vector<float> nodeBalanceVector = new Vector<float>(node.Balance);
-            ReadOnlySpan<float> nodeBuffer = node.GetBuffer().Slice(startIndex, Vector<float>.Count);
+            Vector<SynthType> nodeBalanceVector = new Vector<SynthType>(node.Balance);
+            ReadOnlySpan<SynthType> nodeBuffer = node.GetBuffer().Slice(startIndex, Vector<SynthType>.Count);
 
             LoadParameters(startIndex, node);
 
-            Vector<float> gainParam = new Vector<float>(gainArray);
-            Vector<float> balanceParam1 = new Vector<float>(balanceArray1) + nodeBalanceVector;
-            Vector<float> balanceParam2 = new Vector<float>(balanceArray2);
-            Vector<float> sample = new Vector<float>(nodeBuffer) * gainParam;
+            var gainParam = new Vector<SynthType>(gainArray);
+            var balanceParam1 = new Vector<SynthType>(balanceArray1) + nodeBalanceVector;
+            var balanceParam2 = new Vector<SynthType>(balanceArray2);
+            var sample = new Vector<SynthType>(nodeBuffer) * gainParam;
 
-            Vector<float> balance = Vector.Max(negOne, Vector.Min(balanceParam1 * balanceParam2, posOne));
+            var balance = Vector.Max(negOne, Vector.Min(balanceParam1 * balanceParam2, posOne));
 
-            Vector<float> leftVolume = Vector.ConditionalSelect(Vector.LessThan(balance, Vector<float>.Zero), posOne, posOne - balance);
-            Vector<float> rightVolume = Vector.ConditionalSelect(Vector.GreaterThan(balance, Vector<float>.Zero), posOne, posOne + balance);
+            var leftVolume = Vector.ConditionalSelect(Vector.LessThan(balance, Vector<SynthType>.Zero), posOne, posOne - balance);
+            var rightVolume = Vector.ConditionalSelect(Vector.GreaterThan(balance, Vector<SynthType>.Zero), posOne, posOne + balance);
 
             leftAccumulator += leftVolume * sample * Gain;
             rightAccumulator += rightVolume * sample * Gain;
@@ -96,7 +96,7 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void LoadParameters(int startIndex, AudioNode node)
         {
-            for (int j = 0; j < Vector<float>.Count; j++)
+            for (int j = 0; j < Vector<SynthType>.Count; j++)
             {
                 gainArray[j] = GetParameter(AudioParam.Gain, startIndex + j).Item2;
                 balanceArray1[j] = node.GetParameter(AudioParam.Balance, startIndex + j).Item1;

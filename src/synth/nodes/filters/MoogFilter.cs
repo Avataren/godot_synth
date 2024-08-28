@@ -5,14 +5,14 @@ namespace Synth
 {
     public class MoogFilter
     {
-        private float sampleRate;
-        private float cutoff = 1.0f;
-        private float resonance = 0.0f;
-        private float p, k, r;
-        private float x, y1, y2, y3, y4;
-        private float oldx, oldy1, oldy2, oldy3;
+        private SynthType sampleRate;
+        private SynthType cutoff = 1.0f;
+        private SynthType resonance = 0.0f;
+        private SynthType p, k, r;
+        private SynthType x, y1, y2, y3, y4;
+        private SynthType oldx, oldy1, oldy2, oldy3;
 
-        public MoogFilter(float sampleFrequency = 44100.0f)
+        public MoogFilter(SynthType sampleFrequency = 44100.0f)
         {
             sampleRate = sampleFrequency;
             Init();
@@ -24,20 +24,20 @@ namespace Synth
             Calc(Cutoff);
         }
 
-        private void Calc(float cutoff)
+        private void Calc(SynthType cutoff)
         {
-            const float Pi = 3.1415926535897931f;
-            p = cutoff * (1.8f - 0.8f * cutoff);
-            k = 2.0f * (float)Math.Sin(cutoff * Pi * 0.5f) - 1.0f;
 
-            float t1 = (1.0f - p) * 1.386249f;
-            float t2 = 12.0f + t1 * t1;
+            p = cutoff * (1.8f - 0.8f * cutoff);
+            k = 2.0f * Math.Sin(cutoff * SynthTypeHelper.Pi * SynthTypeHelper.Half) - SynthTypeHelper.One;
+
+            SynthType t1 = (1.0f - p) * 1.386249f;
+            SynthType t2 = 12.0f + t1 * t1;
             r = resonance * (t2 + 6.0f * t1) / (t2 - 6.0f * t1);
         }
 
-        public float Process(float input, float cutoff_mod)
+        public SynthType Process(SynthType input, SynthType cutoff_mod)
         {
-            float modulatedCutoff = cutoff * cutoff_mod; // Calculate modulated cutoff
+            var modulatedCutoff = cutoff * cutoff_mod; // Calculate modulated cutoff
             Calc(modulatedCutoff); // Recalculate filter coefficients with the new cutoff
 
             x = input - r * y4;
@@ -49,31 +49,31 @@ namespace Synth
             // Clipper band limited sigmoid
             y4 -= (y4 * y4 * y4) / 6.0f;
             // Apply a soft limiter to prevent blow-up
-            y4 = Math.Max(-3.0f, Math.Min(3.0f, y4)); 
+            y4 = Math.Max(-3.0f, Math.Min(3.0f, y4));
             //y4 = (float)Math.Tanh(y4);
             oldx = x; oldy1 = y1; oldy2 = y2; oldy3 = y3;
 
             return y4;
         }
 
-        public float SampleRate
+        public SynthType SampleRate
         {
             get => sampleRate;
             set { sampleRate = value; Calc(Cutoff); }
         }
 
-        public float Cutoff
+        public SynthType Cutoff
         {
             get => cutoff;
             set
             {
-                float normalizedCutoff = value / (sampleRate / 2); // Normalize cutoff to 0-1
-                cutoff = Math.Max(0, Math.Min(1, normalizedCutoff)); // Clamp to [0,1]
+                SynthType normalizedCutoff = value / (sampleRate / 2); // Normalize cutoff to 0-1
+                cutoff = SynthTypeHelper.Max(SynthTypeHelper.Zero, SynthTypeHelper.Min(SynthTypeHelper.One, normalizedCutoff)); // Clamp to [0,1]
                 Calc(cutoff);
             }
         }
 
-        public float Resonance
+        public SynthType Resonance
         {
             get => resonance;
             set { resonance = value; Calc(Cutoff); }

@@ -2,18 +2,18 @@ namespace Synth
 {
     public class Allpass
     {
-        private float feedback;
-        private float[] buffer;
+        private SynthType feedback;
+        private SynthType[] buffer;
         private int bufSize;
         private int bufIdx;
 
         public Allpass(int bufSize)
         {
-            Buffer = new float[bufSize];
+            Buffer = new SynthType[bufSize];
             bufIdx = 0;
         }
 
-        public float[] Buffer
+        public SynthType[] Buffer
         {
             get => buffer;
             set
@@ -23,7 +23,7 @@ namespace Synth
             }
         }
 
-        public float Feedback
+        public SynthType Feedback
         {
             get => feedback;
             set => feedback = value;
@@ -37,12 +37,12 @@ namespace Synth
             }
         }
 
-        public float Process(float input)
+        public SynthType Process(SynthType input)
         {
-            float bufOut = buffer[bufIdx];
+            SynthType bufOut = buffer[bufIdx];
             //Undenormaliser.Undenormalise(ref bufOut);
 
-            float output = -input + bufOut;
+            SynthType output = -input + bufOut;
             buffer[bufIdx] = input + (bufOut * feedback);
 
             if (++bufIdx >= bufSize)

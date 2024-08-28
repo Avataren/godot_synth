@@ -19,8 +19,8 @@ namespace Synth
             rightFilter = new MoogFilter(SampleRate);
             leftBiQuadFilter = new BiquadFilter((int)SampleRate);
             rightBiQuadFilter = new BiquadFilter((int)SampleRate);
-            LeftBuffer = new float[NumSamples];
-            RightBuffer = new float[NumSamples];
+            LeftBuffer = new SynthType[NumSamples];
+            RightBuffer = new SynthType[NumSamples];
         }
 
         public void SetFilterType(FilterType type)
@@ -28,7 +28,7 @@ namespace Synth
             filterType = type;
             if (type != FilterType.MoogLowPass)
             {
-                
+
                 leftBiQuadFilter.SetFilterType(type);
                 rightBiQuadFilter.SetFilterType(type);
 
@@ -56,10 +56,10 @@ namespace Synth
                         for (int i = 0; i < NumSamples; i++)
                         {
                             var cutoff_mod_param = GetParameter(AudioParam.CutOffMod, i);
-                            float sampleL = node.LeftBuffer[i];
-                            float sampleR = node.RightBuffer[i];
+                            var sampleL = node.LeftBuffer[i];
+                            var sampleR = node.RightBuffer[i];
 
-                            float co = cutoff_mod_param.Item2;
+                            var co = cutoff_mod_param.Item2;
                             LeftBuffer[i] = leftFilter.Process(sampleL, co);
                             RightBuffer[i] = rightFilter.Process(sampleR, co);
                         }
@@ -68,12 +68,12 @@ namespace Synth
                         for (int i = 0; i < NumSamples; i++)
                         {
                             var cutoff_mod_param = GetParameter(AudioParam.CutOffMod, i);
-                            float sampleL = node.LeftBuffer[i];
-                            float sampleR = node.RightBuffer[i];
+                            var sampleL = node.LeftBuffer[i];
+                            var sampleR = node.RightBuffer[i];
 
-                            float co = cutoff_mod_param.Item2;
-                            LeftBuffer[i] = (float)leftBiQuadFilter.Process(sampleL, cutoff_mod_param.Item2);
-                            RightBuffer[i] = (float)rightBiQuadFilter.Process(sampleR,  cutoff_mod_param.Item2);
+                            var co = cutoff_mod_param.Item2;
+                            LeftBuffer[i] = leftBiQuadFilter.Process(sampleL, cutoff_mod_param.Item2);
+                            RightBuffer[i] = rightBiQuadFilter.Process(sampleR, cutoff_mod_param.Item2);
                         }
                         break;
                 }
@@ -81,35 +81,35 @@ namespace Synth
             }
         }
 
-        public static double TransformToCutoff(double input, double minCutoff, double maxCutoff)
+        public static SynthType TransformToCutoff(SynthType input, SynthType minCutoff, SynthType maxCutoff)
         {
             if (input < 0 || input > 1)
                 throw new ArgumentOutOfRangeException(nameof(input), "Input must be between 0 and 1.");
 
             // Use an exponential mapping to make the transformation feel more natural
-            double exponent = 3.0; // You can adjust this exponent for more or less nonlinearity
-            double transformedValue = Math.Pow(input, exponent);
+            SynthType exponent = 3.0; // You can adjust this exponent for more or less nonlinearity
+            SynthType transformedValue = SynthTypeHelper.Pow(input, exponent);
 
             // Map the transformed value to the cutoff frequency range
-            double cutoffFrequency = minCutoff + transformedValue * (maxCutoff - minCutoff);
+            var cutoffFrequency = minCutoff + transformedValue * (maxCutoff - minCutoff);
 
             return cutoffFrequency;
         }
 
-        public float CutOff
+        public SynthType CutOff
         {
             get { return leftFilter.Cutoff; }
             set
             {
-                leftFilter.Cutoff = (float)TransformToCutoff(value, 0.0, SampleRate / 2.0);
+                leftFilter.Cutoff = TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f);
                 GD.Print("Cutoff: " + leftFilter.Cutoff);
-                rightFilter.Cutoff = (float)TransformToCutoff(value, 0.0, SampleRate / 2.0);
-                leftBiQuadFilter.SetFrequency((float)TransformToCutoff(value, 0.0, SampleRate / 2.0));
-                rightBiQuadFilter.SetFrequency((float)TransformToCutoff(value, 0.0, SampleRate / 2.0));
+                rightFilter.Cutoff = TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f);
+                leftBiQuadFilter.SetFrequency(TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f));
+                rightBiQuadFilter.SetFrequency(TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f));
             }
         }
 
-        public float Resonance
+        public SynthType Resonance
         {
             get { return leftFilter.Resonance; }
             set
@@ -134,13 +134,13 @@ namespace Synth
         //     }
         // }
 
-        private float MapDriveTodBGain(double drive)
+        private SynthType MapDriveTodBGain(SynthType drive)
         {
             // Map drive 1-20 to dBGain range -6 to +24 dB
             // Using a logarithmic scaling for more natural response
-            double normalizedDrive = (drive - 1) / 19; // 0 to 1
-            return (float)(30.0 * Math.Log10(normalizedDrive * 19 + 1) - 6.0);
-        }        
+            double normalizedDrive = (drive - SynthTypeHelper.One) / 19; // 0 to 1
+            return (SynthType)(30.0 * Math.Log10(normalizedDrive * 19 + 1) - 6.0);
+        }
 
     }
 }

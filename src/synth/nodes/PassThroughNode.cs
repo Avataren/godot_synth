@@ -14,8 +14,8 @@ namespace Synth
         public PassThroughNode()
         {
             AcceptedInputType = InputType.Stereo;
-            LeftBuffer = new float[NumSamples];
-            RightBuffer = new float[NumSamples];
+            LeftBuffer = new SynthType[NumSamples];
+            RightBuffer = new SynthType[NumSamples];
         }
 
         public override void Process(double increment)

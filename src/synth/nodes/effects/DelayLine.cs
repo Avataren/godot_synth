@@ -1,16 +1,16 @@
 public class DelayLine
 {
-    private float[] buffer;
+    private SynthType[] buffer;
     private int writeIndex = 0;
     private int bufferSize;
     private int delaySamples;
 
     // Feedback and Wet/Dry Mix
-    public float Feedback;
-    public float WetMix;
-    public float DryMix;
+    public SynthType Feedback;
+    public SynthType WetMix;
+    public SynthType DryMix;
 
-    public DelayLine(int delayInMilliseconds, int sampleRate, float feedback = 0.25f, float wetMix = 0.5f, float dryMix = 1.0f)
+    public DelayLine(int delayInMilliseconds, int sampleRate, SynthType feedback = 0.25f, SynthType wetMix = 0.5f, SynthType dryMix = 1.0f)
     {
         SetDelayTime(delayInMilliseconds, sampleRate);
         this.Feedback = feedback;
@@ -21,9 +21,9 @@ public class DelayLine
     // Method to set or change the delay time dynamically
     public void SetDelayTime(int delayInMilliseconds, int sampleRate)
     {
-        delaySamples = (int)(delayInMilliseconds * sampleRate / 1000.0f);
+        delaySamples = (int)(delayInMilliseconds * sampleRate / 1000.0);
         bufferSize = delaySamples + 1;
-        buffer = new float[bufferSize];
+        buffer = new SynthType[bufferSize];
         writeIndex = 0;
     }
 
@@ -36,17 +36,17 @@ public class DelayLine
     }
 
     // Method to process a single sample with enhancements
-    public float Process(float inputSample)
+    public SynthType Process(SynthType inputSample)
     {
         // Read delayed sample
         int readIndex = (writeIndex + bufferSize - delaySamples) % bufferSize;
-        float delayedSample = buffer[readIndex];
+        var delayedSample = buffer[readIndex];
 
         // Apply feedback directly to the delayed sample, so even the first echo is attenuated
-        float processedSample = delayedSample * Feedback;
+        var processedSample = delayedSample * Feedback;
 
         // Mix the original input with the processed (attenuated) delayed sample
-        float outputSample = (DryMix * inputSample) + (WetMix * processedSample);
+        var outputSample = (DryMix * inputSample) + (WetMix * processedSample);
 
         // Write the new sample into the buffer with the feedback applied
         buffer[writeIndex] = inputSample + processedSample;

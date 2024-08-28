@@ -240,13 +240,13 @@ public partial class AudioOutputNode : AudioStreamPlayer
 
 			// Pre-calculate length to avoid repetitive property access
 			int leftRightBufferLength = mix.LeftBuffer.Length;
-			float repr = 1.0f / AudioContext.Oversampling;
+			SynthType repr = SynthTypeHelper.One / AudioContext.Oversampling;
 			// Optimize loop by using a single loop instead of nested loops
 			for (int i = 0; i < num_samples; i++)
 			{
 				int baseIndex = i * AudioContext.Oversampling;
-				float left = 0.0f;
-				float right = 0.0f;
+				SynthType left = 0.0f;
+				SynthType right = 0.0f;
 
 				// Sum the oversampled data in one loop
 				for (int j = 0; j < AudioContext.Oversampling; j++)
@@ -258,11 +258,11 @@ public partial class AudioOutputNode : AudioStreamPlayer
 						right += mix.RightBuffer[sampleIndex];
 					}
 				}
-				audioData[i][0] = left * repr;
-				audioData[i][1] = right * repr;
+				audioData[i][0] = (float)(left * repr);
+				audioData[i][1] = (float)(right * repr);
 
 				// Mix buffer average directly in the same loop
-				buffer_copy[i] = (left + right) * repr / 2;
+				buffer_copy[i] = (float)((left + right) * repr / 2);
 			}
 			var timestamp_process_done = Time.GetTicksUsec();
 			// Avoid tight loop and sleep

@@ -9,11 +9,11 @@ namespace Synth
 
         public override void Process(double increment)
         {
-            float[] bufferRef = buffer; // Cache the buffer reference
+            SynthType[] bufferRef = buffer; // Cache the buffer reference
 
             for (int i = 0; i < NumSamples; i++)
             {
-                bufferRef[i] = (float)_scheduler.GetValueAtSample(this, AudioParam.ConstValue,i);
+                bufferRef[i] = (SynthType)_scheduler.GetValueAtSample(this, AudioParam.ConstValue, i);
             }
         }
 

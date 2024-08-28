@@ -11,8 +11,8 @@ namespace Synth
         {
             leftDelayLine = new DelayLine(300, (int)SampleRate);
             rightDelayLine = new DelayLine(300, (int)SampleRate);
-            LeftBuffer = new float[NumSamples];
-            RightBuffer = new float[NumSamples];
+            LeftBuffer = new SynthType[NumSamples];
+            RightBuffer = new SynthType[NumSamples];
         }
 
         public override void Process(double increment)
@@ -20,7 +20,7 @@ namespace Synth
             var inputs = GetParameterNodes(AudioParam.StereoInput);
             if (inputs == null || inputs.Count == 0)
                 return;
-                
+
             foreach (var node in inputs)
             {
                 if (node == null || !node.Enabled)
@@ -28,8 +28,8 @@ namespace Synth
 
                 for (int i = 0; i < NumSamples; i++)
                 {
-                    float sampleL = node.LeftBuffer[i];
-                    float sampleR = node.RightBuffer[i];
+                    var sampleL = node.LeftBuffer[i];
+                    var sampleR = node.RightBuffer[i];
 
                     LeftBuffer[i] = leftDelayLine.Process(sampleL);
                     RightBuffer[i] = rightDelayLine.Process(sampleR);
@@ -52,7 +52,7 @@ namespace Synth
             }
         }
 
-        public float Feedback
+        public SynthType Feedback
         {
             get { return leftDelayLine.Feedback; }
             set
@@ -63,7 +63,7 @@ namespace Synth
             }
         }
 
-        public float DryMix
+        public SynthType DryMix
         {
             get { return leftDelayLine.DryMix; }
             set
@@ -73,7 +73,7 @@ namespace Synth
             }
         }
 
-        public float WetMix
+        public SynthType WetMix
         {
             get { return leftDelayLine.WetMix; }
             set

@@ -5,13 +5,13 @@ namespace Synth
 {
     public class ReverbModel
     {
-        private float gain;
-        private float roomSize, roomSize1;
-        private float damp, damp1;
-        private float wet, wet1, wet2;
-        private float dry;
-        private float width;
-        private float mode;
+        private SynthType gain;
+        private SynthType roomSize, roomSize1;
+        private SynthType damp, damp1;
+        private SynthType wet, wet1, wet2;
+        private SynthType dry;
+        private SynthType width;
+        private SynthType mode;
 
         // Comb filters
         private Comb[] combL;
@@ -46,9 +46,9 @@ namespace Synth
 
             // Set default values
             foreach (var allpass in allpassL)
-                allpass.Feedback = 0.5f;
+                allpass.Feedback = SynthTypeHelper.Half;
             foreach (var allpass in allpassR)
-                allpass.Feedback = 0.5f;
+                allpass.Feedback = SynthTypeHelper.Half;
 
             Wet = ReverbTunings.InitialWet;
             RoomSize = ReverbTunings.InitialRoom;
@@ -88,18 +88,18 @@ namespace Synth
             }
         }
 
-        private float SoftClip(float input)
+        private SynthType SoftClip(SynthType input)
         {
-            const float threshold = 0.6f;
+            const SynthType threshold = (SynthType)0.6;
             if (input > threshold)
-                return threshold + (input - threshold) / (1.0f + Mathf.Pow(input - threshold, 2));
+                return threshold + (input - threshold) / (SynthTypeHelper.One + SynthTypeHelper.Pow(input - threshold, 2));
             else if (input < -threshold)
-                return -threshold + (input + threshold) / (1.0f + Mathf.Pow(-input - threshold, 2));
+                return -threshold + (input + threshold) / (SynthTypeHelper.One + SynthTypeHelper.Pow(-input - threshold, 2));
             else
                 return input;
         }
 
-        public float RoomSize
+        public SynthType RoomSize
         {
             get => (roomSize - ReverbTunings.OffsetRoom) / ReverbTunings.ScaleRoom;
             set
@@ -109,7 +109,7 @@ namespace Synth
             }
         }
 
-        public float Damp
+        public SynthType Damp
         {
             get => damp / ReverbTunings.ScaleDamp;
             set
@@ -119,7 +119,7 @@ namespace Synth
             }
         }
 
-        public float Wet
+        public SynthType Wet
         {
             get => wet / ReverbTunings.ScaleWet;
             set
@@ -129,13 +129,13 @@ namespace Synth
             }
         }
 
-        public float Dry
+        public SynthType Dry
         {
             get => dry / ReverbTunings.ScaleDry;
             set => dry = value * ReverbTunings.ScaleDry;
         }
 
-        public float Width
+        public SynthType Width
         {
             get => width;
             set
@@ -145,9 +145,9 @@ namespace Synth
             }
         }
 
-        public float Mode
+        public SynthType Mode
         {
-            get => mode >= ReverbTunings.FreezeMode ? 1.0f : 0.0f;
+            get => mode >= ReverbTunings.FreezeMode ? SynthTypeHelper.One : SynthTypeHelper.Zero;
             set
             {
                 mode = value;
@@ -171,13 +171,13 @@ namespace Synth
                 allpass.Mute();
         }
 
-        public void ProcessReplace(float[] inputL, float[] inputR, float[] outputL, float[] outputR, long numSamples, int skip)
+        public void ProcessReplace(SynthType[] inputL, SynthType[] inputR, SynthType[] outputL, SynthType[] outputR, long numSamples, int skip)
         {
-            float outL, outR, input;
+            SynthType outL, outR, input;
 
             for (long i = 0; i < numSamples; i++)
             {
-                outL = outR = 0.0f;
+                outL = outR = SynthTypeHelper.Zero;
                 input = (inputL[i * skip] + inputR[i * skip]) * gain;
 
                 // Accumulate comb filters in parallel
@@ -198,7 +198,7 @@ namespace Synth
                 outputL[i * skip] = outL * wet1 + outR * wet2 + inputL[i * skip] * dry;
                 outputR[i * skip] = outR * wet1 + outL * wet2 + inputR[i * skip] * dry;
 
-                float phaseShift = 0.02f; // Adjust as needed
+                SynthType phaseShift = 0.02f; // Adjust as needed
                 outputR[i * skip] += outputL[i * skip] * phaseShift;
                 outputL[i * skip] -= outputR[i * skip] * phaseShift;
 
@@ -207,9 +207,9 @@ namespace Synth
             }
         }
 
-        public void ProcessMix(float[] inputL, float[] inputR, float[] outputL, float[] outputR, long numSamples, int skip)
+        public void ProcessMix(SynthType[] inputL, SynthType[] inputR, SynthType[] outputL, SynthType[] outputR, long numSamples, int skip)
         {
-            float outL, outR, input;
+            SynthType outL, outR, input;
 
             for (long i = 0; i < numSamples; i++)
             {

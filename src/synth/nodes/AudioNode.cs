@@ -11,45 +11,43 @@ namespace Synth
 		Stereo,
 		Both
 	}
+
 	// Interface for audio processing nodes
 	public abstract class AudioNode
 	{
 		public bool Enabled = true;
-		public float SampleRate = 44100.0f;
-		public float Amplitude { get; set; } = 1.0f;
-		public float Frequency { get; set; } = 440.0f;
-		public double Phase = 0.0f;
-		public float Balance = 0.0f;
-		protected float[] buffer;
-		public float[] LeftBuffer;
-		public float[] RightBuffer;
+		public SynthType SampleRate = 44100.0f;
+		public SynthType Amplitude { get; set; } = SynthTypeHelper.One;
+		public SynthType Frequency { get; set; } = SynthTypeHelper.Zero;
+		public SynthType Phase = 0.0f;
+		public SynthType Balance = SynthTypeHelper.Zero;
+		protected SynthType[] buffer;
+		public SynthType[] LeftBuffer;
+		public SynthType[] RightBuffer;
 		public int NumSamples;
 		public bool HardSync = false;
 		public string Name { get; set; }
 		public Dictionary<AudioParam, List<ParameterConnection>> AudioParameters = new Dictionary<AudioParam, List<ParameterConnection>>();
 		//private Dictionary<AudioParam, List<ParameterConnection>> originalConnections = new Dictionary<AudioParam, List<ParameterConnection>>();
 		protected ParameterScheduler _scheduler = AudioContext.Scheduler;
-	    public InputType AcceptedInputType { get; set; } = InputType.Mono; // Default to stereo, can be overridden
+		public InputType AcceptedInputType { get; set; } = InputType.Mono; // Default to stereo, can be overridden
 
-		public static double ModuloOne(double val)
-		{
-			return (val + 100.0) % 1.0;
-		}
 
-		public ReadOnlySpan<float> GetBuffer() => buffer;
-		public ReadOnlySpan<float> GetLeftBuffer() => LeftBuffer;
-		public ReadOnlySpan<float> GetRightBuffer() => RightBuffer;
+
+		public ReadOnlySpan<SynthType> GetBuffer() => buffer;
+		public ReadOnlySpan<SynthType> GetLeftBuffer() => LeftBuffer;
+		public ReadOnlySpan<SynthType> GetRightBuffer() => RightBuffer;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Tuple<float, float> GetParameter(AudioParam param, int sampleIndex, float defaultVal = 0)
+		public Tuple<SynthType, SynthType> GetParameter(AudioParam param, int sampleIndex, SynthType defaultVal = 0)
 		{
 
 			if (!AudioParameters.ContainsKey(param))
 			{
-				return Tuple.Create(defaultVal, 1.0f);
+				return Tuple.Create(defaultVal, SynthTypeHelper.One);
 			}
-			float adds = 0.0f;
-			float muls = 1.0f;
+			SynthType adds = SynthTypeHelper.Zero;
+			SynthType muls = SynthTypeHelper.One;
 			foreach (var ap in AudioParameters[param])
 			{
 				if (ap.SourceNode.Enabled)
@@ -80,14 +78,14 @@ namespace Synth
 		{
 			NumSamples = AudioContext.BufferSize;
 			SampleRate = AudioContext.SampleRate;
-			buffer = new float[NumSamples];
+			buffer = new SynthType[NumSamples];
 		}
 
 		public virtual void Process(double increment)
 		{
 		}
 
-		public virtual float this[int index]
+		public virtual SynthType this[int index]
 		{
 			get => buffer[index];
 			set => buffer[index] = value;
@@ -101,7 +99,7 @@ namespace Synth
 			_scheduler.ScheduleValueAtTime(this, param, value, time);
 		}
 
-   		public void LinearRampToValueAtTime(AudioParam param, double targetValue,  double endTimeInSeconds)
+		public void LinearRampToValueAtTime(AudioParam param, double targetValue, double endTimeInSeconds)
 		{
 			_scheduler.LinearRampToValueAtTime(this, param, targetValue, endTimeInSeconds);
 		}

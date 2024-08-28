@@ -10,10 +10,10 @@ public static class SynthTypeHelper
     {
         return (val + 100.0f) % 1.0f;
     }
-    public static SynthType Zero = 0.0f;
-    public static SynthType One = 1.0f;
-    public static SynthType NegativeOne = 1.0f;
-    public static SynthType Half = 0.5f;
+    public const SynthType Zero = 0.0f;
+    public const SynthType One = 1.0f;
+    public const SynthType NegativeOne = 1.0f;
+    public const SynthType Half = 0.5f;
     public static SynthType Clamp(SynthType val, SynthType min, SynthType max)
     {
         return Mathf.Max(min, Mathf.Min(max, val));
@@ -54,22 +54,21 @@ public static class SynthTypeHelper
     {
         return Mathf.Log(val);
     }
-    public static SynthType Pi = Mathf.Pi;
+    public const SynthType Pi = Mathf.Pi;
 }
 #else
 global using SynthType = System.Double;
 using System;
-using System.Reflection.Emit;
 public static class SynthTypeHelper
 {
     public static SynthType ModuloOne(SynthType val)
     {
         return (val + 100.0) % 1.0;
     }
-    public static SynthType Zero = 0.0;
-    public static SynthType One = 1.0;
-    public static SynthType NegativeOne = -1.0;
-    public static SynthType Half = 0.5;
+    public const SynthType Zero = 0.0;
+    public const SynthType One = 1.0;
+    public const SynthType NegativeOne = -1.0;
+    public const SynthType Half = 0.5;
     public static SynthType Clamp(SynthType val, SynthType min, SynthType max)
     {
         return Math.Max(min, Math.Min(max, val));
@@ -110,7 +109,7 @@ public static class SynthTypeHelper
     {
         return Math.Log(val);
     }
-    public static SynthType Pi = Math.PI;
+    public const SynthType Pi = Math.PI;
 
 }
 #endif

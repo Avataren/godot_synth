@@ -2,7 +2,7 @@ namespace Synth
 {
     public static class ReverbTunings
     {
-        public const int NumCombs = 12;
+        public const int NumCombs = 16;
         public const int NumAllpasses = 6;
         public const float Muted = 0f;
         public const float FixedGain = 0.015f;
@@ -44,7 +44,14 @@ namespace Synth
         public const int CombTuningR11 = CombTuningL11 + StereoSpread;
         public const int CombTuningL12 = 1961;
         public const int CombTuningR12 = CombTuningL12 + StereoSpread;
-
+        public const int CombTuningL13 = 2053;
+        public const int CombTuningR13 = CombTuningL13 + StereoSpread;
+        public const int CombTuningL14 = 2137;
+        public const int CombTuningR14 = CombTuningL14 + StereoSpread;
+        public const int CombTuningL15 = 2237;
+        public const int CombTuningR15 = CombTuningL15 + StereoSpread;
+        public const int CombTuningL16 = 2339;
+        public const int CombTuningR16 = CombTuningL16 + StereoSpread;
 
         public const int AllpassTuningL1 = 556;
         public const int AllpassTuningR1 = AllpassTuningL1 + StereoSpread;
@@ -57,7 +64,7 @@ namespace Synth
         public const int AllpassTuningL5 = 165;
         public const int AllpassTuningR5 = AllpassTuningL5 + StereoSpread;
         public const int AllpassTuningL6 = 122;
-        public const int AllpassTuningR6 = AllpassTuningL6 + StereoSpread;        
+        public const int AllpassTuningR6 = AllpassTuningL6 + StereoSpread;
     }
 
 }

@@ -3,7 +3,6 @@ using Godot;
 
 namespace Synth
 {
-
     public class ReverbModel
     {
         private float gain;
@@ -15,68 +14,41 @@ namespace Synth
         private float mode;
 
         // Comb filters
-        private Comb[] combL = new Comb[ReverbTunings.NumCombs];
-        private Comb[] combR = new Comb[ReverbTunings.NumCombs];
+        private Comb[] combL;
+        private Comb[] combR;
 
         // Allpass filters
-        private Allpass[] allpassL = new Allpass[ReverbTunings.NumAllpasses];
-        private Allpass[] allpassR = new Allpass[ReverbTunings.NumAllpasses];
+        private Allpass[] allpassL;
+        private Allpass[] allpassR;
 
-        public ReverbModel()
+        public ReverbModel(int numCombs = ReverbTunings.NumCombs, int numAllpasses = ReverbTunings.NumAllpasses)
         {
-            // Initialize Comb filters with their respective buffers
-            combL[0] = new Comb(ReverbTunings.CombTuningL1);
-            combR[0] = new Comb(ReverbTunings.CombTuningR1);
-            combL[1] = new Comb(ReverbTunings.CombTuningL2);
-            combR[1] = new Comb(ReverbTunings.CombTuningR2);
-            combL[2] = new Comb(ReverbTunings.CombTuningL3);
-            combR[2] = new Comb(ReverbTunings.CombTuningR3);
-            combL[3] = new Comb(ReverbTunings.CombTuningL4);
-            combR[3] = new Comb(ReverbTunings.CombTuningR4);
-            combL[4] = new Comb(ReverbTunings.CombTuningL5);
-            combR[4] = new Comb(ReverbTunings.CombTuningR5);
-            combL[5] = new Comb(ReverbTunings.CombTuningL6);
-            combR[5] = new Comb(ReverbTunings.CombTuningR6);
-            combL[6] = new Comb(ReverbTunings.CombTuningL7);
-            combR[6] = new Comb(ReverbTunings.CombTuningR7);
-            combL[7] = new Comb(ReverbTunings.CombTuningL8);
-            combR[7] = new Comb(ReverbTunings.CombTuningR8);
+            if (numCombs > ReverbTunings.NumCombs)
+            {
+                GD.Print("Number of combs exceeds maximum. Setting to maximum.");
+                numCombs = ReverbTunings.NumCombs;
+            }
+            if (numAllpasses > ReverbTunings.NumAllpasses)
+            {
+                GD.Print("Number of allpasses exceeds maximum. Setting to maximum.");
+                numAllpasses = ReverbTunings.NumAllpasses;
+            }
 
-            combL[8] = new Comb(ReverbTunings.CombTuningL9);
-            combR[8] = new Comb(ReverbTunings.CombTuningR9);
-            combL[9] = new Comb(ReverbTunings.CombTuningL10);
-            combR[9] = new Comb(ReverbTunings.CombTuningR10);
-            combL[10] = new Comb(ReverbTunings.CombTuningL11);
-            combR[10] = new Comb(ReverbTunings.CombTuningR11);
-            combL[11] = new Comb(ReverbTunings.CombTuningL12);
-            combR[11] = new Comb(ReverbTunings.CombTuningR12);
+            // Initialize Comb filters
+            combL = new Comb[numCombs];
+            combR = new Comb[numCombs];
 
+            // Initialize Allpass filters
+            allpassL = new Allpass[numAllpasses];
+            allpassR = new Allpass[numAllpasses];
 
-            // Initialize Allpass filters with their respective buffers
-            allpassL[0] = new Allpass(ReverbTunings.AllpassTuningL1);
-            allpassR[0] = new Allpass(ReverbTunings.AllpassTuningR1);
-            allpassL[1] = new Allpass(ReverbTunings.AllpassTuningL2);
-            allpassR[1] = new Allpass(ReverbTunings.AllpassTuningR2);
-            allpassL[2] = new Allpass(ReverbTunings.AllpassTuningL3);
-            allpassR[2] = new Allpass(ReverbTunings.AllpassTuningR3);
-            allpassL[3] = new Allpass(ReverbTunings.AllpassTuningL4);
-            allpassR[3] = new Allpass(ReverbTunings.AllpassTuningR4);
-
-            allpassL[4] = new Allpass(ReverbTunings.AllpassTuningL5);
-            allpassR[4] = new Allpass(ReverbTunings.AllpassTuningR5);
-
-            allpassL[5] = new Allpass(ReverbTunings.AllpassTuningL6);
-            allpassR[5] = new Allpass(ReverbTunings.AllpassTuningR6);
+            InitializeFilters(numCombs, numAllpasses);
 
             // Set default values
-            // foreach (var allpass in allpassL)
-            //     allpass.Feedback = 0.5f;
-            // foreach (var allpass in allpassR)
-            //     allpass.Feedback = 0.5f;
             foreach (var allpass in allpassL)
-                allpass.Feedback = 0.5f * (1.0f - damp); // Dynamic adjustment
+                allpass.Feedback = 0.5f;
             foreach (var allpass in allpassR)
-                allpass.Feedback = 0.5f * (1.0f - damp);
+                allpass.Feedback = 0.5f;
 
             Wet = ReverbTunings.InitialWet;
             RoomSize = ReverbTunings.InitialRoom;
@@ -87,6 +59,33 @@ namespace Synth
 
             // Mute buffers
             Mute();
+        }
+
+        private void InitializeFilters(int numCombs, int numAllpasses)
+        {
+            int[] combTuningsL = {
+                ReverbTunings.CombTuningL1, ReverbTunings.CombTuningL2, ReverbTunings.CombTuningL3, ReverbTunings.CombTuningL4,
+                ReverbTunings.CombTuningL5, ReverbTunings.CombTuningL6, ReverbTunings.CombTuningL7, ReverbTunings.CombTuningL8,
+                ReverbTunings.CombTuningL9, ReverbTunings.CombTuningL10, ReverbTunings.CombTuningL11, ReverbTunings.CombTuningL12,
+                ReverbTunings.CombTuningL13, ReverbTunings.CombTuningL14, ReverbTunings.CombTuningL15, ReverbTunings.CombTuningL16
+            };
+
+            int[] allpassTuningsL = {
+                ReverbTunings.AllpassTuningL1, ReverbTunings.AllpassTuningL2, ReverbTunings.AllpassTuningL3,
+                ReverbTunings.AllpassTuningL4, ReverbTunings.AllpassTuningL5, ReverbTunings.AllpassTuningL6
+            };
+
+            for (int i = 0; i < numCombs; i++)
+            {
+                combL[i] = new Comb(combTuningsL[i % combTuningsL.Length]);
+                combR[i] = new Comb(combTuningsL[i % combTuningsL.Length] + ReverbTunings.StereoSpread);
+            }
+
+            for (int i = 0; i < numAllpasses; i++)
+            {
+                allpassL[i] = new Allpass(allpassTuningsL[i % allpassTuningsL.Length]);
+                allpassR[i] = new Allpass(allpassTuningsL[i % allpassTuningsL.Length] + ReverbTunings.StereoSpread);
+            }
         }
 
         private float SoftClip(float input)
@@ -182,14 +181,14 @@ namespace Synth
                 input = (inputL[i * skip] + inputR[i * skip]) * gain;
 
                 // Accumulate comb filters in parallel
-                for (int j = 0; j < ReverbTunings.NumCombs; j++)
+                for (int j = 0; j < combL.Length; j++)
                 {
                     outL += combL[j].Process(input);
                     outR += combR[j].Process(input);
                 }
 
                 // Feed through allpasses in series
-                for (int j = 0; j < ReverbTunings.NumAllpasses; j++)
+                for (int j = 0; j < allpassL.Length; j++)
                 {
                     outL = allpassL[j].Process(outL);
                     outR = allpassR[j].Process(outR);
@@ -205,7 +204,6 @@ namespace Synth
 
                 outputL[i * skip] = SoftClip(outputL[i * skip]);
                 outputR[i * skip] = SoftClip(outputR[i * skip]);
-
             }
         }
 
@@ -219,14 +217,14 @@ namespace Synth
                 input = (inputL[i * skip] + inputR[i * skip]) * gain;
 
                 // Accumulate comb filters in parallel
-                for (int j = 0; j < ReverbTunings.NumCombs; j++)
+                for (int j = 0; j < combL.Length; j++)
                 {
                     outL += combL[j].Process(input);
                     outR += combR[j].Process(input);
                 }
 
                 // Feed through allpasses in series
-                for (int j = 0; j < ReverbTunings.NumAllpasses; j++)
+                for (int j = 0; j < allpassL.Length; j++)
                 {
                     outL = allpassL[j].Process(outL);
                     outR = allpassR[j].Process(outR);

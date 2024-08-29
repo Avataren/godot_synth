@@ -112,6 +112,7 @@ public class SynthPatch
         }
         this.waveTableBank = waveTableBank;
         //graph.SetNodeEnabled(filterNode, false);
+        graph.SetNodeEnabled(chorusEffectNode, false);
         graph.SetNodeEnabled(noiseNode, false);
         graph.SetNodeEnabled(fuzzNode, false);
         graph.SetNodeEnabled(reverbEffectNode, false);

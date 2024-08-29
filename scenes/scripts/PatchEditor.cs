@@ -385,6 +385,36 @@ public partial class PatchEditor : Node2D
 		AudioOutputNode.CurrentPatch.SetDelayEffect_DryMix(value);
 	}
 
+	private void _on_chorus_delay_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.chorusEffectNode.AverageDelayMs = value;
+	}
+
+	private void _on_chorus_depth_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.chorusEffectNode.DepthMs = value;
+	}
+
+	private void _on_chorus_feedback_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.chorusEffectNode.Feedback = value;
+	}
+
+	private void _on_chorus_frequency_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.chorusEffectNode.LfoFrequencyHz = value;
+	}	
+	
+	private void _on_chorus_mix_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.chorusEffectNode.WetMix = value;
+	}
+
+	private void _on_chorus_enabled_changed(bool enabled)
+	{
+		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.chorusEffectNode, enabled);
+	}
+
 	int activeLFO = 0;
 	private void ConnectLFOSignals(LFO lfo, int lfoNum)
 	{

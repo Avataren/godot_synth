@@ -159,11 +159,11 @@ namespace Synth
         }
 
         // Parameters with validation
-        private SynthType averageDelayMs = 7.0f;
+        private SynthType averageDelayMs = 20.0f;
         public SynthType AverageDelayMs
         {
             get => averageDelayMs;
-            set => averageDelayMs = Math.Clamp(value, 5.0f, 15.0f);
+            set => averageDelayMs = Math.Clamp(value, 1.0f, 50.0f);
         }
 
         private SynthType depthMs = 3.0f;
@@ -184,7 +184,7 @@ namespace Synth
         public float LfoFrequencyHz
         {
             get => lfoFrequencyHz;
-            set => lfoFrequencyHz = Math.Clamp(value, 0.1f, 2.0f);
+            set => lfoFrequencyHz = Math.Clamp(value, 0.0f, 2.0f);
         }
 
         private SynthType feedback = 0.2f;

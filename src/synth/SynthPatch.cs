@@ -34,7 +34,7 @@ public class SynthPatch
         freq = graph.CreateNode<ConstantNode>("Freq");
         mix1 = graph.CreateNode<MixerNode>("Mix1");
         filterNode = graph.CreateNode<FilterNode>("MoogFilter");
-        //chorusEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
+        chorusEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
@@ -95,9 +95,9 @@ public class SynthPatch
         graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(fuzzNode, filterNode, AudioParam.StereoInput, ModulationType.Add);
 
-        graph.Connect(filterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
-        //graph.Connect(filterNode, chorusEffectNode, AudioParam.StereoInput, ModulationType.Add);
-        //graph.Connect(chorusEffectNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        //graph.Connect(filterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(filterNode, chorusEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(chorusEffectNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
 

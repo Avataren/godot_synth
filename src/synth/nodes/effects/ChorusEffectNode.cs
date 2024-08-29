@@ -1,17 +1,23 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Godot;
 
 namespace Synth
 {
-    public class Oscillator
+    public class ChorusLFO
     {
-        private int index;
+        private double phase = 0.0;
         private readonly SynthType[] waveTable;
         private const int TableSize = 4096;
+        private const int TableMask = TableSize - 1; // For bitwise optimization
+        public float Frequency { get; set; } // in Hz
+        public float PhaseOffset { get; set; } // Phase offset in radians
 
-        public Oscillator()
+        public ChorusLFO(float frequency, float phaseOffset = 0.0f)
         {
+            Frequency = frequency;
+            PhaseOffset = phaseOffset;
             waveTable = new SynthType[TableSize];
             InitializeWaveTable();
         }
@@ -20,15 +26,17 @@ namespace Synth
         {
             for (int i = 0; i < TableSize; i++)
             {
-                waveTable[i] = (SynthType)(0.7 * Math.Sin(2 * Math.PI * i / TableSize) + 0.3 * (2 * Math.Abs(2 * (i / (double)TableSize) - 1) - 1));
+                waveTable[i] = (SynthType)Math.Sin(2 * Math.PI * i / TableSize);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SynthType GetSample()
+        public SynthType GetSample(double sampleRate)
         {
+            int index = (int)(((phase + PhaseOffset) * TableSize) % TableSize) & TableMask; // Apply phase offset
             SynthType sample = waveTable[index];
-            index = (index + 1) % TableSize;
+            phase += Frequency / sampleRate;
+            if (phase >= 1.0) phase -= 1.0;
             return sample;
         }
     }
@@ -37,22 +45,22 @@ namespace Synth
     {
         private readonly SynthType[] buffer;
         private int writeIndex;
-        private int bufferSize;
+        private readonly int bufferSize;
         private int readIndex;
         private SynthType fraction;
 
-        public ChorusDelayLine(int size)
+        public ChorusDelayLine(int sizeInSamples)
         {
-            bufferSize = size;
+            bufferSize = sizeInSamples;
             buffer = new SynthType[bufferSize];
             Array.Clear(buffer, 0, bufferSize);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetDelay(SynthType delay)
+        public void SetDelayInSamples(SynthType delaySamples)
         {
-            int intDelay = (int)delay;
-            fraction = delay - intDelay;
+            int intDelay = (int)delaySamples;
+            fraction = delaySamples - intDelay;
             readIndex = (writeIndex - intDelay + bufferSize) % bufferSize;
         }
 
@@ -63,6 +71,7 @@ namespace Synth
             SynthType outputSample = (1 - fraction) * buffer[readIndex] + fraction * buffer[nextIndex];
             buffer[writeIndex] = inputSample;
             writeIndex = (writeIndex + 1) % bufferSize;
+            readIndex = (readIndex + 1) % bufferSize;
             return outputSample;
         }
 
@@ -74,23 +83,20 @@ namespace Synth
 
     public class ChorusEffectNode : AudioNode
     {
-        private const int MaxVoices = 3;
-        private readonly ChorusDelayLine[] delayLines;
-        private readonly Oscillator oscillator;
-        private readonly SynthType[] voicePans;
+        private readonly ChorusDelayLine delayLineLeft;
+        private readonly ChorusDelayLine delayLineRight;
+        private readonly ChorusLFO lfoLeft;
+        private readonly ChorusLFO lfoRight;
 
         public ChorusEffectNode()
         {
-            delayLines = new ChorusDelayLine[MaxVoices];
-            oscillator = new Oscillator();
-            voicePans = new SynthType[MaxVoices];
+            int maxDelayInSamples = (int)((AverageDelayMs + DepthMs) * SampleRate / 1000) + 1;
+            delayLineLeft = new ChorusDelayLine(maxDelayInSamples);
+            delayLineRight = new ChorusDelayLine(maxDelayInSamples);
 
-            int maxDelayInSamples = (int)(SampleRate * (BaseDelayTime + LfoDepth) / 1000) + 1;
-            for (int i = 0; i < MaxVoices; i++)
-            {
-                delayLines[i] = new ChorusDelayLine(maxDelayInSamples);
-                voicePans[i] = (SynthType)i / (MaxVoices - 1) - 0.5f;
-            }
+            // Introduce a phase offset for the right channel LFO
+            lfoLeft = new ChorusLFO(LfoFrequencyHz);
+            lfoRight = new ChorusLFO(LfoFrequencyHz, 0.5f); // 0.5 radians offset
 
             LeftBuffer = new SynthType[NumSamples];
             RightBuffer = new SynthType[NumSamples];
@@ -98,35 +104,77 @@ namespace Synth
 
         public override void Process(double increment)
         {
+            var input = GetParameterNodes(AudioParam.StereoInput).FirstOrDefault();
+            if (input == null || !input.Enabled)
+                return;
+
             for (int i = 0; i < NumSamples; i++)
             {
-                SynthType oscOut = oscillator.GetSample();
-                SynthType inSample = LeftBuffer[i]; // Assuming mono input for simplicity
-                SynthType wetOut = 0;
+                SynthType leftIn = input.LeftBuffer[i];
+                SynthType rightIn = input.RightBuffer[i];
 
-                for (int voice = 0; voice < MaxVoices; voice++)
-                {
-                    delayLines[voice].SetDelay(BaseDelayTime + LfoDepth * oscOut);
-                    wetOut += delayLines[voice].GetSample(inSample);
-                }
+                // Calculate LFO output for each channel with a phase offset
+                SynthType oscOutLeft = lfoLeft.GetSample(SampleRate);
+                SynthType oscOutRight = lfoRight.GetSample(SampleRate);
 
-                LeftBuffer[i] = DryMix * inSample + WetMix * (wetOut / MaxVoices);
-                RightBuffer[i] = LeftBuffer[i]; // For stereo output, you might want different processing
+                // Convert delay time from ms to samples
+                SynthType delaySamplesLeft = (AverageDelayMs + DepthMs * oscOutLeft) * SampleRate / 1000;
+                SynthType delaySamplesRight = (AverageDelayMs + DepthMs * oscOutRight) * SampleRate / 1000;
+
+                // Set delay times independently
+                delayLineLeft.SetDelayInSamples(delaySamplesLeft);
+                delayLineRight.SetDelayInSamples(delaySamplesRight);
+
+                // Get the delayed samples for each channel
+                SynthType leftWet = delayLineLeft.GetSample(leftIn);
+                SynthType rightWet = delayLineRight.GetSample(rightIn);
+
+                // Mix wet and dry signals for each channel
+                LeftBuffer[i] = WetMix * leftWet + DryMix * leftIn;
+                RightBuffer[i] = WetMix * rightWet + DryMix * rightIn;
             }
+        }
+
+        // Parameters with validation
+        private SynthType averageDelayMs = 15.0f;
+        public SynthType AverageDelayMs
+        {
+            get => averageDelayMs;
+            set => averageDelayMs = Math.Clamp(value, 0.0f, 50.0f);
+        }
+
+        private SynthType depthMs = 5.0f;
+        public SynthType DepthMs
+        {
+            get => depthMs;
+            set => depthMs = Math.Clamp(value, 0.0f, 20.0f);
+        }
+
+        private SynthType dryMix = 0.5f;
+        public SynthType DryMix
+        {
+            get => dryMix;
+            set => dryMix = Math.Clamp(value, 0.0f, 1.0f); // Ensure within 0-1 range
+        }
+
+        private SynthType wetMix = 0.5f;
+        public SynthType WetMix
+        {
+            get => wetMix;
+            set => wetMix = Math.Clamp(value, 0.0f, 1.0f); // Ensure within 0-1 range
+        }
+
+        private float lfoFrequencyHz = 0.5f;
+        public float LfoFrequencyHz
+        {
+            get => lfoFrequencyHz;
+            set => lfoFrequencyHz = Math.Clamp(value, 0.1f, 5.0f); // Example range
         }
 
         public void Mute()
         {
-            foreach (var delayLine in delayLines)
-            {
-                delayLine.Mute();
-            }
+            delayLineLeft.Mute();
+            delayLineRight.Mute();
         }
-
-        // Parameters
-        public SynthType LfoDepth { get; set; } = 1.5f;
-        public int BaseDelayTime { get; set; } = 25; // milliseconds
-        public SynthType DryMix { get; set; } = 0.5f;
-        public SynthType WetMix { get; set; } = 0.5f;
     }
 }

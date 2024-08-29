@@ -70,7 +70,7 @@ func get_node_name_from_textbox_entry(node_name) -> String:
 				return "LFO0"
 			"LFO 2":
 				return "LFO1"
-			"LFO 3":
+			"LFO 3": 
 				return "LFO2"
 			"LFO 4":
 				return "LFO3"

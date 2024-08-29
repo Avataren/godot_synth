@@ -180,7 +180,7 @@ namespace Synth
             set => wetMix = Math.Clamp(value, 0.0f, 1.0f);
         }
 
-        private float lfoFrequencyHz = 0.2f;
+        private float lfoFrequencyHz = 0.5f;
         public float LfoFrequencyHz
         {
             get => lfoFrequencyHz;

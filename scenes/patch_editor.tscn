@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=25 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/nodes/AudioOutputNode.cs" id="2_suqit"]
@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://bqic6ky7yxt0h" path="res://scenes/ModulationMatrix.tscn" id="10_o17te"]
 [ext_resource type="PackedScene" uid="uid://cejpagsok6vs7" path="res://scenes/Distortion.tscn" id="10_p8ik4"]
 [ext_resource type="PackedScene" uid="uid://crjemhpcmuknv" path="res://scenes/PatchControls.tscn" id="14_4hro0"]
+[ext_resource type="PackedScene" uid="uid://b1kgu3ylb47cf" path="res://scenes/Chorus.tscn" id="18_f1001"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.02
@@ -42,10 +43,10 @@ Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxCon
 Oscillator3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator3")
 Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator4")
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/OscillatorContainer/OscillatorsContainer/Oscillator5")
-LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/LFO1")
-LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/LFO2")
-LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer/LFO3")
-LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer/LFO4")
+LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer/LFO1")
+LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer/LFO2")
+LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer/LFO3")
+LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer/LFO4")
 AudioOutputNode = NodePath("AudioOutputNode")
 AdsrVisualizer = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/ADSR_Envelope")
 metadata/_edit_vertical_guides_ = [-573.0]
@@ -97,7 +98,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 25
+theme_override_constants/separation = 20
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer"]
 layout_mode = 2
@@ -203,26 +204,39 @@ layout_mode = 2
 
 [node name="BottomContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 0
-theme_override_constants/separation = 60
+theme_override_constants/separation = 20
 alignment = 1
 
 [node name="ADSR_Envelope" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer" instance=ExtResource("10_6jxek")]
 layout_mode = 2
 button_group = SubResource("ButtonGroup_plx0a")
 
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer"]
+layout_mode = 2
+
+[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer" instance=ExtResource("6_4sevq")]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer" instance=ExtResource("6_4sevq")]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/GridContainer" instance=ExtResource("6_4sevq")]
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+
 [node name="ModulationMatrix" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer" instance=ExtResource("10_o17te")]
 custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
-
-[node name="LFOContainer" type="HBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 25
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer/LFOContainer"]
-layout_mode = 2
-theme_override_constants/separation = 30
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/BottomContainer"]
 layout_mode = 2
@@ -252,26 +266,8 @@ layout_mode = 2
 [node name="PatchControls" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("14_4hro0")]
 layout_mode = 2
 
-[node name="LFO1" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("6_4sevq")]
+[node name="Chorus" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("18_f1001")]
 layout_mode = 2
-size_flags_vertical = 4
-
-[node name="LFO2" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("6_4sevq")]
-layout_mode = 2
-size_flags_vertical = 4
-
-[node name="GridContainer" type="GridContainer" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer"]
-layout_mode = 2
-
-[node name="LFO3" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer" instance=ExtResource("6_4sevq")]
-visible = false
-layout_mode = 2
-size_flags_vertical = 4
-
-[node name="LFO4" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/GridContainer" instance=ExtResource("6_4sevq")]
-visible = false
-layout_mode = 2
-size_flags_vertical = 4
 
 [connection signal="CpuUsageChanged" from="." to="CanvasLayer/Control/VBoxContainer/HBoxContainer/CpuMeter" method="set_cpu_usage"]
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]

@@ -2,59 +2,81 @@ public class DelayLine
 {
     private SynthType[] buffer;
     private int writeIndex = 0;
-    private int bufferSize;
-    private int delaySamples;
-
-    // Feedback and Wet/Dry Mix
+    private int maxBufferSize;
+    private int currentDelaySamples;
+    private int targetDelaySamples;
+    private SynthType crossfadePosition = 0;
+    private const SynthType CrossfadeDuration = 0.050f; // 50ms crossfade
     public SynthType Feedback;
     public SynthType WetMix;
     public SynthType DryMix;
+    public SynthType SampleRate;
 
-    public DelayLine(int delayInMilliseconds, int sampleRate, SynthType feedback = 0.25f, SynthType wetMix = 0.5f, SynthType dryMix = 1.0f)
+    public DelayLine(int maxDelayInMilliseconds, SynthType sampleRate, SynthType feedback = 0.25f, SynthType wetMix = 0.5f, SynthType dryMix = 1.0f)
     {
-        SetDelayTime(delayInMilliseconds, sampleRate);
+        SampleRate = sampleRate;
+        maxBufferSize = (int)(maxDelayInMilliseconds * sampleRate / 1000.0) + 1;
+        buffer = new SynthType[maxBufferSize];
         this.Feedback = feedback;
         this.WetMix = wetMix;
         this.DryMix = dryMix;
+        SetDelayTime(maxDelayInMilliseconds);
     }
 
-    // Method to set or change the delay time dynamically
-    public void SetDelayTime(int delayInMilliseconds, int sampleRate)
+    public void SetDelayTime(int delayInMilliseconds)
     {
-        delaySamples = (int)(delayInMilliseconds * sampleRate / 1000.0);
-        bufferSize = delaySamples + 1;
-        buffer = new SynthType[bufferSize];
-        writeIndex = 0;
+        targetDelaySamples = (int)(delayInMilliseconds * SampleRate / 1000.0f);
+        targetDelaySamples = System.Math.Min(targetDelaySamples, maxBufferSize - 1);
+
+        if (currentDelaySamples != targetDelaySamples)
+        {
+            crossfadePosition = 0;
+        }
     }
 
     public void Mute()
     {
-        for (int i = 0; i < bufferSize; i++)
+        for (int i = 0; i < maxBufferSize; i++)
         {
             buffer[i] = 0.0f;
         }
     }
 
-    // Method to process a single sample with enhancements
     public SynthType Process(SynthType inputSample)
     {
-        // Read delayed sample
-        int readIndex = (writeIndex + bufferSize - delaySamples) % bufferSize;
-        var delayedSample = buffer[readIndex];
+        int oldReadIndex = (writeIndex - currentDelaySamples + maxBufferSize) % maxBufferSize;
+        int newReadIndex = (writeIndex - targetDelaySamples + maxBufferSize) % maxBufferSize;
 
-        // Apply feedback directly to the delayed sample, so even the first echo is attenuated
-        var processedSample = delayedSample * Feedback;
+        SynthType oldSample = buffer[oldReadIndex];
+        SynthType newSample = buffer[newReadIndex];
 
-        // Mix the original input with the processed (attenuated) delayed sample
-        var outputSample = (DryMix * inputSample) + (WetMix * processedSample);
+        SynthType outputSample;
 
-        // Write the new sample into the buffer with the feedback applied
+        if (crossfadePosition < 1)
+        {
+            // Crossfade between old and new delay times
+            outputSample = (1 - crossfadePosition) * oldSample + crossfadePosition * newSample;
+            crossfadePosition += 1 / (CrossfadeDuration * SampleRate);
+            if (crossfadePosition >= 1)
+            {
+                currentDelaySamples = targetDelaySamples;
+            }
+        }
+        else
+        {
+            outputSample = newSample;
+        }
+
+        // Apply feedback and wet/dry mix
+        var processedSample = outputSample * Feedback;
+        outputSample = (DryMix * inputSample) + (WetMix * processedSample);
+
+        // Write the new sample into the buffer
         buffer[writeIndex] = inputSample + processedSample;
 
-        // Increment write index and wrap around if necessary
-        writeIndex = (writeIndex + 1) % bufferSize;
+        // Increment write index
+        writeIndex = (writeIndex + 1) % maxBufferSize;
 
-        // Return the output sample
         return outputSample;
     }
 }

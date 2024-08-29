@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Synth
 {
@@ -9,31 +10,27 @@ namespace Synth
 
         public DelayEffectNode() : base()
         {
-            leftDelayLine = new DelayLine(300, (int)SampleRate);
-            rightDelayLine = new DelayLine(300, (int)SampleRate);
+            leftDelayLine = new DelayLine(1000, (int)SampleRate);
+            leftDelayLine.SetDelayTime(300);
+            rightDelayLine = new DelayLine(1000, (int)SampleRate);
+            rightDelayLine.SetDelayTime(300);
             LeftBuffer = new SynthType[NumSamples];
             RightBuffer = new SynthType[NumSamples];
         }
 
         public override void Process(double increment)
         {
-            var inputs = GetParameterNodes(AudioParam.StereoInput);
-            if (inputs == null || inputs.Count == 0)
+            var inputNode = GetParameterNodes(AudioParam.StereoInput).FirstOrDefault();
+            if (inputNode == null || !inputNode.Enabled)
                 return;
 
-            foreach (var node in inputs)
+            for (int i = 0; i < NumSamples; i++)
             {
-                if (node == null || !node.Enabled)
-                    continue;
+                var sampleL = inputNode.LeftBuffer[i];
+                var sampleR = inputNode.RightBuffer[i];
 
-                for (int i = 0; i < NumSamples; i++)
-                {
-                    var sampleL = node.LeftBuffer[i];
-                    var sampleR = node.RightBuffer[i];
-
-                    LeftBuffer[i] = leftDelayLine.Process(sampleL);
-                    RightBuffer[i] = rightDelayLine.Process(sampleR);
-                }
+                LeftBuffer[i] = leftDelayLine.Process(sampleL);
+                RightBuffer[i] = rightDelayLine.Process(sampleR);
             }
         }
 
@@ -47,8 +44,8 @@ namespace Synth
         {
             set
             {
-                leftDelayLine.SetDelayTime(value, (int)SampleRate);
-                rightDelayLine.SetDelayTime(value, (int)SampleRate);
+                leftDelayLine.SetDelayTime(value);
+                rightDelayLine.SetDelayTime(value);
             }
         }
 

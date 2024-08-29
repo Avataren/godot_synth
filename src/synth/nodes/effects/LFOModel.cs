@@ -58,27 +58,42 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SynthType GetSample(double sampleRate)
         {
-            double tableIndex = (phase + PhaseOffset) * SharedLFOTables.TableSize;
-            int index1 = (int)tableIndex & SharedLFOTables.TableMask;
-            int index2 = (index1 + 1) & SharedLFOTables.TableMask;
-            float fraction = (float)(tableIndex - Math.Floor(tableIndex));
+            // Calculate the phase increment for this sample
+            double phaseIncrement = Frequency / sampleRate;
 
-            var currentTable = Waveform switch
+            // Apply oversampling for anti-aliasing
+            const int oversampleFactor = 4;
+            SynthType accumulatedSample = 0;
+
+            for (int i = 0; i < oversampleFactor; i++)
             {
-                LFOWaveform.Sine => SharedLFOTables.SineTable,
-                LFOWaveform.Triangle => SharedLFOTables.TriangleTable,
-                LFOWaveform.Square => SharedLFOTables.SquareTable,
-                LFOWaveform.Saw => SharedLFOTables.SawTable,
-                _ => SharedLFOTables.SineTable
-            };
+                double tableIndex = (phase + PhaseOffset) * SharedLFOTables.TableSize;
+                int index1 = (int)tableIndex & SharedLFOTables.TableMask;
+                int index2 = (index1 + 1) & SharedLFOTables.TableMask;
+                float fraction = (float)(tableIndex - Math.Floor(tableIndex));
 
-            SynthType sample1 = currentTable[index1];
-            SynthType sample2 = currentTable[index2];
-            SynthType interpolatedSample = sample1 + (sample2 - sample1) * fraction;
+                var currentTable = Waveform switch
+                {
+                    LFOWaveform.Sine => SharedLFOTables.SineTable,
+                    LFOWaveform.Triangle => SharedLFOTables.TriangleTable,
+                    LFOWaveform.Square => SharedLFOTables.SquareTable,
+                    LFOWaveform.Saw => SharedLFOTables.SawTable,
+                    _ => SharedLFOTables.SineTable
+                };
 
-            phase += Frequency / sampleRate;
-            if (phase >= 1.0) phase -= 1.0;
-            return interpolatedSample;
+                SynthType sample1 = currentTable[index1];
+                SynthType sample2 = currentTable[index2];
+                SynthType interpolatedSample = sample1 + (sample2 - sample1) * fraction;
+
+                accumulatedSample += interpolatedSample;
+
+                // Increment phase for each oversample
+                phase += phaseIncrement / oversampleFactor;
+                if (phase >= 1.0) phase -= 1.0;
+            }
+
+            // Return the average of oversampled values
+            return accumulatedSample / oversampleFactor;
         }
     }
 }

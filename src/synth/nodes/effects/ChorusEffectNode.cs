@@ -94,9 +94,9 @@ namespace Synth
             delayLineLeft = new ChorusDelayLine(maxDelayInSamples);
             delayLineRight = new ChorusDelayLine(maxDelayInSamples);
 
-            // Introduce a phase offset for the right channel LFO
+            // Initialize LFOs for left and right channels
             lfoLeft = new ChorusLFO(LfoFrequencyHz);
-            lfoRight = new ChorusLFO(LfoFrequencyHz, 0.5f); // 0.5 radians offset
+            lfoRight = new ChorusLFO(LfoFrequencyHz, 0.5f); // Phase offset for stereo effect
 
             LeftBuffer = new SynthType[NumSamples];
             RightBuffer = new SynthType[NumSamples];
@@ -113,7 +113,7 @@ namespace Synth
                 SynthType leftIn = input.LeftBuffer[i];
                 SynthType rightIn = input.RightBuffer[i];
 
-                // Calculate LFO output for each channel with a phase offset
+                // Calculate LFO output for each channel
                 SynthType oscOutLeft = lfoLeft.GetSample(SampleRate);
                 SynthType oscOutRight = lfoRight.GetSample(SampleRate);
 
@@ -125,7 +125,7 @@ namespace Synth
                 delayLineLeft.SetDelayInSamples(delaySamplesLeft);
                 delayLineRight.SetDelayInSamples(delaySamplesRight);
 
-                // Get the delayed samples for each channel
+                // Process the current sample `i` through the delay line
                 SynthType leftWet = delayLineLeft.GetSample(leftIn);
                 SynthType rightWet = delayLineRight.GetSample(rightIn);
 
@@ -177,4 +177,5 @@ namespace Synth
             delayLineRight.Mute();
         }
     }
+
 }

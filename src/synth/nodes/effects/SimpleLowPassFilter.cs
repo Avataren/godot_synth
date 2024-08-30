@@ -21,5 +21,10 @@ namespace Synth
             previousOutput += alpha * (input - previousOutput);
             return previousOutput;
         }
+
+        public void Mute()
+        {
+            previousOutput = SynthTypeHelper.Zero;
+        }
     }
 }

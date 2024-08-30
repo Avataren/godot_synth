@@ -39,15 +39,13 @@ namespace Synth
         {
             CurrentDelayInMilliseconds = Math.Min(delayInMilliseconds, MaxDelayInMilliseconds);
             SynthType delaySamples = CurrentDelayInMilliseconds * SampleRate / 1000.0f;
-            SetDelayInSamples(delaySamples);
+            SetDelayInSamples((int)delaySamples);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetDelayInSamples(SynthType delaySamples)
+        public void SetDelayInSamples(int delaySamples)
         {
-            int intDelay = (int)delaySamples;
-            fraction = delaySamples - intDelay;
-            readIndex = (writeIndex - intDelay + bufferSize) % bufferSize;
+            readIndex = (writeIndex - delaySamples + bufferSize) % bufferSize;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -64,7 +62,16 @@ namespace Synth
             SynthType x1 = buffer[index1];
 
             SynthType delaySample = a * (x0 - prevOutput) + x1;
-            prevOutput = delaySample;
+
+            // If feedback is zero, ensure prevOutput doesn't contribute to the output
+            if (Feedback == 0)
+            {
+                prevOutput = 0;
+            }
+            else
+            {
+                prevOutput = delaySample;
+            }
 
             // Apply feedback and wet/dry mix
             SynthType feedbackSample = delaySample * Feedback;
@@ -79,6 +86,7 @@ namespace Synth
 
             return outputSample;
         }
+
 
         public void Mute()
         {

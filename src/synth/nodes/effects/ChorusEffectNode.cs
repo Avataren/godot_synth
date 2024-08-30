@@ -23,7 +23,7 @@ namespace Synth
 
             for (int i = 0; i < NumVoices * 2; i++)
             {
-                delayLines[i] = new DelayLine(maxDelayInSamples,SampleRate, 0.0f, 1.0f, 0.0f);
+                delayLines[i] = new DelayLine(maxDelayInSamples,SampleRate, 0.0f, 0.95f, 0.0f);
                 LFOWaveform waveform = i % 2 == 0 ? LFOWaveform.Sine : LFOWaveform.Triangle;
                 lfos[i] = new LFOModel(LfoFrequencyHz + i * 0.01f, waveform, i * 0.1f);
                 lowPassFilters[i] = new SimpleLowPassFilter(10000.0f, SampleRate);
@@ -66,7 +66,7 @@ namespace Synth
                     // Apply low-pass filter before the delay line
                     lowPassFilters[v * 2].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                     SynthType filteredLeftIn = lowPassFilters[v * 2].Process(leftIn + Feedback * feedbackBuffer[i * 2]);
-                    delayLines[v * 2].SetDelayInSamples(delaySamplesLeft);
+                    delayLines[v * 2].SetDelayInSamples((int)delaySamplesLeft);
                     SynthType delayedSampleLeft = delayLines[v * 2].Process(filteredLeftIn);
                     leftWet += delayedSampleLeft;
 
@@ -78,7 +78,7 @@ namespace Synth
                     // Apply low-pass filter before the delay line
                     lowPassFilters[v * 2 + 1].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                     SynthType filteredRightIn = lowPassFilters[v * 2 + 1].Process(rightIn + Feedback * feedbackBuffer[i * 2 + 1]);
-                    delayLines[v * 2 + 1].SetDelayInSamples(delaySamplesRight);
+                    delayLines[v * 2 + 1].SetDelayInSamples((int)delaySamplesRight);
                     SynthType delayedSampleRight = delayLines[v * 2 + 1].Process(filteredRightIn);
                     rightWet += delayedSampleRight;
                 }
@@ -171,7 +171,12 @@ namespace Synth
             {
                 delayLine.Mute();
             }
-            Array.Clear(feedbackBuffer, 0, feedbackBuffer.Length);
+            feedbackBuffer.AsSpan().Clear();
+
+            for (int i = 0; i < NumVoices * 2; i++)
+            {
+                lowPassFilters[i].Mute();
+            }
         }
 
         public void SetLFOWaveform(int lfoIndex, LFOWaveform waveform)

@@ -47,7 +47,7 @@ namespace Synth
                 // Left channel
                 lowPassFilters[0].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                 SynthType filteredLeftIn = lowPassFilters[0].Process(leftIn + Feedback * feedbackBuffer[i * 2]);
-                delayLines[0].SetDelayInSamples(delaySamples);
+                delayLines[0].SetDelayInSamples((int)delaySamples);
                 SynthType delayedSampleLeft = delayLines[0].Process(filteredLeftIn);
                 LeftBuffer[i] = WetMix * (delayedSampleLeft + Feedback * feedbackBuffer[i * 2]) + (1 - WetMix) * leftIn;
                 feedbackBuffer[i * 2] = delayedSampleLeft;
@@ -55,7 +55,7 @@ namespace Synth
                 // Right channel
                 lowPassFilters[1].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                 SynthType filteredRightIn = lowPassFilters[1].Process(rightIn + Feedback * feedbackBuffer[i * 2 + 1]);
-                delayLines[1].SetDelayInSamples(delaySamples);
+                delayLines[1].SetDelayInSamples((int)delaySamples);
                 SynthType delayedSampleRight = delayLines[1].Process(filteredRightIn);
                 RightBuffer[i] = WetMix * (delayedSampleRight + Feedback * feedbackBuffer[i * 2 + 1]) + (1 - WetMix) * rightIn;
                 feedbackBuffer[i * 2 + 1] = delayedSampleRight;
@@ -115,7 +115,11 @@ namespace Synth
             {
                 delayLine.Mute();
             }
-            Array.Clear(feedbackBuffer, 0, feedbackBuffer.Length);
+            feedbackBuffer.AsSpan().Clear();
+            for (int i = 0; i < 2; i++)
+            {
+                lowPassFilters[i].Mute();
+            }
         }
 
         public void SetLFOWaveform(int lfoIndex, LFOWaveform waveform)

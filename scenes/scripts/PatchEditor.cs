@@ -432,6 +432,7 @@ public partial class PatchEditor : Node2D
 	private void _on_flanger_enabled_changed(bool enabled)
 	{
 		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.flangerEffectNode, enabled);
+		AudioOutputNode.CurrentPatch.flangerEffectNode.Mute();
 	}
 
 	private void _on_flanger_feedback_changed(float value)
@@ -452,6 +453,7 @@ public partial class PatchEditor : Node2D
 	private void _on_chorus_enabled_changed(bool enabled)
 	{
 		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.chorusEffectNode, enabled);
+		AudioOutputNode.CurrentPatch.chorusEffectNode.Mute();
 	}
 
 	int activeLFO = 0;

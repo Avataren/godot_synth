@@ -10,10 +10,8 @@ namespace Synth
 
         public DelayEffectNode() : base()
         {
-            leftDelayLine = new DelayLine(1000, (int)SampleRate);
-            leftDelayLine.SetDelayTime(300);
-            rightDelayLine = new DelayLine(1000, (int)SampleRate);
-            rightDelayLine.SetDelayTime(300);
+            leftDelayLine = new DelayLine(300, (int)SampleRate);
+            rightDelayLine = new DelayLine(300, (int)SampleRate);
             LeftBuffer = new SynthType[NumSamples];
             RightBuffer = new SynthType[NumSamples];
         }
@@ -21,7 +19,7 @@ namespace Synth
         public override void Process(double increment)
         {
             var inputNode = GetParameterNodes(AudioParam.StereoInput).FirstOrDefault();
-            if (inputNode == null || !inputNode.Enabled)
+            if (inputNode == null)
                 return;
 
             for (int i = 0; i < NumSamples; i++)

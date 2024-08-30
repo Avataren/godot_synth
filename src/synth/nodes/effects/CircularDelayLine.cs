@@ -14,6 +14,8 @@ namespace Synth
 
         public CircularDelayLine(int sizeInSamples)
         {
+            readIndex = 0;
+            writeIndex = 0;
             bufferSize = sizeInSamples;
             buffer = new SynthType[bufferSize];
             Array.Clear(buffer, 0, bufferSize);
@@ -52,7 +54,7 @@ namespace Synth
 
         public void Mute()
         {
-            Array.Clear(buffer, 0, bufferSize);
+            buffer.AsSpan().Clear();
             prevOutput = 0;
         }
     }

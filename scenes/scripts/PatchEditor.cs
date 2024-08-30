@@ -415,6 +415,40 @@ public partial class PatchEditor : Node2D
 		AudioOutputNode.CurrentPatch.chorusEffectNode.WetMix = value;
 	}
 
+	private void _on_flanger_cutoff_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.flangerEffectNode.FilterFrequencyHz = FilterNode.TransformToCutoff(value, 20.0f, 20000.0f);
+	}
+	private void _on_flanger_delay_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.flangerEffectNode.AverageDelayMs = value;
+	}
+
+	private void _on_flanger_depth_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.flangerEffectNode.DepthMs = value;
+	}
+
+	private void _on_flanger_enabled_changed(bool enabled)
+	{
+		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.flangerEffectNode, enabled);
+	}
+
+	private void _on_flanger_feedback_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.flangerEffectNode.Feedback = value;
+	}
+
+	private void _on_flanger_frequency_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.flangerEffectNode.LfoFrequencyHz = value;
+	}
+
+	private void _on_flanger_mix_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.flangerEffectNode.WetMix = value;
+	}
+
 	private void _on_chorus_enabled_changed(bool enabled)
 	{
 		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.chorusEffectNode, enabled);

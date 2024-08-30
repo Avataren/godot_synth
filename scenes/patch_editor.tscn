@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://0idual1an6x7"]
+[gd_scene load_steps=26 format=3 uid="uid://0idual1an6x7"]
 
 [ext_resource type="Script" path="res://scenes/scripts/PatchEditor.cs" id="1_ox65v"]
 [ext_resource type="Script" path="res://src/synth/nodes/AudioOutputNode.cs" id="2_suqit"]
@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://cejpagsok6vs7" path="res://scenes/Distortion.tscn" id="10_p8ik4"]
 [ext_resource type="PackedScene" uid="uid://crjemhpcmuknv" path="res://scenes/PatchControls.tscn" id="14_4hro0"]
 [ext_resource type="PackedScene" uid="uid://b1kgu3ylb47cf" path="res://scenes/Chorus.tscn" id="18_f1001"]
+[ext_resource type="PackedScene" uid="uid://cn2kbp7i3tety" path="res://scenes/Flanger.tscn" id="19_cifj1"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.02
@@ -272,6 +273,9 @@ layout_mode = 2
 [node name="Chorus" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("18_f1001")]
 layout_mode = 2
 
+[node name="Flanger" parent="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer" instance=ExtResource("19_cifj1")]
+layout_mode = 2
+
 [connection signal="CpuUsageChanged" from="." to="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/HBoxContainer/CpuMeter" method="set_cpu_usage"]
 [connection signal="item_selected" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/HBoxContainer/OctaveSelect" to="." method="_on_octave_select_item_selected"]
 [connection signal="pressed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]
@@ -311,3 +315,10 @@ layout_mode = 2
 [connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Chorus" to="." method="_on_chorus_feedback_changed"]
 [connection signal="frequency_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Chorus" to="." method="_on_chorus_frequency_changed"]
 [connection signal="mix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Chorus" to="." method="_on_chorus_mix_changed"]
+[connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Flanger" to="." method="_on_flanger_cutoff_changed"]
+[connection signal="delay_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Flanger" to="." method="_on_flanger_delay_changed"]
+[connection signal="depth_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Flanger" to="." method="_on_flanger_depth_changed"]
+[connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Flanger" to="." method="_on_flanger_enabled_changed"]
+[connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Flanger" to="." method="_on_flanger_feedback_changed"]
+[connection signal="frequency_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Flanger" to="." method="_on_flanger_frequency_changed"]
+[connection signal="mix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Flanger" to="." method="_on_flanger_mix_changed"]

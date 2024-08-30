@@ -23,6 +23,7 @@ public class SynthPatch
     public NoiseNode noiseNode;
     public FuzzNode fuzzNode;
     public ChorusEffectNode chorusEffectNode;
+    public ChorusEffectNode flangerEffectNode;
     MixerNode mix1;
 
     //Dictionary<int, float> NoteVelocityRegister = new Dictionary<int, float>();
@@ -35,6 +36,7 @@ public class SynthPatch
         mix1 = graph.CreateNode<MixerNode>("Mix1");
         filterNode = graph.CreateNode<FilterNode>("MoogFilter");
         chorusEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
+        flangerEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
@@ -96,11 +98,11 @@ public class SynthPatch
         graph.Connect(fuzzNode, filterNode, AudioParam.StereoInput, ModulationType.Add);
 
         //graph.Connect(filterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
-        graph.Connect(filterNode, chorusEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(filterNode, flangerEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(flangerEffectNode, chorusEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(chorusEffectNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
-
 
         graph.TopologicalSortWorkingGraph();
         GD.Print("Initial setup:");
@@ -112,6 +114,7 @@ public class SynthPatch
         }
         this.waveTableBank = waveTableBank;
         //graph.SetNodeEnabled(filterNode, false);
+        graph.SetNodeEnabled(flangerEffectNode, false);
         graph.SetNodeEnabled(chorusEffectNode, false);
         graph.SetNodeEnabled(noiseNode, false);
         graph.SetNodeEnabled(fuzzNode, false);

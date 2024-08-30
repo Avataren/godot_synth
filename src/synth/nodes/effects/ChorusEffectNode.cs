@@ -5,7 +5,7 @@ namespace Synth
 {
     public class ChorusEffectNode : AudioNode
     {
-        private readonly CircularDelayLine[] delayLines;
+        private readonly DelayLine[] delayLines;
         private readonly LFOModel[] lfos;
         private readonly LFOModel globalLfo;
         private readonly SynthType[] feedbackBuffer;
@@ -15,7 +15,7 @@ namespace Synth
         public ChorusEffectNode() : base()
         {
             int maxDelayInSamples = (int)((MaxAverageDelayMs + MaxDepthMs) * SampleRate / 1000) + 1;
-            delayLines = new CircularDelayLine[NumVoices * 2]; // Stereo, so 2 per voice
+            delayLines = new DelayLine[NumVoices * 2]; // Stereo, so 2 per voice
             lfos = new LFOModel[NumVoices * 2];
             globalLfo = new LFOModel(GlobalLfoFrequencyHz, LFOWaveform.Sine, 0);
             feedbackBuffer = new SynthType[NumSamples * 2]; // Stereo feedback buffer
@@ -23,7 +23,7 @@ namespace Synth
 
             for (int i = 0; i < NumVoices * 2; i++)
             {
-                delayLines[i] = new CircularDelayLine(maxDelayInSamples);
+                delayLines[i] = new DelayLine(maxDelayInSamples,SampleRate, 0.0f, 1.0f, 0.0f);
                 LFOWaveform waveform = i % 2 == 0 ? LFOWaveform.Sine : LFOWaveform.Triangle;
                 lfos[i] = new LFOModel(LfoFrequencyHz + i * 0.01f, waveform, i * 0.1f);
                 lowPassFilters[i] = new SimpleLowPassFilter(10000.0f, SampleRate);
@@ -67,7 +67,7 @@ namespace Synth
                     lowPassFilters[v * 2].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                     SynthType filteredLeftIn = lowPassFilters[v * 2].Process(leftIn + Feedback * feedbackBuffer[i * 2]);
                     delayLines[v * 2].SetDelayInSamples(delaySamplesLeft);
-                    SynthType delayedSampleLeft = delayLines[v * 2].GetSample(filteredLeftIn);
+                    SynthType delayedSampleLeft = delayLines[v * 2].Process(filteredLeftIn);
                     leftWet += delayedSampleLeft;
 
                     // Right channel
@@ -79,7 +79,7 @@ namespace Synth
                     lowPassFilters[v * 2 + 1].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                     SynthType filteredRightIn = lowPassFilters[v * 2 + 1].Process(rightIn + Feedback * feedbackBuffer[i * 2 + 1]);
                     delayLines[v * 2 + 1].SetDelayInSamples(delaySamplesRight);
-                    SynthType delayedSampleRight = delayLines[v * 2 + 1].GetSample(filteredRightIn);
+                    SynthType delayedSampleRight = delayLines[v * 2 + 1].Process(filteredRightIn);
                     rightWet += delayedSampleRight;
                 }
 

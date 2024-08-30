@@ -1,82 +1,101 @@
-public class DelayLine
+using System;
+using System.Runtime.CompilerServices;
+
+namespace Synth
 {
-    private SynthType[] buffer;
-    private int writeIndex = 0;
-    private int maxBufferSize;
-    private int currentDelaySamples;
-    private int targetDelaySamples;
-    private SynthType crossfadePosition = 0;
-    private const SynthType CrossfadeDuration = 0.050f; // 50ms crossfade
-    public SynthType Feedback;
-    public SynthType WetMix;
-    public SynthType DryMix;
-    public SynthType SampleRate;
-
-    public DelayLine(int maxDelayInMilliseconds, SynthType sampleRate, SynthType feedback = 0.25f, SynthType wetMix = 0.5f, SynthType dryMix = 1.0f)
+    public class DelayLine
     {
-        SampleRate = sampleRate;
-        maxBufferSize = (int)(maxDelayInMilliseconds * sampleRate / 1000.0) + 1;
-        buffer = new SynthType[maxBufferSize];
-        this.Feedback = feedback;
-        this.WetMix = wetMix;
-        this.DryMix = dryMix;
-        SetDelayTime(maxDelayInMilliseconds);
-    }
+        private SynthType[] buffer;
+        private int writeIndex;
+        private int bufferSize;
+        private int readIndex;
+        private SynthType fraction;
+        private SynthType prevOutput;
 
-    public void SetDelayTime(int delayInMilliseconds)
-    {
-        targetDelaySamples = (int)(delayInMilliseconds * SampleRate / 1000.0f);
-        targetDelaySamples = System.Math.Min(targetDelaySamples, maxBufferSize - 1);
+        public SynthType Feedback { get; set; }
+        public SynthType WetMix { get; set; }
+        public SynthType DryMix { get; set; }
+        public SynthType SampleRate { get; set; }
 
-        if (currentDelaySamples != targetDelaySamples)
+        public int MaxDelayInMilliseconds { get; private set; }
+        public int CurrentDelayInMilliseconds { get; private set; }
+
+        public DelayLine(int maxDelayInMilliseconds, SynthType sampleRate, SynthType feedback = 0.25f, SynthType wetMix = 0.5f, SynthType dryMix = 1.0f)
         {
-            crossfadePosition = 0;
+            SampleRate = sampleRate;
+            MaxDelayInMilliseconds = maxDelayInMilliseconds;
+            bufferSize = (int)(maxDelayInMilliseconds * sampleRate / 1000.0) + 1;
+            buffer = new SynthType[bufferSize];
+            Array.Clear(buffer, 0, bufferSize);
+            Feedback = feedback;
+            WetMix = wetMix;
+            DryMix = dryMix;
+            prevOutput = 0;
+            SetDelayTime(maxDelayInMilliseconds);
         }
-    }
 
-    public void Mute()
-    {
-        for (int i = 0; i < maxBufferSize; i++)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetDelayTime(int delayInMilliseconds)
         {
-            buffer[i] = 0.0f;
+            CurrentDelayInMilliseconds = Math.Min(delayInMilliseconds, MaxDelayInMilliseconds);
+            SynthType delaySamples = CurrentDelayInMilliseconds * SampleRate / 1000.0f;
+            SetDelayInSamples(delaySamples);
         }
-    }
 
-    public SynthType Process(SynthType inputSample)
-    {
-        int oldReadIndex = (writeIndex - currentDelaySamples + maxBufferSize) % maxBufferSize;
-        int newReadIndex = (writeIndex - targetDelaySamples + maxBufferSize) % maxBufferSize;
-
-        SynthType oldSample = buffer[oldReadIndex];
-        SynthType newSample = buffer[newReadIndex];
-
-        SynthType outputSample;
-
-        if (crossfadePosition < 1)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetDelayInSamples(SynthType delaySamples)
         {
-            // Crossfade between old and new delay times
-            outputSample = (1 - crossfadePosition) * oldSample + crossfadePosition * newSample;
-            crossfadePosition += 1 / (CrossfadeDuration * SampleRate);
-            if (crossfadePosition >= 1)
+            int intDelay = (int)delaySamples;
+            fraction = delaySamples - intDelay;
+            readIndex = (writeIndex - intDelay + bufferSize) % bufferSize;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SynthType Process(SynthType inputSample)
+        {
+            // All-pass interpolation
+            int index0 = readIndex;
+            int index1 = (readIndex + 1) % bufferSize;
+
+            SynthType frac = fraction;
+            SynthType a = (1 - frac) / (1 + frac);
+
+            SynthType x0 = buffer[index0];
+            SynthType x1 = buffer[index1];
+
+            SynthType delaySample = a * (x0 - prevOutput) + x1;
+            prevOutput = delaySample;
+
+            // Apply feedback and wet/dry mix
+            SynthType feedbackSample = delaySample * Feedback;
+            SynthType outputSample = (DryMix * inputSample) + (WetMix * delaySample);
+
+            // Write the new sample into the buffer
+            buffer[writeIndex] = inputSample + feedbackSample;
+
+            // Update indices
+            writeIndex = (writeIndex + 1) % bufferSize;
+            readIndex = (readIndex + 1) % bufferSize;
+
+            return outputSample;
+        }
+
+        public void Mute()
+        {
+            buffer.AsSpan().Clear();
+            prevOutput = 0;
+        }
+
+        public void SetMaxDelayTime(int maxDelayInMilliseconds)
+        {
+            MaxDelayInMilliseconds = maxDelayInMilliseconds;
+            int newBufferSize = (int)(maxDelayInMilliseconds * SampleRate / 1000.0) + 1;
+            if (newBufferSize > bufferSize)
             {
-                currentDelaySamples = targetDelaySamples;
+                Array.Resize(ref buffer, newBufferSize);
+                bufferSize = newBufferSize;
             }
+            SetDelayTime(CurrentDelayInMilliseconds); // Ensure current delay is still valid
         }
-        else
-        {
-            outputSample = newSample;
-        }
-
-        // Apply feedback and wet/dry mix
-        var processedSample = outputSample * Feedback;
-        outputSample = (DryMix * inputSample) + (WetMix * processedSample);
-
-        // Write the new sample into the buffer
-        buffer[writeIndex] = inputSample + processedSample;
-
-        // Increment write index
-        writeIndex = (writeIndex + 1) % maxBufferSize;
-
-        return outputSample;
     }
 }

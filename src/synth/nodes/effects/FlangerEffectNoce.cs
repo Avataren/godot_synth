@@ -5,7 +5,7 @@ namespace Synth
 {
     public class FlangerEffectNode : AudioNode
     {
-        private readonly CircularDelayLine[] delayLines;
+        private readonly DelayLine[] delayLines;
         private readonly LFOModel lfo;
         private readonly SynthType[] feedbackBuffer;
         private readonly SimpleLowPassFilter[] lowPassFilters;
@@ -13,14 +13,14 @@ namespace Synth
         public FlangerEffectNode() : base()
         {
             int maxDelayInSamples = (int)((MaxAverageDelayMs + MaxDepthMs) * SampleRate / 1000) + 1;
-            delayLines = new CircularDelayLine[2]; // Stereo: one delay line per channel
+            delayLines = new DelayLine[2]; // Stereo: one delay line per channel
             lfo = new LFOModel(LfoFrequencyHz, LFOWaveform.Sine, 0);
             feedbackBuffer = new SynthType[NumSamples * 2]; // Stereo feedback buffer
             lowPassFilters = new SimpleLowPassFilter[2];
 
             for (int i = 0; i < 2; i++)
             {
-                delayLines[i] = new CircularDelayLine(maxDelayInSamples);
+                delayLines[i] = new DelayLine(maxDelayInSamples, SampleRate, 0.0f, 1.0f, 0.0f);
                 lowPassFilters[i] = new SimpleLowPassFilter(10000.0f, SampleRate);
             }
 
@@ -48,7 +48,7 @@ namespace Synth
                 lowPassFilters[0].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                 SynthType filteredLeftIn = lowPassFilters[0].Process(leftIn + Feedback * feedbackBuffer[i * 2]);
                 delayLines[0].SetDelayInSamples(delaySamples);
-                SynthType delayedSampleLeft = delayLines[0].GetSample(filteredLeftIn);
+                SynthType delayedSampleLeft = delayLines[0].Process(filteredLeftIn);
                 LeftBuffer[i] = WetMix * (delayedSampleLeft + Feedback * feedbackBuffer[i * 2]) + (1 - WetMix) * leftIn;
                 feedbackBuffer[i * 2] = delayedSampleLeft;
 
@@ -56,7 +56,7 @@ namespace Synth
                 lowPassFilters[1].SetCutoffFrequency(FilterFrequencyHz, SampleRate);
                 SynthType filteredRightIn = lowPassFilters[1].Process(rightIn + Feedback * feedbackBuffer[i * 2 + 1]);
                 delayLines[1].SetDelayInSamples(delaySamples);
-                SynthType delayedSampleRight = delayLines[1].GetSample(filteredRightIn);
+                SynthType delayedSampleRight = delayLines[1].Process(filteredRightIn);
                 RightBuffer[i] = WetMix * (delayedSampleRight + Feedback * feedbackBuffer[i * 2 + 1]) + (1 - WetMix) * rightIn;
                 feedbackBuffer[i * 2 + 1] = delayedSampleRight;
             }

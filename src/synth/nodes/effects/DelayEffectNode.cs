@@ -10,8 +10,10 @@ namespace Synth
 
         public DelayEffectNode() : base()
         {
-            leftDelayLine = new DelayLine(300, (int)SampleRate);
-            rightDelayLine = new DelayLine(300, (int)SampleRate);
+            leftDelayLine = new DelayLine(1000, (int)SampleRate);
+            rightDelayLine = new DelayLine(1000, (int)SampleRate);
+            leftDelayLine.SetDelayTime(300);
+            rightDelayLine.SetDelayTime(300);
             LeftBuffer = new SynthType[NumSamples];
             RightBuffer = new SynthType[NumSamples];
         }

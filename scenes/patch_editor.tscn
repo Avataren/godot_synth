@@ -18,7 +18,7 @@
 [ext_resource type="PackedScene" uid="uid://cejpagsok6vs7" path="res://scenes/Distortion.tscn" id="10_p8ik4"]
 [ext_resource type="PackedScene" uid="uid://crjemhpcmuknv" path="res://scenes/PatchControls.tscn" id="14_4hro0"]
 [ext_resource type="PackedScene" uid="uid://b1kgu3ylb47cf" path="res://scenes/Chorus.tscn" id="18_f1001"]
-[ext_resource type="PackedScene" uid="uid://cn2kbp7i3tety" path="res://scenes/Flanger.tscn" id="19_cifj1"]
+[ext_resource type="PackedScene" path="res://scenes/Flanger.tscn" id="19_cifj1"]
 
 [sub_resource type="AudioStreamGenerator" id="AudioStreamGenerator_whm0j"]
 buffer_length = 0.02

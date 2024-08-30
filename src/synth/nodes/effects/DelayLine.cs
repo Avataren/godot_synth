@@ -63,15 +63,7 @@ namespace Synth
 
             SynthType delaySample = a * (x0 - prevOutput) + x1;
 
-            // If feedback is zero, ensure prevOutput doesn't contribute to the output
-            if (Feedback == 0)
-            {
-                prevOutput = 0;
-            }
-            else
-            {
-                prevOutput = delaySample;
-            }
+
 
             // Apply feedback and wet/dry mix
             SynthType feedbackSample = delaySample * Feedback;
@@ -83,7 +75,7 @@ namespace Synth
             // Update indices
             writeIndex = (writeIndex + 1) % bufferSize;
             readIndex = (readIndex + 1) % bufferSize;
-
+            prevOutput = outputSample;
             return outputSample;
         }
 

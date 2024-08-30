@@ -6,6 +6,7 @@ signal frequency_changed
 signal feedback_changed
 signal mix_changed
 signal enabled_changed
+signal cutoff_changed
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -36,3 +37,6 @@ func _on_wet_knob_value_changed(val) -> void:
 
 func _on_enabled_check_box_toggled(toggled_on: bool) -> void:
 	enabled_changed.emit(toggled_on)
+
+func _on_filter_knob_value_changed(val) -> void:
+	cutoff_changed.emit(val)

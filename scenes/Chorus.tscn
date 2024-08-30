@@ -62,6 +62,15 @@ sensitivity = 0.1
 title = "Feedback"
 current_value = 0.2
 
+[node name="FilterKnob" parent="VBoxContainer/GridContainer" instance=ExtResource("1_ib0y0")]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+sensitivity = 0.1
+title = "Filter"
+current_value = 0.5
+
 [node name="WetKnob" parent="VBoxContainer/GridContainer" instance=ExtResource("1_ib0y0")]
 unique_name_in_owner = true
 layout_mode = 2
@@ -76,4 +85,5 @@ current_value = 0.5
 [connection signal="value_changed" from="VBoxContainer/GridContainer/DepthKnob" to="." method="_on_depth_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/GridContainer/FrequencyKnob" to="." method="_on_frequency_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/GridContainer/FeedbackKnob" to="." method="_on_feedback_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/GridContainer/FilterKnob" to="." method="_on_filter_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/GridContainer/WetKnob" to="." method="_on_wet_knob_value_changed"]

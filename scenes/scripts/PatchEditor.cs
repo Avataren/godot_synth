@@ -400,11 +400,16 @@ public partial class PatchEditor : Node2D
 		AudioOutputNode.CurrentPatch.chorusEffectNode.Feedback = value;
 	}
 
+	private void _on_chorus_cutoff_changed(float value)
+	{
+		AudioOutputNode.CurrentPatch.chorusEffectNode.FilterFrequencyHz = FilterNode.TransformToCutoff(value, 20.0f, 20000.0f);
+	}
+
 	private void _on_chorus_frequency_changed(float value)
 	{
 		AudioOutputNode.CurrentPatch.chorusEffectNode.LfoFrequencyHz = value;
-	}	
-	
+	}
+
 	private void _on_chorus_mix_changed(float value)
 	{
 		AudioOutputNode.CurrentPatch.chorusEffectNode.WetMix = value;

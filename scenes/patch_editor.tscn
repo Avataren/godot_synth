@@ -304,6 +304,7 @@ layout_mode = 2
 [connection signal="resonance_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/MoogFilter" to="." method="_on_resonance_changed"]
 [connection signal="gain_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PatchControls" to="." method="_on_patch_controls_gain_changed"]
 [connection signal="portamento_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PatchControls" to="." method="_on_patch_controls_portamento_changed"]
+[connection signal="cutoff_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Chorus" to="." method="_on_chorus_cutoff_changed"]
 [connection signal="delay_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Chorus" to="." method="_on_chorus_delay_changed"]
 [connection signal="depth_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Chorus" to="." method="_on_chorus_depth_changed"]
 [connection signal="enabled_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Chorus" to="." method="_on_chorus_enabled_changed"]

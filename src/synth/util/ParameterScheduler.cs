@@ -72,7 +72,7 @@ namespace Synth
 
         public void ScheduleValuesAtTimeBulk(AudioNode node, AudioParam param, IEnumerable<(double timeInSeconds, double value)> eventsToAdd)
         {
-            _stopwatch.Start();
+            // _stopwatch.Start();
             var nodeLock = _nodeLocks[node];
             double sampleRate = _sampleRate;
 
@@ -106,16 +106,15 @@ namespace Synth
             finally
             {
                 nodeLock.ExitWriteLock();
-                _stopwatch.Stop();
-                GD.Print($"ScheduleValuesAtTimeBulk executed in {_stopwatch.Elapsed.TotalMilliseconds} ms");
-                _stopwatch.Reset();                
+                // _stopwatch.Stop();
+                // GD.Print($"ScheduleValuesAtTimeBulk executed in {_stopwatch.Elapsed.TotalMilliseconds} ms");
+                // _stopwatch.Reset();                
             }
         }
 
 
         public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
         {
-            _stopwatch.Start();
             var nodeLock = _nodeLocks[node];
             double sampleTime = timeInSeconds * _sampleRate;
 
@@ -163,9 +162,6 @@ namespace Synth
             finally
             {
                 nodeLock.ExitUpgradeableReadLock();
-                _stopwatch.Stop();
-                GD.Print($"ScheduleValueAtTime executed in {_stopwatch.Elapsed.TotalMilliseconds} ms");
-                _stopwatch.Reset();
             }
         }
 
@@ -262,6 +258,42 @@ namespace Synth
         //     }
         // }
 
+        // public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
+        // {
+        //     if (targetValue <= 0)
+        //     {
+        //         throw new InvalidParameterValueException(nameof(targetValue), targetValue);
+        //     }
+
+        //     _nodeLocks[node].EnterWriteLock();
+        //     try
+        //     {
+        //         double startSampleTime = _currentSample;
+        //         double endSampleTime = endTimeInSeconds * _sampleRate;
+        //         var events = _nodeEventDictionary[node][param];
+
+        //         double currentValue = CalculateCurrentValue(node, param);
+
+        //         if (endSampleTime <= startSampleTime + TIME_EPSILON)
+        //         {
+        //             //GD.Print($"Warning: Attempted to create zero-duration exponential ramp. Node: {node}, Param: {param}, Start: {startSampleTime}, End: {endSampleTime}, Current: {currentValue}, Target: {targetValue}");
+        //             //Console.WriteLine
+        //             ScheduleValueAtTime(node, param, targetValue, endTimeInSeconds);
+        //             return;
+        //         }
+
+        //         TruncateOngoingEvent(events, startSampleTime);
+
+        //         events.Add(_eventPool.Get(startSampleTime, currentValue, endSampleTime, targetValue, true));
+
+        //         _nodeLastScheduledValues[node][param] = currentValue;
+        //     }
+        //     finally
+        //     {
+        //         _nodeLocks[node].ExitWriteLock();
+        //     }
+        // }
+
         public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
             if (targetValue <= 0)
@@ -280,15 +312,32 @@ namespace Synth
 
                 if (endSampleTime <= startSampleTime + TIME_EPSILON)
                 {
-                    GD.Print($"Warning: Attempted to create zero-duration exponential ramp. Node: {node}, Param: {param}, Start: {startSampleTime}, End: {endSampleTime}, Current: {currentValue}, Target: {targetValue}");
                     ScheduleValueAtTime(node, param, targetValue, endTimeInSeconds);
                     return;
                 }
 
-                TruncateOngoingEvent(events, startSampleTime);
+                // Remove any events that start after or at the same time as this new ramp
+                events.RemoveWhere(e => e.SampleTime >= startSampleTime);
 
+                // Truncate the last event if it overlaps with this new ramp
+                if (events.Count > 0)
+                {
+                    var lastEvent = events.Max;
+                    if (lastEvent.EndSampleTime > startSampleTime)
+                    {
+                        double truncatedValue = CalculateValueAtTime(lastEvent, startSampleTime);
+                        events.Remove(lastEvent);
+                        lastEvent.EndSampleTime = startSampleTime;
+                        lastEvent.TargetValue = truncatedValue;
+                        events.Add(lastEvent);
+                        currentValue = truncatedValue;
+                    }
+                }
+
+                // Add the new exponential ramp
                 events.Add(_eventPool.Get(startSampleTime, currentValue, endSampleTime, targetValue, true));
 
+                // Update the last scheduled value
                 _nodeLastScheduledValues[node][param] = currentValue;
             }
             finally
@@ -296,6 +345,7 @@ namespace Synth
                 _nodeLocks[node].ExitWriteLock();
             }
         }
+
 
         public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
@@ -345,7 +395,7 @@ namespace Synth
                         return;
                     }
 
-                    GD.PrintErr($"Attempted to truncate event to zero or invalid duration: SampleTime = {sampleTime}, StartSampleTime = {lastEvent.SampleTime}, EndSampleTime = {lastEvent.EndSampleTime}");
+                    //GD.PrintErr($"Attempted to truncate event to zero or invalid duration: SampleTime = {sampleTime}, StartSampleTime = {lastEvent.SampleTime}, EndSampleTime = {lastEvent.EndSampleTime}");
                     return;
                 }
 
@@ -367,18 +417,41 @@ namespace Synth
             if (events.Count > 0)
             {
                 var activeEvent = events.Min;
-                if (sampleTime >= activeEvent.SampleTime && sampleTime <= activeEvent.EndSampleTime)
+                if (sampleTime >= activeEvent.SampleTime && activeEvent.EndSampleTime.HasValue)
                 {
                     double progress = (sampleTime - activeEvent.SampleTime) / (activeEvent.EndSampleTime.Value - activeEvent.SampleTime);
-                    progress = Math.Clamp(progress, 0, 1);
                     currentValue = activeEvent.IsExponential
                         ? InterpolateExponential(activeEvent.Value, activeEvent.TargetValue, progress)
                         : InterpolateLinear(activeEvent.Value, activeEvent.TargetValue, progress);
                 }
             }
 
-            return Math.Max(MIN_EXPONENTIAL_VALUE, currentValue);
+            // Logging for debugging
+            Console.WriteLine($"Calculated current value: {currentValue} at time: {sampleTime / _sampleRate}");
+
+            return currentValue;
         }
+        // private double CalculateCurrentValue(AudioNode node, AudioParam param)
+        // {
+        //     var events = _nodeEventDictionary[node][param];
+        //     double currentValue = _nodeLastScheduledValues[node][param];
+        //     double sampleTime = _currentSample;
+
+        //     if (events.Count > 0)
+        //     {
+        //         var activeEvent = events.Min;
+        //         if (sampleTime >= activeEvent.SampleTime && sampleTime <= activeEvent.EndSampleTime)
+        //         {
+        //             double progress = (sampleTime - activeEvent.SampleTime) / (activeEvent.EndSampleTime.Value - activeEvent.SampleTime);
+        //             progress = Math.Clamp(progress, 0, 1);
+        //             currentValue = activeEvent.IsExponential
+        //                 ? InterpolateExponential(activeEvent.Value, activeEvent.TargetValue, progress)
+        //                 : InterpolateLinear(activeEvent.Value, activeEvent.TargetValue, progress);
+        //         }
+        //     }
+
+        //     return Math.Max(MIN_EXPONENTIAL_VALUE, currentValue);
+        // }
 
         private double CalculateValueAtTime(ScheduleEvent scheduleEvent, double sampleTime)
         {
@@ -455,6 +528,7 @@ namespace Synth
         {
             return start + progress * (end - start);
         }
+
 
         private static double InterpolateExponential(double start, double end, double progress)
         {

@@ -61,17 +61,17 @@ public class SynthPatch
             }
         }
 
-#if true
-float speed = 0.3f; // Adjust speed to match the desired tempo
-int repeatCount = 10000; // Number of times to repeat the melody
-var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
+#if false
+        float speed = 0.3f; // Adjust speed to match the desired tempo
+        int repeatCount = 10000; // Number of times to repeat the melody
+        var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
 
-// Lists to hold the events for bulk scheduling
-var freqEvents = new List<(double timeInSeconds, double value)>();
-var gateEvents = new List<(double timeInSeconds, double isOpen)>();
+        // Lists to hold the events for bulk scheduling
+        var freqEvents = new List<(double timeInSeconds, double value)>();
+        var gateEvents = new List<(double timeInSeconds, double isOpen)>();
 
-// MIDI notes for "Twinkle, Twinkle, Little Star" full song
-int[] melodyNotes = {
+        // MIDI notes for "Twinkle, Twinkle, Little Star" full song
+        int[] melodyNotes = {
     60, 60, 67, 67, 69, 69, 67, // A Section
     65, 65, 64, 64, 62, 62, 60, // B Section
     67, 67, 65, 65, 64, 64, 62, // C Section
@@ -81,7 +81,7 @@ int[] melodyNotes = {
     65, 65, 64, 64, 62, 62, 60  // Repeat B Section
 };
 
-double[] noteDurations = {
+        double[] noteDurations = {
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, // Durations in seconds
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
@@ -91,32 +91,32 @@ double[] noteDurations = {
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0
 };
 
-double currentTime = 0.0; // Initialize currentTime
+        double currentTime = 0.0; // Initialize currentTime
 
-for (int repeat = 0; repeat < repeatCount; repeat++)
-{
-    for (int i = 0; i < melodyNotes.Length; i++)
-    {
-        int note = melodyNotes[i];
-        double freqValue = 440.0 * Math.Pow(2.0, (note - 69) / 12.0);
-        double gateLength = noteDurations[i] * speed;
+        for (int repeat = 0; repeat < repeatCount; repeat++)
+        {
+            for (int i = 0; i < melodyNotes.Length; i++)
+            {
+                int note = melodyNotes[i];
+                double freqValue = 440.0 * Math.Pow(2.0, (note - 69) / 12.0);
+                double gateLength = noteDurations[i] * speed;
 
-        freqEvents.Add((currentTime, freqValue)); // Add frequency event
-        gateEvents.Add((currentTime, 1)); // Gate open event
-        gateEvents.Add((currentTime + gateLength*0.95, 0)); // Gate close event to ensure a clean note end
+                freqEvents.Add((currentTime, freqValue)); // Add frequency event
+                gateEvents.Add((currentTime, 1)); // Gate open event
+                gateEvents.Add((currentTime + gateLength * 0.95, 0)); // Gate close event to ensure a clean note end
 
-        currentTime += gateLength; // Move to the next note's start time
-    }
-    currentTime += 1.0; // Add a small pause between repetitions to clear the melody
-}
+                currentTime += gateLength; // Move to the next note's start time
+            }
+            currentTime += 1.0; // Add a small pause between repetitions to clear the melody
+        }
 
-// Now, schedule all frequency and gate events
- scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
- for (int j = 0; j < MaxEnvelopes; j++)
- {
-     scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
- }
- 
+        // Now, schedule all frequency and gate events
+        scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
+        for (int j = 0; j < MaxEnvelopes; j++)
+        {
+            scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
+        }
+
 #endif
 
 

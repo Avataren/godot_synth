@@ -13,10 +13,13 @@
     <TrimmerRootAssembly Include="$(TargetName)" />
   </ItemGroup>
 
-  <!-- Conditionally include test packages only in Debug builds -->
-  <!-- <ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.0" />
     <PackageReference Include="NUnit" Version="4.2.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
-  </ItemGroup> -->
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' != 'Debug'">
+    <Compile Remove="src\tests\**\*.cs" />
+  </ItemGroup>
 </Project>

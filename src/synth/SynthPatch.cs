@@ -61,9 +61,15 @@ public class SynthPatch
             }
         }
 
-#if false
-        float speed = 0.35f;
-        for (int i = 0; i < 1000; i++)
+#if true
+        float speed = 0.25f;
+        var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
+
+        // Lists to hold the events for bulk scheduling
+        var freqEvents = new List<(double timeInSeconds, double value)>();
+        var gateEvents = new List<(double timeInSeconds, double isOpen)>();
+
+        for (int i = 0; i < 10000; i++)
         {
             // Rhythm pattern for the bassline
             double timeOffset = 0.75 * speed;  // Consistent rhythm, adjusted for speed
@@ -77,15 +83,24 @@ public class SynthPatch
             int[] bassPattern = { rootNote, rootNote, rootNote + 12, rootNote, rootNote + 10, rootNote + 12, rootNote, rootNote + 12 };  // Adjusted to the current root note
             int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
 
-            // Set the frequency based on the note
-            freq.SetValueAtTime(440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) * 0.5, i * timeOffset);
+            // Calculate the frequency based on the note
+            double freqValue = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) * 0.5;
+            freqEvents.Add((i * timeOffset, freqValue)); // Add to the list for bulk scheduling
 
-            // Schedule the gate open and close for each step
+            // Schedule the gate open and close events
             for (int j = 0; j < MaxEnvelopes; j++)
             {
-                envelopes[j].ScheduleGateOpen(i * timeOffset, true);
-                envelopes[j].ScheduleGateClose(i * timeOffset + gateLength);
+                gateEvents.Add((i * timeOffset, 1.0)); // Add gate open event
+                gateEvents.Add((i * timeOffset + gateLength, 0.0)); // Add gate close event
             }
+        }
+
+        // Now use ScheduleValuesAtTimeBulk to schedule all events at once
+        scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
+
+        for (int j = 0; j < MaxEnvelopes; j++)
+        {
+            scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
         }
 #endif
 

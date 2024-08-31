@@ -9,8 +9,6 @@ namespace Synth
         private int writeIndex;
         private int bufferSize;
         private int readIndex;
-        private SynthType fraction;
-        private SynthType prevOutput;
 
         public SynthType Feedback { get; set; }
         public SynthType _wetMix;
@@ -40,18 +38,18 @@ namespace Synth
             Array.Clear(buffer, 0, bufferSize);
             Feedback = feedback;
             WetMix = wetMix;
-            prevOutput = 0;
             SetDelayTime(maxDelayInMilliseconds);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDelayTime(int delayInMilliseconds)
         {
             CurrentDelayInMilliseconds = Math.Min(delayInMilliseconds, MaxDelayInMilliseconds);
             SynthType delaySamples = CurrentDelayInMilliseconds * SampleRate / 1000.0f;
-            int integerDelaySamples = Math.Max(1, (int)delaySamples);  // Ensure at least 1 sample delay
-            fraction = delaySamples - integerDelaySamples;
+            int integerDelaySamples = (int)delaySamples;
             SetDelayInSamples(integerDelaySamples);
         }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDelayInSamples(int delaySamples)
@@ -62,34 +60,29 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SynthType Process(SynthType inputSample)
         {
-            int index0 = readIndex;
-            int index1 = (readIndex + 1) % bufferSize;
+            // Directly use the delay sample from the buffer
+            SynthType delaySample = buffer[readIndex];
 
-            SynthType frac = fraction;
-            SynthType a = (1 - frac) / (1 + frac);
-
-            SynthType x0 = buffer[index0];
-            SynthType x1 = buffer[index1];
-
-            SynthType delaySample = a * (x0 - prevOutput) + x1;
-
+            // Apply feedback (if any)
             SynthType feedbackSample = delaySample * Feedback;
 
+            // Crossfade between dry and wet signals
             SynthType outputSample = ((1 - WetMix) * inputSample) + (WetMix * delaySample);
 
+            // Write the new sample into the buffer with feedback
             buffer[writeIndex] = inputSample + feedbackSample;
 
+            // Update indices
             writeIndex = (writeIndex + 1) % bufferSize;
             readIndex = (readIndex + 1) % bufferSize;
-            prevOutput = delaySample;
 
             return outputSample;
         }
 
+
         public void Mute()
         {
             buffer.AsSpan().Clear();
-            prevOutput = 0;
         }
 
         public void SetMaxDelayTime(int maxDelayInMilliseconds)

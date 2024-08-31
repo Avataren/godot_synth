@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Godot;
@@ -9,6 +10,7 @@ namespace Synth
 {
     public class ParameterScheduler : IDisposable
     {
+        private Stopwatch _stopwatch = new Stopwatch();
         private const double TIME_EPSILON = 1e-10;
         private const double MIN_EXPONENTIAL_VALUE = 1e-6;
         private const double VALUE_EPSILON = 1e-6;
@@ -68,37 +70,154 @@ namespace Synth
             }
         }
 
-        public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
+        public void ScheduleValuesAtTimeBulk(AudioNode node, AudioParam param, IEnumerable<(double timeInSeconds, double value)> eventsToAdd)
         {
-            // GD.Print($"### ScheduleValueAtTime called: Node={node}, Param={param}, Value={value}, Time={timeInSeconds}");
+            _stopwatch.Start();
+            var nodeLock = _nodeLocks[node];
+            double sampleRate = _sampleRate;
 
-            _nodeLocks[node].EnterWriteLock();
+            nodeLock.EnterWriteLock();
             try
             {
-                double sampleTime = timeInSeconds * _sampleRate;
                 var events = _nodeEventDictionary[node][param];
 
-                // GD.Print($"### Before clearing conflicts: EventCount={events.Count}");
-                ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
-                // GD.Print($"### After clearing conflicts: EventCount={events.Count}");
-
-                var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
-                events.Add(newEvent);
-                // GD.Print($"### New event added: SampleTime={newEvent.SampleTime}, Value={newEvent.Value}");
-
-                if (sampleTime <= _currentSample)
+                // Prepare new events
+                var newEvents = new List<ScheduleEvent>();
+                foreach (var (timeInSeconds, value) in eventsToAdd)
                 {
-                    _nodeLastScheduledValues[node][param] = value;
-                    // GD.Print($"### Updated last scheduled value: {value}");
+                    double sampleTime = timeInSeconds * sampleRate;
+                    newEvents.Add(_eventPool.Get(sampleTime, value, isSetValueAtTime: true));
                 }
 
-                // GD.Print($"### Final event count: {events.Count}");
+                // Sort and insert new events in bulk
+                newEvents.Sort((e1, e2) => e1.SampleTime.CompareTo(e2.SampleTime));
+                foreach (var ev in newEvents)
+                {
+                    events.Add(ev);
+                }
+
+                // Update the last scheduled value based on the latest event
+                var lastEvent = newEvents.LastOrDefault();
+                if (lastEvent != null && lastEvent.SampleTime <= _currentSample)
+                {
+                    _nodeLastScheduledValues[node][param] = lastEvent.Value;
+                }
             }
             finally
             {
-                _nodeLocks[node].ExitWriteLock();
+                nodeLock.ExitWriteLock();
+                _stopwatch.Stop();
+                GD.Print($"ScheduleValuesAtTimeBulk executed in {_stopwatch.Elapsed.TotalMilliseconds} ms");
+                _stopwatch.Reset();                
             }
         }
+
+
+        public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
+        {
+            _stopwatch.Start();
+            var nodeLock = _nodeLocks[node];
+            double sampleTime = timeInSeconds * _sampleRate;
+
+            // Lock the specific parameter events
+            nodeLock.EnterUpgradeableReadLock();
+            try
+            {
+                var events = _nodeEventDictionary[node][param];
+
+                // Check and handle conflicts before locking for write
+                bool hasConflicts = false;
+                foreach (var existingEvent in events)
+                {
+                    if (IsEventConflicting(existingEvent, sampleTime))
+                    {
+                        hasConflicts = true;
+                        break;
+                    }
+                }
+
+                if (hasConflicts)
+                {
+                    nodeLock.EnterWriteLock();
+                    try
+                    {
+                        ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
+                        AddNewEvent(events, sampleTime, value);
+                    }
+                    finally
+                    {
+                        nodeLock.ExitWriteLock();
+                    }
+                }
+                else
+                {
+                    AddNewEvent(events, sampleTime, value);
+                }
+
+                // Update the last scheduled value if necessary
+                if (sampleTime <= _currentSample)
+                {
+                    _nodeLastScheduledValues[node][param] = value;
+                }
+            }
+            finally
+            {
+                nodeLock.ExitUpgradeableReadLock();
+                _stopwatch.Stop();
+                GD.Print($"ScheduleValueAtTime executed in {_stopwatch.Elapsed.TotalMilliseconds} ms");
+                _stopwatch.Reset();
+            }
+        }
+
+        private bool IsEventConflicting(ScheduleEvent existingEvent, double newEventTime)
+        {
+            if (existingEvent.EndSampleTime == null)
+            {
+                return Math.Abs(newEventTime - existingEvent.SampleTime) < TIME_EPSILON;
+            }
+            else
+            {
+                return newEventTime > existingEvent.SampleTime && newEventTime <= existingEvent.EndSampleTime;
+            }
+        }
+
+        private void AddNewEvent(SortedSet<ScheduleEvent> events, double sampleTime, double value)
+        {
+            var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
+            events.Add(newEvent);
+        }
+
+        // public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
+        // {
+        //     // GD.Print($"### ScheduleValueAtTime called: Node={node}, Param={param}, Value={value}, Time={timeInSeconds}");
+
+        //     _nodeLocks[node].EnterWriteLock();
+        //     try
+        //     {
+        //         double sampleTime = timeInSeconds * _sampleRate;
+        //         var events = _nodeEventDictionary[node][param];
+
+        //         // GD.Print($"### Before clearing conflicts: EventCount={events.Count}");
+        //         ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
+        //         // GD.Print($"### After clearing conflicts: EventCount={events.Count}");
+
+        //         var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
+        //         events.Add(newEvent);
+        //         // GD.Print($"### New event added: SampleTime={newEvent.SampleTime}, Value={newEvent.Value}");
+
+        //         if (sampleTime <= _currentSample)
+        //         {
+        //             _nodeLastScheduledValues[node][param] = value;
+        //             // GD.Print($"### Updated last scheduled value: {value}");
+        //         }
+
+        //         // GD.Print($"### Final event count: {events.Count}");
+        //     }
+        //     finally
+        //     {
+        //         _nodeLocks[node].ExitWriteLock();
+        //     }
+        // }
 
         // public void ScheduleValueAtTime(AudioNode node, AudioParam param, double value, double timeInSeconds)
         // {

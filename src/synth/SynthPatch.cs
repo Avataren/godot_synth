@@ -62,47 +62,110 @@ public class SynthPatch
         }
 
 #if true
-        float speed = 0.25f;
-        var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
+float speed = 0.3f; // Adjust speed to match the desired tempo
+int repeatCount = 10000; // Number of times to repeat the melody
+var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
 
-        // Lists to hold the events for bulk scheduling
-        var freqEvents = new List<(double timeInSeconds, double value)>();
-        var gateEvents = new List<(double timeInSeconds, double isOpen)>();
+// Lists to hold the events for bulk scheduling
+var freqEvents = new List<(double timeInSeconds, double value)>();
+var gateEvents = new List<(double timeInSeconds, double isOpen)>();
 
-        for (int i = 0; i < 10000; i++)
-        {
-            // Rhythm pattern for the bassline
-            double timeOffset = 0.75 * speed;  // Consistent rhythm, adjusted for speed
-            double gateLength = 0.5 * speed;  // Slightly longer gate for a sustained bass sound
+// MIDI notes for "Twinkle, Twinkle, Little Star" full song
+int[] melodyNotes = {
+    60, 60, 67, 67, 69, 69, 67, // A Section
+    65, 65, 64, 64, 62, 62, 60, // B Section
+    67, 67, 65, 65, 64, 64, 62, // C Section
+    60, 60, 67, 67, 69, 69, 67, // Repeat A Section
+    65, 65, 64, 64, 62, 62, 60, // Repeat B Section
+    60, 60, 67, 67, 69, 69, 67, // Repeat A Section
+    65, 65, 64, 64, 62, 62, 60  // Repeat B Section
+};
 
-            // Define a chord progression or root note changes
-            int[] rootNotes = { 36, 37, 41, 39 }; // C1, D1, F1, G1 (MIDI notes)
-            int rootNote = rootNotes[(i / 16) % rootNotes.Length];  // Change root note every 16 steps (4 bars)
+double[] noteDurations = {
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, // Durations in seconds
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0
+};
 
-            // Low-low-high-high bass pattern with octave shifts, relative to the root note
-            int[] bassPattern = { rootNote, rootNote, rootNote + 12, rootNote, rootNote + 10, rootNote + 12, rootNote, rootNote + 12 };  // Adjusted to the current root note
-            int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
+double currentTime = 0.0; // Initialize currentTime
 
-            // Calculate the frequency based on the note
-            double freqValue = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) * 0.5;
-            freqEvents.Add((i * timeOffset, freqValue)); // Add to the list for bulk scheduling
+for (int repeat = 0; repeat < repeatCount; repeat++)
+{
+    for (int i = 0; i < melodyNotes.Length; i++)
+    {
+        int note = melodyNotes[i];
+        double freqValue = 440.0 * Math.Pow(2.0, (note - 69) / 12.0);
+        double gateLength = noteDurations[i] * speed;
 
-            // Schedule the gate open and close events
-            for (int j = 0; j < MaxEnvelopes; j++)
-            {
-                gateEvents.Add((i * timeOffset, 1.0)); // Add gate open event
-                gateEvents.Add((i * timeOffset + gateLength, 0.0)); // Add gate close event
-            }
-        }
+        freqEvents.Add((currentTime, freqValue)); // Add frequency event
+        gateEvents.Add((currentTime, 1)); // Gate open event
+        gateEvents.Add((currentTime + gateLength*0.95, 0)); // Gate close event to ensure a clean note end
 
-        // Now use ScheduleValuesAtTimeBulk to schedule all events at once
-        scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
+        currentTime += gateLength; // Move to the next note's start time
+    }
+    currentTime += 1.0; // Add a small pause between repetitions to clear the melody
+}
 
-        for (int j = 0; j < MaxEnvelopes; j++)
-        {
-            scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
-        }
+// Now, schedule all frequency and gate events
+ scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
+ for (int j = 0; j < MaxEnvelopes; j++)
+ {
+     scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
+ }
+ 
 #endif
+
+
+
+
+
+
+        // #if true
+        //         float speed = 0.25f;
+        //         var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
+
+        //         // Lists to hold the events for bulk scheduling
+        //         var freqEvents = new List<(double timeInSeconds, double value)>();
+        //         var gateEvents = new List<(double timeInSeconds, double isOpen)>();
+
+        //         for (int i = 0; i < 10000; i++)
+        //         {
+        //             // Rhythm pattern for the bassline
+        //             double timeOffset = 0.75 * speed;  // Consistent rhythm, adjusted for speed
+        //             double gateLength = 0.5 * speed;  // Slightly longer gate for a sustained bass sound
+
+        //             // Define a chord progression or root note changes
+        //             int[] rootNotes = { 36, 37, 41, 39 }; // C1, D1, F1, G1 (MIDI notes)
+        //             int rootNote = rootNotes[(i / 16) % rootNotes.Length];  // Change root note every 16 steps (4 bars)
+
+        //             // Low-low-high-high bass pattern with octave shifts, relative to the root note
+        //             int[] bassPattern = { rootNote, rootNote, rootNote + 12, rootNote, rootNote + 10, rootNote + 12, rootNote, rootNote + 12 };  // Adjusted to the current root note
+        //             int note = bassPattern[i % bassPattern.Length];  // Cycle through the pattern
+
+        //             // Calculate the frequency based on the note
+        //             double freqValue = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0) * 0.5;
+        //             freqEvents.Add((i * timeOffset, freqValue)); // Add to the list for bulk scheduling
+
+        //             // Schedule the gate open and close events
+        //             for (int j = 0; j < MaxEnvelopes; j++)
+        //             {
+        //                 gateEvents.Add((i * timeOffset, 1.0)); // Add gate open event
+        //                 gateEvents.Add((i * timeOffset + gateLength, 0.0)); // Add gate close event
+        //             }
+        //         }
+
+        //         // Now use ScheduleValuesAtTimeBulk to schedule all events at once
+        //         scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
+
+        //         for (int j = 0; j < MaxEnvelopes; j++)
+        //         {
+        //             scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
+        //         }
+        // #endif
 
         for (int i = 0; i < MaxLFOs; i++)
         {

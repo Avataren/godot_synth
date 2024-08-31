@@ -20,7 +20,7 @@ namespace Synth
 
             for (int i = 0; i < 2; i++)
             {
-                delayLines[i] = new DelayLine(maxDelayInSamples, SampleRate, 0.0f, 1.0f, 0.0f);
+                delayLines[i] = new DelayLine(maxDelayInSamples, SampleRate, 0.0f, 1.0f);
                 lowPassFilters[i] = new SimpleLowPassFilter(10000.0f, SampleRate);
             }
 

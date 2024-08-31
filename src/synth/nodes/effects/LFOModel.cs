@@ -55,6 +55,11 @@ namespace Synth
             PhaseOffset = phaseOffset;
         }
 
+        public void Reset()
+        {
+            phase = 0.0;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SynthType GetSample(double sampleRate)
         {

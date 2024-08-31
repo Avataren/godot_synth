@@ -60,15 +60,6 @@ namespace Synth
             }
         }
 
-        public SynthType DryMix
-        {
-            get { return leftDelayLine.DryMix; }
-            set
-            {
-                leftDelayLine.DryMix = value;
-                rightDelayLine.DryMix = value;
-            }
-        }
 
         public SynthType WetMix
         {

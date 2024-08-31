@@ -185,10 +185,6 @@ public class SynthPatch
         delayEffectNode.Feedback = feedback;
     }
 
-    public void SetDelayEffect_DryMix(float dryMix)
-    {
-        delayEffectNode.DryMix = dryMix;
-    }
 
     public void SetDelayEffect_WetMix(float wetMix)
     {

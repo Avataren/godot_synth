@@ -13,14 +13,25 @@ namespace Synth
         private SynthType prevOutput;
 
         public SynthType Feedback { get; set; }
-        public SynthType WetMix { get; set; }
-        public SynthType DryMix { get; set; }
+        public SynthType _wetMix;
+        public SynthType WetMix
+        {
+            get
+            {
+                return _wetMix;
+            }
+
+            set
+            {
+                _wetMix = SynthType.Clamp(value, 0.0f, 1.0f);
+            }
+        }
         public SynthType SampleRate { get; set; }
 
         public int MaxDelayInMilliseconds { get; private set; }
         public int CurrentDelayInMilliseconds { get; private set; }
 
-        public DelayLine(int maxDelayInMilliseconds, SynthType sampleRate, SynthType feedback = 0.25f, SynthType wetMix = 0.5f, SynthType dryMix = 1.0f)
+        public DelayLine(int maxDelayInMilliseconds, SynthType sampleRate, SynthType feedback = 0.25f, SynthType wetMix = 0.5f)
         {
             SampleRate = sampleRate;
             MaxDelayInMilliseconds = maxDelayInMilliseconds;
@@ -29,17 +40,17 @@ namespace Synth
             Array.Clear(buffer, 0, bufferSize);
             Feedback = feedback;
             WetMix = wetMix;
-            DryMix = dryMix;
             prevOutput = 0;
             SetDelayTime(maxDelayInMilliseconds);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDelayTime(int delayInMilliseconds)
         {
             CurrentDelayInMilliseconds = Math.Min(delayInMilliseconds, MaxDelayInMilliseconds);
             SynthType delaySamples = CurrentDelayInMilliseconds * SampleRate / 1000.0f;
-            SetDelayInSamples((int)delaySamples);
+            int integerDelaySamples = Math.Max(1, (int)delaySamples);  // Ensure at least 1 sample delay
+            fraction = delaySamples - integerDelaySamples;
+            SetDelayInSamples(integerDelaySamples);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,7 +62,6 @@ namespace Synth
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SynthType Process(SynthType inputSample)
         {
-            // All-pass interpolation
             int index0 = readIndex;
             int index1 = (readIndex + 1) % bufferSize;
 
@@ -63,22 +73,18 @@ namespace Synth
 
             SynthType delaySample = a * (x0 - prevOutput) + x1;
 
-
-
-            // Apply feedback and wet/dry mix
             SynthType feedbackSample = delaySample * Feedback;
-            SynthType outputSample = (DryMix * inputSample) + (WetMix * delaySample);
 
-            // Write the new sample into the buffer
+            SynthType outputSample = ((1 - WetMix) * inputSample) + (WetMix * delaySample);
+
             buffer[writeIndex] = inputSample + feedbackSample;
 
-            // Update indices
             writeIndex = (writeIndex + 1) % bufferSize;
             readIndex = (readIndex + 1) % bufferSize;
-            prevOutput = outputSample;
+            prevOutput = delaySample;
+
             return outputSample;
         }
-
 
         public void Mute()
         {

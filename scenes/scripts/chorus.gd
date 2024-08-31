@@ -16,10 +16,6 @@ func _ready() -> void:
 	feedback_changed.emit(%FeedbackKnob.current_value)
 	mix_changed.emit(%WetKnob.current_value)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-
 func _on_delay_knob_value_changed(val) -> void:
 	delay_changed.emit(val)
 

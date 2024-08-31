@@ -28,6 +28,7 @@ layout_mode = 2
 columns = 2
 
 [node name="DelayKnob" parent="VBoxContainer/GridContainer" instance=ExtResource("1_eq62o")]
+unique_name_in_owner = true
 layout_mode = 2
 max_value = 1000.0
 sensitivity = 0.25
@@ -35,6 +36,7 @@ title = "Delay"
 current_value = 300.0
 
 [node name="FeedbackKnob" parent="VBoxContainer/GridContainer" instance=ExtResource("1_eq62o")]
+unique_name_in_owner = true
 layout_mode = 2
 max_value = 1.0
 step = 0.01
@@ -42,23 +44,16 @@ sensitivity = 0.25
 title = "Feedback"
 current_value = 0.25
 
-[node name="DryMixKnob" parent="VBoxContainer/GridContainer" instance=ExtResource("1_eq62o")]
-layout_mode = 2
-max_value = 1.0
-step = 0.001
-sensitivity = 0.25
-title = "Dry"
-current_value = 1.0
-
 [node name="WetMixKnob" parent="VBoxContainer/GridContainer" instance=ExtResource("1_eq62o")]
+unique_name_in_owner = true
 layout_mode = 2
 max_value = 1.0
 step = 0.001
 sensitivity = 0.25
-title = "Wet"
-current_value = 0.5
+title = "Mix"
+current_value = 0.25
 
 [connection signal="toggled" from="VBoxContainer/CheckBox" to="." method="_on_check_box_toggled"]
 [connection signal="value_changed" from="VBoxContainer/GridContainer/DelayKnob" to="." method="_on_delay_knob_value_changed"]
 [connection signal="value_changed" from="VBoxContainer/GridContainer/FeedbackKnob" to="." method="_on_feedback_knob_value_changed"]
-[connection signal="value_changed" from="VBoxContainer/GridContainer/DryMixKnob" to="." method="_on_dry_mix_knob_value_changed"]
+[connection signal="value_changed" from="VBoxContainer/GridContainer/WetMixKnob" to="." method="_on_wet_mix_knob_value_changed"]

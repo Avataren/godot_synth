@@ -371,18 +371,12 @@ public partial class PatchEditor : Node2D
 
 	private void _on_delay_feedback_changed(float value)
 	{
-		GD.Print("Feedback Changed: ", value);
 		AudioOutputNode.CurrentPatch.SetDelayEffect_Feedback(value);
 	}
 
 	private void _on_delay_wetmix_changed(float value)
 	{
 		AudioOutputNode.CurrentPatch.SetDelayEffect_WetMix(value);
-	}
-
-	private void _on_delay_drymix_changed(float value)
-	{
-		AudioOutputNode.CurrentPatch.SetDelayEffect_DryMix(value);
 	}
 
 	private void _on_chorus_delay_changed(float value)

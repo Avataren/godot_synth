@@ -23,7 +23,7 @@ namespace Synth
 
             for (int i = 0; i < NumVoices * 2; i++)
             {
-                delayLines[i] = new DelayLine(maxDelayInSamples,SampleRate, 0.0f, 0.95f, 0.0f);
+                delayLines[i] = new DelayLine(maxDelayInSamples, SampleRate, 0.0f, 1.0f);
                 LFOWaveform waveform = i % 2 == 0 ? LFOWaveform.Sine : LFOWaveform.Triangle;
                 lfos[i] = new LFOModel(LfoFrequencyHz + i * 0.01f, waveform, i * 0.1f);
                 lowPassFilters[i] = new SimpleLowPassFilter(10000.0f, SampleRate);
@@ -171,12 +171,16 @@ namespace Synth
             {
                 delayLine.Mute();
             }
-            feedbackBuffer.AsSpan().Clear();
+            Array.Clear(feedbackBuffer, 0, feedbackBuffer.Length);
+            Array.Clear(LeftBuffer, 0, LeftBuffer.Length);
+            Array.Clear(RightBuffer, 0, RightBuffer.Length);
 
             for (int i = 0; i < NumVoices * 2; i++)
             {
                 lowPassFilters[i].Mute();
+                lfos[i].Reset(); // Assuming LFOModel has a Reset method
             }
+            globalLfo.Reset();
         }
 
         public void SetLFOWaveform(int lfoIndex, LFOWaveform waveform)

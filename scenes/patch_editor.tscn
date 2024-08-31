@@ -293,7 +293,6 @@ layout_mode = 2
 [connection signal="slope_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/PanelContainer" to="." method="_on_panel_container_slope_changed"]
 [connection signal="delay_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_delay_changed"]
 [connection signal="delay_enabled" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_delay_enabled"]
-[connection signal="drymix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_drymix_changed"]
 [connection signal="feedback_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_feedback_changed"]
 [connection signal="wetmix_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Delay" to="." method="_on_delay_wetmix_changed"]
 [connection signal="damp_changed" from="CanvasLayer/Control/VBoxContainer/HBoxContainer2/EffectsGridContainer/Noise" to="." method="_on_reverb_damp_changed"]

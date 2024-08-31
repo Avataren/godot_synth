@@ -118,13 +118,13 @@ namespace Synth
             var nodeLock = _nodeLocks[node];
             double sampleTime = timeInSeconds * _sampleRate;
 
-            // Lock the specific parameter events
-            nodeLock.EnterUpgradeableReadLock();
+            // Use write lock for the entire operation to prevent any concurrent modification.
+            nodeLock.EnterWriteLock();
             try
             {
                 var events = _nodeEventDictionary[node][param];
 
-                // Check and handle conflicts before locking for write
+                // Check and handle conflicts
                 bool hasConflicts = false;
                 foreach (var existingEvent in events)
                 {
@@ -137,21 +137,9 @@ namespace Synth
 
                 if (hasConflicts)
                 {
-                    nodeLock.EnterWriteLock();
-                    try
-                    {
-                        ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
-                        AddNewEvent(events, sampleTime, value);
-                    }
-                    finally
-                    {
-                        nodeLock.ExitWriteLock();
-                    }
+                    ClearConflictingEvents(_nodeEventDictionary[node], param, sampleTime);
                 }
-                else
-                {
-                    AddNewEvent(events, sampleTime, value);
-                }
+                AddNewEvent(events, sampleTime, value);
 
                 // Update the last scheduled value if necessary
                 if (sampleTime <= _currentSample)
@@ -161,7 +149,7 @@ namespace Synth
             }
             finally
             {
-                nodeLock.ExitUpgradeableReadLock();
+                nodeLock.ExitWriteLock();
             }
         }
 

@@ -120,30 +120,30 @@ namespace Synth.Tests
             Assert.That(result, Is.EqualTo(50.0).Within(PRECISION));
         }
 
-        // [Test]
-        // public void TestCancelAndHold()
-        // {
-        //     scheduler.SetCurrentTimeInSeconds(0);
-        //     scheduler.ScheduleValueAtTime(testNode, testParam, 0, 0);
-        //     scheduler.LinearRampToValueAtTime(testNode, testParam, 1, 1);
+        [Test]
+        public void TestCancelAndHold()
+        {
+            scheduler.SetCurrentTimeInSeconds(0);
+            scheduler.ScheduleValueAtTime(testNode, testParam, 0, 0);
+            scheduler.LinearRampToValueAtTime(testNode, testParam, 1, 1);
 
-        //     for (int i = 0; i < SampleRate / 2; i += BufferSize)
-        //     {
-        //         scheduler.Process();
-        //     }
+            for (int i = 0; i < SampleRate / 2; i += BufferSize)
+            {
+                scheduler.Process();
+            }
 
-        //     double midValue = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
-        //     Console.WriteLine($"Mid-ramp value: {midValue}");
-        //     scheduler.Clear(); // This acts like cancelAndHold
+            double midValue = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Mid-ramp value: {midValue}");
+            scheduler.Clear(); // This acts like cancelAndHold
 
-        //     for (int i = SampleRate / 2; i < SampleRate; i += BufferSize)
-        //     {
-        //         scheduler.Process();
-        //     }
+            for (int i = SampleRate / 2; i < SampleRate; i += BufferSize)
+            {
+                scheduler.Process();
+            }
 
-        //     double result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
-        //     Console.WriteLine($"Cancel and Hold Result: {result}");
-        //     Assert.That(result, Is.EqualTo(midValue).Within(PRECISION));
-        // }
+            double result = scheduler.GetValueAtSample(testNode, testParam, BufferSize - 1);
+            Console.WriteLine($"Cancel and Hold Result: {result}");
+            Assert.That(result, Is.EqualTo(midValue).Within(PRECISION));
+        }
     }
 }

@@ -263,11 +263,16 @@ namespace Synth
             int i = (int)index;
             SynthType t = index - i;
 
-            SynthType y0 = i > 0 ? buffer[i - 1] : buffer[i];
-            SynthType y1 = buffer[i];
-            SynthType y2 = i < buffer.Length - 1 ? buffer[i + 1] : y1;
-            SynthType y3 = i < buffer.Length - 2 ? buffer[i + 2] : y2;
+            // Ensure that i is within the bounds of the buffer
+            i = Math.Clamp(i, 0, buffer.Length - 1);
 
+            // Safe access for cubic interpolation with clamping at the boundaries
+            SynthType y0 = (i > 0) ? buffer[i - 1] : buffer[i]; // Use current value if at start
+            SynthType y1 = buffer[i]; // Current point
+            SynthType y2 = (i < buffer.Length - 1) ? buffer[i + 1] : buffer[i]; // Use current if at end
+            SynthType y3 = (i < buffer.Length - 2) ? buffer[i + 2] : y2; // Use next value if near the end, otherwise current
+
+            // Cubic interpolation formula remains the same
             SynthType a0 = y3 - y2 - y0 + y1;
             SynthType a1 = y0 - y1 - a0;
             SynthType a2 = y2 - y0;
@@ -275,6 +280,7 @@ namespace Synth
 
             return a0 * t * t * t + a1 * t * t + a2 * t + a3;
         }
+
 
         public float[] GetVisualBuffer(int numSamples, float visualizationDuration = 3.0f)
         {

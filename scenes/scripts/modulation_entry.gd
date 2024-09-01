@@ -42,8 +42,9 @@ func _populate_oscillator_Parameters():
 	%DestinationParameterOption.add_item("PWM")
 		
 func _populate_lfo_Parameters():
-	%DestinationParameterOption.add_item("Depth")
-	%DestinationParameterOption.add_item("Rate")
+	%DestinationParameterOption.add_item("Gain")
+	#%DestinationParameterOption.add_item("Depth")
+	#%DestinationParameterOption.add_item("Rate")
 
 func _populate_envelope_Parameters():
 	%DestinationParameterOption.add_item("Attack")

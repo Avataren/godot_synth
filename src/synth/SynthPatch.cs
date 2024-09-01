@@ -28,6 +28,7 @@ public class SynthPatch
 
     //Dictionary<int, float> NoteVelocityRegister = new Dictionary<int, float>();
     Stack<int> NoteVelocityRegister = new Stack<int>();
+    bool initialized = false;
 
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
@@ -198,6 +199,8 @@ public class SynthPatch
         graph.SetNodeEnabled(fuzzNode, false);
         graph.SetNodeEnabled(reverbEffectNode, false);
         graph.SetNodeEnabled(delayEffectNode, false);
+
+        initialized = true;
     }
 
     public void SetMasterGain(float gain)
@@ -399,10 +402,9 @@ public class SynthPatch
     // }
 
 
-    public void SetLFOWaveform(string waveTypeName, int LFOIndex = -1)
+    public void SetLFOWaveform(LFOWaveform waveform, int LFOIndex = -1)
     {
         //convert from waveTypeName to enum
-        LFONode.LFOWaveform waveform = (LFONode.LFOWaveform)System.Enum.Parse(typeof(LFONode.LFOWaveform), waveTypeName);
         if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
         {
             LFOs[LFOIndex].CurrentWaveform = waveform;
@@ -417,6 +419,12 @@ public class SynthPatch
 
     public void SetLFOFrequency(float freq, int LFOIndex = -1)
     {
+        GD.Print("Trying to set LFO frequency to " + freq);
+        if (!initialized)
+        {
+            GD.Print("SynthPatch not initialized");
+            return;
+        }
         if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
         {
             GD.Print("Setting LFO " + LFOIndex + " frequency to " + freq);

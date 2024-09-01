@@ -74,3 +74,7 @@ layout_mode = 2
 min_value = -2.0
 max_value = 2.0
 title = "Bias"
+
+[connection signal="WaveformChanged" from="VBoxContainer/WaveformSelect" to="." method="OnWaveformOptionsItemSelected"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/FreqKnob" to="." method="OnFreqKnobValueChanged"]
+[connection signal="value_changed" from="VBoxContainer/HBoxContainer/GainKnob" to="." method="OnGainKnobValueChanged"]

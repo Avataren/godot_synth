@@ -47,7 +47,7 @@ public partial class PatchEditor : Node2D
 	{
 		//lfoContainer = GetNode<Control>("%LFOContainer");
 		var oscs = new Oscillator[] { Oscillator1, Oscillator2, Oscillator3, Oscillator4, Oscillator5 };
-		var lfos = new LFO[] { LFO1, LFO2, LFO3, LFO4 };
+		var lfos = new LFO[] { LFO1, LFO2 };//, LFO3, LFO4 };
 		try
 		{
 			Print("Patch Editor Ready");
@@ -464,7 +464,7 @@ public partial class PatchEditor : Node2D
 		};
 		lfo.WaveformChanged += (val) =>
 		{
-			AudioOutputNode.CurrentPatch.SetLFOWaveform(val, lfoNum);
+			AudioOutputNode.CurrentPatch.SetLFOWaveform((LFOWaveform)val, lfoNum);
 		};
 
 	}

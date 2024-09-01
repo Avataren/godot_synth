@@ -38,11 +38,11 @@ public partial class WaveformSelect : Control
         "PWM",
     ];
 
-    LFONode.LFOWaveform[] LFOWaveforms = {
-        LFONode.LFOWaveform.Sine,
-        LFONode.LFOWaveform.Saw,
-        LFONode.LFOWaveform.Triangle,
-        LFONode.LFOWaveform.Pulse,
+    public static LFOWaveform[] LFOWaveforms = {
+        LFOWaveform.Sine,
+        LFOWaveform.Saw,
+        LFOWaveform.Triangle,
+        LFOWaveform.Square,
     };
 
     public override void _Ready()

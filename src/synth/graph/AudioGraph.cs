@@ -33,9 +33,22 @@ namespace Synth
 
         public T CreateNode<T>(string name) where T : AudioNode, new()
         {
-            T node = new T { Name = name };
-            RegisterNode(node);
-            return node;
+            try
+            {
+                T node = new T { Name = name };
+                RegisterNode(node);
+                return node;
+            }
+            catch (Exception e)
+            {
+                GD.PrintErr($"Error creating node: {e.Message}");
+                if (e.InnerException != null)
+                {
+                    GD.PrintErr($"Inner exception: {e.InnerException.Message}");
+                    GD.PrintErr(e.InnerException.StackTrace);
+                }
+                throw;
+            }
         }
 
         public void RegisterNode(AudioNode node)
@@ -244,11 +257,11 @@ namespace Synth
                 }
             }
 
-            GD.Print("Topological sort completed. Node order:");
-            foreach (var node in SortedNodes)
-            {
-                GD.Print($" - {node.Name}");
-            }
+            // GD.Print("Topological sort completed. Node order:");
+            // foreach (var node in SortedNodes)
+            // {
+            //     GD.Print($" - {node.Name}");
+            // }
         }
 
         private bool Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)

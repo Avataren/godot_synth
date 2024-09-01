@@ -38,6 +38,7 @@ namespace Synth
         }
 
         private double phase = 0.0;
+        public double Phase => phase;
         private float frequency;
         public float PhaseOffset { get; set; }
         public LFOWaveform Waveform { get; set; }
@@ -99,6 +100,41 @@ namespace Synth
 
             // Return the average of oversampled values
             return accumulatedSample / oversampleFactor;
+        }
+
+        public static SynthType[] GetWaveformData(LFOWaveform waveform, int bufferSize)
+        {
+            SynthType[] buffer = new SynthType[bufferSize];
+            double phaseIncrement = 1.0 / bufferSize;
+            double phase = 0.0;
+
+            SynthType[] waveformTable = waveform switch
+            {
+                LFOWaveform.Sine => SharedLFOTables.SineTable,
+                LFOWaveform.Triangle => SharedLFOTables.TriangleTable,
+                LFOWaveform.Square => SharedLFOTables.SquareTable,
+                LFOWaveform.Saw => SharedLFOTables.SawTable,
+                _ => SharedLFOTables.SineTable,
+            };
+
+            for (int i = 0; i < bufferSize; i++)
+            {
+                double tableIndex = phase * SharedLFOTables.TableSize;
+                int index1 = (int)tableIndex & SharedLFOTables.TableMask;
+                int index2 = (index1 + 1) & SharedLFOTables.TableMask;
+                float fraction = (float)(tableIndex - Math.Floor(tableIndex));
+
+                SynthType sample1 = waveformTable[index1];
+                SynthType sample2 = waveformTable[index2];
+                SynthType interpolatedSample = sample1 + (sample2 - sample1) * fraction;
+
+                buffer[i] = interpolatedSample;
+
+                phase += phaseIncrement;
+                if (phase >= 1.0) phase -= 1.0;
+            }
+
+            return buffer;
         }
     }
 }

@@ -1,5 +1,6 @@
 using static Godot.GD;
 using Godot;
+using Synth;
 
 public partial class LFO : PanelContainer
 {
@@ -10,7 +11,7 @@ public partial class LFO : PanelContainer
 	[Signal]
 	public delegate void BiasValueChangedEventHandler(float value);
 	[Signal]
-	public delegate void WaveformChangedEventHandler(string value);
+	public delegate void WaveformChangedEventHandler(int value);
 	[Signal]
 	public delegate void AbsValueChangedEventHandler(bool value);
 	[Signal]
@@ -22,8 +23,6 @@ public partial class LFO : PanelContainer
 	private Control GainKnob;
 	[Export]
 	private Control BiasKnob;
-	[Export]
-	private OptionButton WaveformOptions;
 	[Export]
 	private CheckBox AbsCheckButton;
 	[Export]
@@ -60,8 +59,8 @@ public partial class LFO : PanelContainer
 
 	private void OnWaveformOptionsItemSelected(int index)
 	{
-		Print("(ui) Waveform Option Selected: " + WaveformOptions.GetItemText(index));
-		EmitSignal("WaveformChanged", WaveformOptions.GetItemText(index));
+		Print("(ui) Waveform Option Selected: " + WaveformSelect.LFOWaveforms[index]);
+		EmitSignal("WaveformChanged", (int)WaveformSelect.LFOWaveforms[index]);
 	}
 
 	private void OnAbsCheckButtonToggled(bool value)

@@ -18,7 +18,7 @@ namespace Synth
 		public bool Enabled = true;
 		public SynthType SampleRate = 44100.0f;
 		public SynthType Amplitude { get; set; } = SynthTypeHelper.One;
-		public SynthType Frequency { get; set; } = SynthTypeHelper.Zero;
+		//public SynthType Frequency { get; set; } = SynthTypeHelper.Zero;
 		public SynthType Phase = 0.0f;
 		public SynthType Balance = SynthTypeHelper.Zero;
 		protected SynthType[] buffer;

@@ -37,7 +37,7 @@ shader_parameter/aspect_ratio = 4.0
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_plx0a"]
 
-[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "LFO3", "LFO4", "AudioOutputNode", "AdsrVisualizer")]
+[node name="PatchEditor" type="Node2D" node_paths=PackedStringArray("Oscillator1", "Oscillator2", "Oscillator3", "Oscillator4", "Oscillator5", "LFO1", "LFO2", "AudioOutputNode", "AdsrVisualizer")]
 script = ExtResource("1_ox65v")
 Oscillator1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/OscillatorContainer/OscillatorsContainer/Oscillator1")
 Oscillator2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/OscillatorContainer/OscillatorsContainer/Oscillator2")
@@ -46,8 +46,6 @@ Oscillator4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxCon
 Oscillator5 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/OscillatorContainer/OscillatorsContainer/Oscillator5")
 LFO1 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/BottomContainer/GridContainer/LFO1")
 LFO2 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/BottomContainer/GridContainer/LFO2")
-LFO3 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/BottomContainer/GridContainer/LFO3")
-LFO4 = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/BottomContainer/GridContainer/LFO4")
 AudioOutputNode = NodePath("AudioOutputNode")
 AdsrVisualizer = NodePath("CanvasLayer/Control/VBoxContainer/HBoxContainer2/VBoxContainer/VBoxContainer2/BottomContainer/ADSR_Envelope")
 metadata/_edit_vertical_guides_ = [-573.0]

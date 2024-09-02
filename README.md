@@ -11,7 +11,7 @@ This is a working title, and will change in the future.
 
 ## Features
 
-- **Complete Sound Engine:** Built from the ground up in C#, offering full control over audio processing.
+- **Complete Sound Engine:** Built from the ground up in C#, offering full control over audio processing, including sample perfect scheduling and a basic audio graph.
 - **Integration with Godot:** Seamlessly integrates with the Godot Engine, allowing real-time audio manipulation within your projects.
 - **Modular Architecture:** Easily extendable with modular components to suit various audio needs.
 - **Performance Optimized:** Designed for real-time performance, ensuring smooth audio playback without compromising on quality.

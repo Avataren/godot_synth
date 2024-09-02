@@ -17,6 +17,9 @@ This is a working title, and will change in the future.
 - **Modular Architecture:** Easily extendable with modular components to suit various audio needs.
 - **Performance Optimized:** Designed for real-time performance, ensuring smooth audio playback without compromising on quality.
 
+[![Simple demo](https://img.youtube.com/vi/mkEPPdgmaqw/0.jpg)](https://www.youtube.com/watch?v=mkEPPdgmaqw)
+
+
 ## Planned Features
 
 - **Tracker for Music Composition:** A user-friendly tracker interface to compose music directly within the synthesizer.

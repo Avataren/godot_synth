@@ -1,45 +1,44 @@
-[gd_scene load_steps=3 format=3 uid="uid://bb2uowmfbve8v"]
+[gd_scene load_steps=4 format=3 uid="uid://bb2uowmfbve8v"]
 
 [ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="1_7goec"]
+[ext_resource type="Script" path="res://scenes/tracker/track_entry.gd" id="1_a680i"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nhx1g"]
-bg_color = Color(0.275323, 0.268458, 0.78713, 0.427451)
+bg_color = Color(0.01053, 0.0102, 0.03, 0.427451)
 border_width_bottom = 1
 border_color = Color(0.404511, 0.404511, 0.404511, 1)
 border_blend = true
 
-[node name="BoxContainer" type="BoxContainer"]
-offset_right = 132.0
-theme = ExtResource("1_7goec")
-
-[node name="PanelContainer" type="PanelContainer" parent="."]
-layout_mode = 2
+[node name="TrackEntry" type="PanelContainer"]
+offset_right = 128.0
+offset_bottom = 20.0
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme_override_styles/panel = SubResource("StyleBoxFlat_nhx1g")
+script = ExtResource("1_a680i")
 
-[node name="TrackContainer" type="HBoxContainer" parent="PanelContainer"]
+[node name="TrackContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 theme = ExtResource("1_7goec")
 
-[node name="Label" type="Label" parent="PanelContainer/TrackContainer"]
+[node name="NoteLabel" type="Label" parent="TrackContainer"]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
-text = "1 C - 4"
+text = "--"
 horizontal_alignment = 1
 
-[node name="Label2" type="Label" parent="PanelContainer/TrackContainer"]
+[node name="GainLabel" type="Label" parent="TrackContainer"]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
-text = "00
+text = "--
 "
 horizontal_alignment = 1
 
-[node name="Label3" type="Label" parent="PanelContainer/TrackContainer"]
+[node name="FXLabel" type="Label" parent="TrackContainer"]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
-text = "00
+text = "--
 "
 horizontal_alignment = 1

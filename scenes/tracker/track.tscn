@@ -2,218 +2,203 @@
 
 [ext_resource type="PackedScene" uid="uid://bb2uowmfbve8v" path="res://scenes/tracker/track_entry.tscn" id="1_c02ol"]
 
-[node name="Track" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = -1783.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0, 0, 0, 1)
-
-[node name="VBoxContainer" type="VBoxContainer" parent="ColorRect"]
-layout_mode = 0
+[node name="Track" type="VBoxContainer"]
 offset_right = 128.0
 offset_bottom = 1724.0
-theme_override_constants/separation = 2
+theme_override_constants/separation = 0
 
-[node name="TrackEntry" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry2" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry2" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry3" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry3" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry4" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry4" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry5" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry5" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry6" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry6" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry7" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry7" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry8" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry8" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry9" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry9" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry10" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry10" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry11" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry11" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry12" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry12" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry13" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry13" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry14" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry14" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry15" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry15" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry16" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry16" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry17" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry17" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry18" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry18" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry19" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry19" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry20" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry20" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry21" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry21" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry22" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry22" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry23" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry23" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry24" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry24" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry25" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry25" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry26" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry26" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry27" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry27" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry28" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry28" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry29" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry29" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry30" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry30" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry31" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry31" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry32" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry32" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry33" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry33" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry34" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry34" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry35" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry35" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry36" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry36" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry37" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry37" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry38" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry38" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry39" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry39" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry40" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry40" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry41" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry41" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry42" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry42" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry43" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry43" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry44" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry44" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry45" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry45" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry46" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry46" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry47" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry47" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry48" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry48" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry49" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry49" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry50" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry50" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry51" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry51" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry52" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry52" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry53" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry53" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry54" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry54" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry55" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry55" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry56" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry56" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry57" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry57" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry58" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry58" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry59" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry59" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry60" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry60" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry61" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry61" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry62" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry62" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry63" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry63" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
-[node name="TrackEntry64" parent="ColorRect/VBoxContainer" instance=ExtResource("1_c02ol")]
+[node name="TrackEntry64" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
+
+[node name="TrackBackground" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0, 0, 0, 1)

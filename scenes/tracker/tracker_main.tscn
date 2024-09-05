@@ -1,0 +1,31 @@
+[gd_scene load_steps=2 format=3 uid="uid://ccpa4x24i8r8c"]
+
+[ext_resource type="PackedScene" uid="uid://d2fj4h4yem3l2" path="res://scenes/tracker/track.tscn" id="1_jqa22"]
+
+[node name="TrackerMain" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TrackContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+offset_right = 656.0
+offset_bottom = 1408.0
+
+[node name="Track" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track2" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track3" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track4" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track5" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2

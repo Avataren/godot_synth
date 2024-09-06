@@ -1,11 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://d2fj4h4yem3l2"]
+[gd_scene load_steps=3 format=3 uid="uid://d2fj4h4yem3l2"]
 
+[ext_resource type="Script" path="res://scenes/tracker/track.gd" id="1_8mxju"]
 [ext_resource type="PackedScene" uid="uid://bb2uowmfbve8v" path="res://scenes/tracker/track_entry.tscn" id="1_c02ol"]
 
-[node name="Track" type="VBoxContainer"]
+[node name="TrackContainer" type="VBoxContainer"]
 offset_right = 128.0
 offset_bottom = 1724.0
 theme_override_constants/separation = 0
+script = ExtResource("1_8mxju")
 
 [node name="TrackEntry" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
@@ -29,174 +31,6 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="TrackEntry8" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry9" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry10" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry11" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry12" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry13" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry14" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry15" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry16" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry17" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry18" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry19" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry20" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry21" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry22" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry23" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry24" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry25" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry26" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry27" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry28" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry29" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry30" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry31" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry32" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry33" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry34" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry35" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry36" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry37" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry38" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry39" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry40" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry41" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry42" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry43" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry44" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry45" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry46" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry47" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry48" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry49" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry50" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry51" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry52" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry53" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry54" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry55" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry56" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry57" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry58" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry59" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry60" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry61" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry62" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry63" parent="." instance=ExtResource("1_c02ol")]
-layout_mode = 2
-
-[node name="TrackEntry64" parent="." instance=ExtResource("1_c02ol")]
 layout_mode = 2
 
 [node name="TrackBackground" type="ColorRect" parent="."]

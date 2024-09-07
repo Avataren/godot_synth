@@ -10,7 +10,7 @@ border_color = Color(0.404511, 0.404511, 0.404511, 1)
 border_blend = true
 
 [node name="TrackEntry" type="PanelContainer"]
-offset_right = 128.0
+offset_right = 100.0
 offset_bottom = 20.0
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -24,21 +24,45 @@ size_flags_vertical = 4
 theme = ExtResource("1_7goec")
 
 [node name="NoteLabel" type="Label" parent="TrackContainer"]
-custom_minimum_size = Vector2(40, 0)
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
 layout_mode = 2
 text = "--"
 horizontal_alignment = 1
 
-[node name="GainLabel" type="Label" parent="TrackContainer"]
-custom_minimum_size = Vector2(40, 0)
+[node name="GainContainer" type="HBoxContainer" parent="TrackContainer"]
 layout_mode = 2
-text = "--
-"
+size_flags_horizontal = 4
+theme_override_constants/separation = -12
+
+[node name="GainLabelDigit1" type="Label" parent="TrackContainer/GainContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "-"
 horizontal_alignment = 1
 
-[node name="FXLabel" type="Label" parent="TrackContainer"]
-custom_minimum_size = Vector2(40, 0)
+[node name="GainLabelDigit2" type="Label" parent="TrackContainer/GainContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
-text = "--
-"
+text = "-"
+horizontal_alignment = 1
+
+[node name="FXContainer" type="HBoxContainer" parent="TrackContainer"]
+layout_mode = 2
+theme_override_constants/separation = -12
+
+[node name="FXLabelDigit1" type="Label" parent="TrackContainer/FXContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "-"
+horizontal_alignment = 1
+
+[node name="FXLabelDigit2" type="Label" parent="TrackContainer/FXContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+text = "-"
 horizontal_alignment = 1

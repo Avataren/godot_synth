@@ -6,6 +6,7 @@
 [node name="TrackContainer" type="VBoxContainer"]
 offset_right = 128.0
 offset_bottom = 1724.0
+focus_mode = 2
 theme_override_constants/separation = 0
 script = ExtResource("1_8mxju")
 
@@ -36,3 +37,6 @@ layout_mode = 2
 [node name="TrackBackground" type="ColorRect" parent="."]
 layout_mode = 2
 color = Color(0, 0, 0, 1)
+
+[connection signal="focus_entered" from="." to="." method="_on_focus_entered"]
+[connection signal="focus_exited" from="." to="." method="_on_focus_exited"]

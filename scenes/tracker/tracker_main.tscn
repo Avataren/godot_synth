@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://ccpa4x24i8r8c"]
+[gd_scene load_steps=3 format=3 uid="uid://ccpa4x24i8r8c"]
 
+[ext_resource type="Script" path="res://scenes/tracker/tracker_main.gd" id="1_4sxa7"]
 [ext_resource type="PackedScene" uid="uid://d2fj4h4yem3l2" path="res://scenes/tracker/track.tscn" id="1_jqa22"]
 
 [node name="TrackerMain" type="Control"]
@@ -9,11 +10,84 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_4sxa7")
 
 [node name="TrackContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
-offset_right = 656.0
-offset_bottom = 1408.0
+offset_right = 510.0
+offset_bottom = 160.0
+
+[node name="NumberContainer" type="VBoxContainer" parent="TrackContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_constants/separation = 0
+
+[node name="Label" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "0"
+
+[node name="Label2" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "1"
+
+[node name="Label3" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "2"
+
+[node name="Label4" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "3"
+
+[node name="Label5" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "4"
+
+[node name="Label6" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "5"
+
+[node name="Label7" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "6"
+
+[node name="Label8" type="Label" parent="TrackContainer/NumberContainer"]
+clip_contents = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 14
+text = "7
+"
 
 [node name="Track" parent="TrackContainer" instance=ExtResource("1_jqa22")]
 layout_mode = 2

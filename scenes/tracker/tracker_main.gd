@@ -11,6 +11,7 @@ func _ready() -> void:
 	clear_numbers()
 	populate_numbers()
 	populate_tracks()
+	%ActiveSegmentVisualizer.position.y = 0
 	
 func populate_tracks():
 	for t in tracks:
@@ -41,7 +42,7 @@ func go_to_next_track(step:int):
 	tracks[current_track].clear_focus_visualization()
 	tracks[current_track].visualize_focused_track_entry()
 	tracks[current_track].grab_focus()
-	
+
 func populate_numbers():
 	for i in range(64):
 		var label = num_scene.instantiate()
@@ -54,3 +55,4 @@ func clear_numbers():
 
 func _on_current_track_index_changed(index):
 	current_track_index = index
+	%ActiveSegmentVisualizer.position.y = current_track_index * 20.0

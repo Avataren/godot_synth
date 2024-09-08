@@ -71,12 +71,16 @@ func _input(event: InputEvent):
 				accept_event()
 			KEY_UP:
 				move_focus_up(step_size)
+				accept_event()
 			KEY_DOWN:
 				move_focus_down(step_size)
+				accept_event()
 			KEY_PAGEUP:
 				move_focus_up(16)
+				accept_event()
 			KEY_PAGEDOWN:
 				move_focus_down(16)
+				accept_event()
 			KEY_DELETE:
 				delete_note()
 				move_focus_down(step_size)
@@ -107,18 +111,18 @@ func move_focus_up(step: int = 1):
 	# If the index goes out of bounds, set it to the first entry (index 0)
 	if current_track_index < 0:
 		current_track_index = 0
-	print_debug_info()  # Debug output to track current index
 	track_entries[current_track_index].set_initial_focus(current_label_focus_index)  # Set focus on the new entry at the same label
 	current_track_index_changed.emit(current_track_index)
 	
 # Move focus down between track entries
 func move_focus_down(step: int = 1):
-	if current_track_index < track_entries.size() - 1:
-		track_entries[current_track_index].clear_focus_visualization()  # Clear current entry's visualization
-		current_track_index += step  # Move to the next track entry
-		print_debug_info()  # Debug output
-		track_entries[current_track_index].set_initial_focus(current_label_focus_index)  # Set focus on the new entry at the same label
-		current_track_index_changed.emit(current_track_index)
+	track_entries[current_track_index].clear_focus_visualization()  # Clear current entry's visualization
+	current_track_index += step  # Move to the next track entry
+	if (current_track_index >= track_entries.size()):
+		current_track_index = track_entries.size() -1
+	track_entries[current_track_index].set_initial_focus(current_label_focus_index)  # Set focus on the new entry at the same label
+	current_track_index_changed.emit(current_track_index)
+	
 # Handle input specific to the current track_entry's focused label
 func handle_input_for_current_track(event: InputEventKey):
 	var handled = track_entries[current_track_index].handle_input_for_focused_label(event, current_label_focus_index)

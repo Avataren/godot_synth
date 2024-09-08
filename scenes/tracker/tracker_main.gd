@@ -1,9 +1,10 @@
 extends Control
+class_name TrackerMain
 
 @onready var num_scene = preload("res://scenes/tracker/num_entry.tscn")
-# Called when the node enters the scene tree for the first time.
 @onready var scroller = %ScrollContainer
 
+@export var app:Control
 
 var tracks = []
 var current_track := 0
@@ -14,6 +15,8 @@ func _ready() -> void:
 	populate_numbers()
 	populate_tracks()
 	%ActiveSegmentVisualizer.position.y = 0
+	if app != null and app.has_signal("SetPatternPosition"):
+		app.SetPatternPosition.connect(_on_current_track_index_changed)	
 	
 func populate_tracks():
 	for t in tracks:

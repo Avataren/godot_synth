@@ -1,14 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://mwbgxheqtt71"]
+[gd_scene load_steps=3 format=3 uid="uid://mwbgxheqtt71"]
 
 [ext_resource type="PackedScene" uid="uid://ccpa4x24i8r8c" path="res://scenes/tracker/tracker_main.tscn" id="1_f2pak"]
+[ext_resource type="Script" path="res://scenes/app/AppMain.cs" id="1_n0bii"]
 
-[node name="AppMain" type="Control"]
+[node name="AppMain" type="Control" node_paths=PackedStringArray("PlayPatternButton", "trackerMain")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_n0bii")
+PlayPatternButton = NodePath("VBoxContainer/Panel/VBoxContainer/PlayButton")
+trackerMain = NodePath("VBoxContainer/ScrollContainer/TrackerMain")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -29,7 +33,7 @@ offset_bottom = 40.0
 
 [node name="PlayButton" type="Button" parent="VBoxContainer/Panel/VBoxContainer"]
 layout_mode = 2
-text = "Play"
+text = "Play Pattern"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
@@ -37,5 +41,8 @@ layout_mode = 2
 size_flags_vertical = 3
 vertical_scroll_mode = 3
 
-[node name="TrackerMain" parent="VBoxContainer/ScrollContainer" instance=ExtResource("1_f2pak")]
+[node name="TrackerMain" parent="VBoxContainer/ScrollContainer" node_paths=PackedStringArray("app") instance=ExtResource("1_f2pak")]
 layout_mode = 2
+app = NodePath("../../..")
+
+[connection signal="pressed" from="VBoxContainer/Panel/VBoxContainer/PlayButton" to="." method="PlayPattern"]

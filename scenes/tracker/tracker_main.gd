@@ -2,6 +2,8 @@ extends Control
 
 @onready var num_scene = preload("res://scenes/tracker/num_entry.tscn")
 # Called when the node enters the scene tree for the first time.
+@onready var scroller = %ScrollContainer
+
 
 var tracks = []
 var current_track := 0
@@ -56,3 +58,7 @@ func clear_numbers():
 func _on_current_track_index_changed(index):
 	current_track_index = index
 	%ActiveSegmentVisualizer.position.y = current_track_index * 20.0
+	var base = current_track_index - 15;
+	if (base < 0):
+		base = 0
+	scroller.scroll_vertical = base*20

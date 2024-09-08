@@ -32,6 +32,7 @@ layout_mode = 2
 text = "Play"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 vertical_scroll_mode = 3

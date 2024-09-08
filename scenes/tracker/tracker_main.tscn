@@ -46,6 +46,36 @@ layout_mode = 2
 [node name="Track5" parent="TrackContainer" instance=ExtResource("1_jqa22")]
 layout_mode = 2
 
+[node name="Track6" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track7" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track8" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track9" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track10" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track11" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track12" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track13" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track14" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
+[node name="Track15" parent="TrackContainer" instance=ExtResource("1_jqa22")]
+layout_mode = 2
+
 [node name="ActiveSegmentVisualizer" type="Panel" parent="."]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 20)

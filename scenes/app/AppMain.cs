@@ -55,6 +55,11 @@ public partial class AppMain : Control
 
 	}
 
+	public void OnBPMChanged(double value)
+	{
+		bpm = value;
+	}
+
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 
 	public override void _Process(double delta)

@@ -35,6 +35,12 @@ offset_bottom = 40.0
 layout_mode = 2
 text = "Play Pattern"
 
+[node name="SpinBox" type="SpinBox" parent="VBoxContainer/Panel/VBoxContainer"]
+layout_mode = 2
+max_value = 400.0
+value = 120.0
+suffix = "BPM"
+
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -46,3 +52,4 @@ layout_mode = 2
 app = NodePath("../../..")
 
 [connection signal="pressed" from="VBoxContainer/Panel/VBoxContainer/PlayButton" to="." method="PlayPattern"]
+[connection signal="value_changed" from="VBoxContainer/Panel/VBoxContainer/SpinBox" to="." method="OnBPMChanged"]

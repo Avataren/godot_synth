@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3 uid="uid://qyuw8hyc56v5"]
+
+[ext_resource type="Script" path="res://scenes/tracker/num_entry.gd" id="1_ov5e6"]
+[ext_resource type="Theme" uid="uid://1jb11niidntv" path="res://themes/default.tres" id="2_s4pkg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nhx1g"]
+bg_color = Color(0.01053, 0.0102, 0.03, 0.427451)
+border_width_bottom = 1
+border_color = Color(0.404511, 0.404511, 0.404511, 1)
+border_blend = true
+
+[node name="NumEntry" type="PanelContainer"]
+offset_right = 40.0
+offset_bottom = 20.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_nhx1g")
+script = ExtResource("1_ov5e6")
+
+[node name="TrackContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("2_s4pkg")
+
+[node name="NumLabel" type="Label" parent="TrackContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+text = "--"
+horizontal_alignment = 1

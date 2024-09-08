@@ -79,8 +79,12 @@ func handle_input_for_focused_label(event: InputEventKey, label_index: int):
 		# Handle note input for NoteLabel
 		if white_keys.has(event.keycode) or black_keys.has(event.keycode):
 			set_note_from_key(event.keycode)
+			return true
+		return false
 	elif labels[current_focus_index] in [%GainLabelDigit1, %GainLabelDigit2, %FXLabelDigit1, %FXLabelDigit2]:
 		handle_hex_digit_input(event)
+		return true
+	return false
 
 # Handle input for hex digits and display it immediately
 func handle_hex_digit_input(event: InputEventKey):

@@ -18,7 +18,7 @@ var hex_keys = [
 static var first_init = false
 func _ready() -> void:
 	clear_container()
-	fill_tracks(48)
+	fill_tracks(64)
 	_on_focus_exited()
 	# Set focus on the first TrackEntry with the first label initially
 	if (!first_init):
@@ -103,10 +103,10 @@ func move_focus_down(step: int = 1):
 
 # Handle input specific to the current track_entry's focused label
 func handle_input_for_current_track(event: InputEventKey):
-	track_entries[current_track_index].handle_input_for_focused_label(event, current_label_focus_index)
+	var handled = track_entries[current_track_index].handle_input_for_focused_label(event, current_label_focus_index)
 
 	# Move to the next entry after input for notes
-	if current_label_focus_index == 0 and event.pressed:
+	if current_label_focus_index == 0 and event.pressed and handled:
 		move_focus_down(step_size)
 	# Check for valid hex input and move focus right for hex labels
 	elif current_label_focus_index > 0 and current_label_focus_index < 5:

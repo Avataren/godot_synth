@@ -13,6 +13,7 @@ grow_vertical = 2
 script = ExtResource("1_4sxa7")
 
 [node name="TrackContainer" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 offset_right = 510.0
 offset_bottom = 160.0

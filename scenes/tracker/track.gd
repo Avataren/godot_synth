@@ -1,7 +1,11 @@
 extends VBoxContainer
+class_name Track
 
 @onready var container = $"."
 @onready var track_entry_scene = preload("res://scenes/tracker/track_entry.tscn")
+
+signal track_switch
+signal current_track_index_changed
 
 var track_entries = []
 var current_track_index = 0
@@ -23,8 +27,15 @@ func _ready() -> void:
 	# Set focus on the first TrackEntry with the first label initially
 	if (!first_init):
 		first_init = true
-		track_entries[0].set_initial_focus(0)
+		visualize_focused_track_entry()
 		grab_focus()
+
+func clear_focus_visualization():
+	for te in track_entries:
+		te.clear_focus_visualization()
+		
+func visualize_focused_track_entry():
+	track_entries[current_track_index].set_initial_focus(0)
 
 # Clear container and fill tracks
 func clear_container():
@@ -46,6 +57,12 @@ func _input(event: InputEvent):
 		
 	if event is InputEventKey and event.pressed:
 		match event.keycode:
+			KEY_TAB:
+				if Input.is_key_pressed(KEY_SHIFT):
+					track_switch.emit(-1)
+				else:
+					track_switch.emit(1)
+				accept_event()
 			KEY_RIGHT:
 				move_focus_right()
 				accept_event()
@@ -92,7 +109,8 @@ func move_focus_up(step: int = 1):
 		current_track_index = 0
 	print_debug_info()  # Debug output to track current index
 	track_entries[current_track_index].set_initial_focus(current_label_focus_index)  # Set focus on the new entry at the same label
-
+	current_track_index_changed.emit(current_track_index)
+	
 # Move focus down between track entries
 func move_focus_down(step: int = 1):
 	if current_track_index < track_entries.size() - 1:
@@ -100,7 +118,7 @@ func move_focus_down(step: int = 1):
 		current_track_index += step  # Move to the next track entry
 		print_debug_info()  # Debug output
 		track_entries[current_track_index].set_initial_focus(current_label_focus_index)  # Set focus on the new entry at the same label
-
+		current_track_index_changed.emit(current_track_index)
 # Handle input specific to the current track_entry's focused label
 func handle_input_for_current_track(event: InputEventKey):
 	var handled = track_entries[current_track_index].handle_input_for_focused_label(event, current_label_focus_index)

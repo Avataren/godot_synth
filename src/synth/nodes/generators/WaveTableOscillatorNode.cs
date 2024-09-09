@@ -200,14 +200,14 @@ namespace Synth
 				// Get sample and apply gain
 				SynthType currentSample = GetSamplePWM(currentWaveTable, modulatedPhase);
 				buffer[i] = currentSample * Amplitude * Gain;
-
+				
 				// Update previous sample for next iteration
 				_previousSample = currentSample;
 
 				// Increment phase
 				phase = SynthTypeHelper.ModuloOne(phase + phaseIncrement);
 			}
-
+			
 			Phase = phase;
 		}
 

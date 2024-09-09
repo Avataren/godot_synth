@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Godot;
 using Synth;
 public class SynthPatch
@@ -30,95 +31,122 @@ public class SynthPatch
     Stack<int> NoteVelocityRegister = new Stack<int>();
     bool initialized = false;
 
+    private const int MaxVoices = 8;
+    Voice[] voices = new Voice[MaxVoices];
+
+    VoiceMixerNode voiceMixerNode;
+
+    int currentVoice = 0;
+    Voice CurrentVoice
+    {
+        get
+        {
+            return voices[currentVoice];
+        }
+    }
+
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
+        for (int i = 0; i < MaxVoices; i++)
+        {
+            voices[i] = new Voice();
+        }
+        voiceMixerNode = graph.CreateNode<VoiceMixerNode>("VoiceMixer");
 
-        freq = graph.CreateNode<ConstantNode>("Freq");
+        // freq = graph.CreateNode<ConstantNode>("Freq");
         mix1 = graph.CreateNode<MixerNode>("Mix1");
-        filterNode = graph.CreateNode<FilterNode>("MoogFilter");
+        // filterNode = graph.CreateNode<FilterNode>("MoogFilter");
+        // noiseNode = graph.CreateNode<NoiseNode>("Noise");
+        // for (int i = 0; i < MaxOscillators; i++)
+        // {
+        //     var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
+        //     oscillators.Add(osc);
+        //     graph.Connect(osc, mix1, AudioParam.Input, ModulationType.Add);
+        //     graph.Connect(freq, osc, AudioParam.Pitch, ModulationType.Add);
+        // }
+
+        // for (int i = 0; i < MaxEnvelopes; i++)
+        // {
+        //     //CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
+        //     var env = graph.CreateNode<EnvelopeNode>("Envelope" + (i + 1));
+        //     envelopes.Add(env);
+        //     if (i == 0)
+        //     {
+        //         graph.Connect(env, mix1, AudioParam.Gain, ModulationType.Multiply);
+        //     }
+        // }
+
+        // for (int i = 0; i < MaxLFOs; i++)
+        // {
+        //     LFOs.Add(graph.CreateNode<LFONode>("LFO" + i));
+        // }        
+
+        speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
+        fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
         chorusEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
         flangerEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
-        speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
-        fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
-        noiseNode = graph.CreateNode<NoiseNode>("Noise");
-        for (int i = 0; i < MaxOscillators; i++)
-        {
-            var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
-            oscillators.Add(osc);
-            graph.Connect(osc, mix1, AudioParam.Input, ModulationType.Add);
-            graph.Connect(freq, osc, AudioParam.Pitch, ModulationType.Add);
-        }
 
-        for (int i = 0; i < MaxEnvelopes; i++)
-        {
-            //CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
-            var env = graph.CreateNode<EnvelopeNode>("Envelope" + (i + 1));
-            envelopes.Add(env);
-            if (i == 0)
-            {
-                graph.Connect(env, mix1, AudioParam.Gain, ModulationType.Multiply);
-            }
-        }
 
-#if false
-        float speed = 0.3f; // Adjust speed to match the desired tempo
-        int repeatCount = 10000; // Number of times to repeat the melody
-        var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
 
-        // Lists to hold the events for bulk scheduling
-        var freqEvents = new List<(double timeInSeconds, double value)>();
-        var gateEvents = new List<(double timeInSeconds, double isOpen)>();
+        // #if false
+        //         float speed = 0.3f; // Adjust speed to match the desired tempo
+        //         int repeatCount = 10000; // Number of times to repeat the melody
+        //         var scheduler = AudioContext.Scheduler; // Get the instance of the scheduler
 
-        // MIDI notes for "Twinkle, Twinkle, Little Star" full song
-        int[] melodyNotes = {
-    60, 60, 67, 67, 69, 69, 67, // A Section
-    65, 65, 64, 64, 62, 62, 60, // B Section
-    67, 67, 65, 65, 64, 64, 62, // C Section
-    60, 60, 67, 67, 69, 69, 67, // Repeat A Section
-    65, 65, 64, 64, 62, 62, 60, // Repeat B Section
-    60, 60, 67, 67, 69, 69, 67, // Repeat A Section
-    65, 65, 64, 64, 62, 62, 60  // Repeat B Section
-};
+        //         // Lists to hold the events for bulk scheduling
+        //         var freqEvents = new List<(double timeInSeconds, double value)>();
+        //         var gateEvents = new List<(double timeInSeconds, double isOpen)>();
 
-        double[] noteDurations = {
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, // Durations in seconds
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0
-};
+        //         // MIDI notes for "Twinkle, Twinkle, Little Star" full song
+        //         int[] melodyNotes = {
+        //     60, 60, 67, 67, 69, 69, 67, // A Section
+        //     65, 65, 64, 64, 62, 62, 60, // B Section
+        //     67, 67, 65, 65, 64, 64, 62, // C Section
+        //     60, 60, 67, 67, 69, 69, 67, // Repeat A Section
+        //     65, 65, 64, 64, 62, 62, 60, // Repeat B Section
+        //     60, 60, 67, 67, 69, 69, 67, // Repeat A Section
+        //     65, 65, 64, 64, 62, 62, 60  // Repeat B Section
+        // };
 
-        double currentTime = 0.0; // Initialize currentTime
+        //         double[] noteDurations = {
+        //     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, // Durations in seconds
+        //     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+        //     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+        //     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+        //     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+        //     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+        //     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0
+        // };
 
-        for (int repeat = 0; repeat < repeatCount; repeat++)
-        {
-            for (int i = 0; i < melodyNotes.Length; i++)
-            {
-                int note = melodyNotes[i];
-                double freqValue = 440.0 * Math.Pow(2.0, (note - 69) / 12.0);
-                double gateLength = noteDurations[i] * speed;
+        //         double currentTime = 0.0; // Initialize currentTime
 
-                freqEvents.Add((currentTime, freqValue)); // Add frequency event
-                gateEvents.Add((currentTime, 1)); // Gate open event
-                gateEvents.Add((currentTime + gateLength * 0.95, 0)); // Gate close event to ensure a clean note end
+        //         for (int repeat = 0; repeat < repeatCount; repeat++)
+        //         {
+        //             for (int i = 0; i < melodyNotes.Length; i++)
+        //             {
+        //                 int note = melodyNotes[i];
+        //                 double freqValue = 440.0 * Math.Pow(2.0, (note - 69) / 12.0);
+        //                 double gateLength = noteDurations[i] * speed;
 
-                currentTime += gateLength; // Move to the next note's start time
-            }
-            currentTime += 1.0; // Add a small pause between repetitions to clear the melody
-        }
+        //                 freqEvents.Add((currentTime, freqValue)); // Add frequency event
+        //                 gateEvents.Add((currentTime, 1)); // Gate open event
+        //                 gateEvents.Add((currentTime + gateLength * 0.95, 0)); // Gate close event to ensure a clean note end
 
-        // Now, schedule all frequency and gate events
-        scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
-        for (int j = 0; j < MaxEnvelopes; j++)
-        {
-            scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
-        }
+        //                 currentTime += gateLength; // Move to the next note's start time
+        //             }
+        //             currentTime += 1.0; // Add a small pause between repetitions to clear the melody
+        //         }
 
-#endif
+        //         // Now, schedule all frequency and gate events
+        //         scheduler.ScheduleValuesAtTimeBulk(freq, AudioParam.ConstValue, freqEvents);
+        //         for (int j = 0; j < MaxEnvelopes; j++)
+        //         {
+        //             scheduler.ScheduleValuesAtTimeBulk(envelopes[j], AudioParam.Gate, gateEvents);
+        //         }
+
+        // #endif
 
 
 
@@ -168,34 +196,34 @@ public class SynthPatch
         //         }
         // #endif
 
-        for (int i = 0; i < MaxLFOs; i++)
-        {
-            LFOs.Add(graph.CreateNode<LFONode>("LFO" + i));
-        }
-        graph.Connect(noiseNode, mix1, AudioParam.Input, ModulationType.Add);
-        graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
-        graph.Connect(fuzzNode, filterNode, AudioParam.StereoInput, ModulationType.Add);
+
+        //graph.Connect(noiseNode, mix1, AudioParam.Input, ModulationType.Add);
+        //graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
+        //graph.Connect(fuzzNode, filterNode, AudioParam.StereoInput, ModulationType.Add);
 
         //graph.Connect(filterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
-        graph.Connect(filterNode, flangerEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        
+        //graph.Connect(voiceMixerNode, mix1, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(voiceMixerNode, flangerEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(flangerEffectNode, chorusEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(chorusEffectNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(reverbEffectNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
 
+        //graph.Connect(voiceMixerNode, speakerNode, AudioParam.StereoInput, ModulationType.Add);
         graph.TopologicalSortWorkingGraph();
         GD.Print("Initial setup:");
 
         // disable various nodes by default
-        for (int i = 1; i < oscillators.Count; i++)
-        {
-            graph.SetNodeEnabled(oscillators[i], false);
-        }
+        // for (int i = 1; i < oscillators.Count; i++)
+        // {
+        //     graph.SetNodeEnabled(oscillators[i], false);
+        // }
         this.waveTableBank = waveTableBank;
         //graph.SetNodeEnabled(filterNode, false);
         graph.SetNodeEnabled(flangerEffectNode, false);
         graph.SetNodeEnabled(chorusEffectNode, false);
-        graph.SetNodeEnabled(noiseNode, false);
+        //graph.SetNodeEnabled(noiseNode, false);
         graph.SetNodeEnabled(fuzzNode, false);
         graph.SetNodeEnabled(reverbEffectNode, false);
         graph.SetNodeEnabled(delayEffectNode, false);
@@ -640,7 +668,7 @@ public class SynthPatch
 
     public EnvelopeNode GetEnvelope(int idx)
     {
-        return envelopes[idx];
+        return voices[0].envelopes[idx];
     }
 
     public void SetDetuneOctaves(float detuneOctaves, int OscillatorIndex = -1)
@@ -711,94 +739,97 @@ public class SynthPatch
     {
         lock (_lock)
         {
-            if (NoteVelocityRegister.Contains(note))
-            {
-                GD.Print("Note already playing");
-                //this will cause an issue when key is release
-                return;
-            }
+            CurrentVoice.NoteOn(note, velocity);
+            // if (NoteVelocityRegister.Contains(note))
+            // {
+            //     GD.Print("Note already playing");
+            //     //this will cause an issue when key is release
+            //     return;
+            // }
 
-            float newFrequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
-            var now = AudioContext.Instance.CurrentTimeInSeconds;
+            // float newFrequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
+            // var now = AudioContext.Instance.CurrentTimeInSeconds;
 
-            if (NoteVelocityRegister.Count == 0 || PortamentoTime < 0.001)
-            {
-                // No note is currently playing, start the new note with full envelope
-                NoteVelocityRegister.Push(note);
+            // if (NoteVelocityRegister.Count == 0 || PortamentoTime < 0.001)
+            // {
+            //     // No note is currently playing, start the new note with full envelope
+            //     NoteVelocityRegister.Push(note);
 
-                freq.SetValueAtTime(newFrequency, now);
+            //     freq.SetValueAtTime(newFrequency, now);
 
-                foreach (var env in envelopes)
-                {
-                    if (env.Enabled)
-                    {
-                        env.ScheduleGateOpen(now, true);  // Open with full envelope
-                    }
-                }
-                foreach (var osc in oscillators)
-                {
-                    osc.ScheduleGateOpen(now, true);  // Open oscillator gates
-                }
-            }
-            else
-            {
-                // A note is already playing, apply portamento (legato)
-                NoteVelocityRegister.Push(note);
-                freq.ExponentialRampToValueAtTime(newFrequency, now + PortamentoTime);  // Glide to new note
-            }
+            //     foreach (var env in envelopes)
+            //     {
+            //         if (env.Enabled)
+            //         {
+            //             env.ScheduleGateOpen(now, true);  // Open with full envelope
+            //         }
+            //     }
+            //     foreach (var osc in oscillators)
+            //     {
+            //         osc.ScheduleGateOpen(now, true);  // Open oscillator gates
+            //     }
+            // }
+            // else
+            // {
+            //     // A note is already playing, apply portamento (legato)
+            //     NoteVelocityRegister.Push(note);
+            //     freq.ExponentialRampToValueAtTime(newFrequency, now + PortamentoTime);  // Glide to new note
+            // }
         }
     }
+
 
     public void NoteOff(int note)
     {
         lock (_lock)
         {
-            var now = AudioContext.Instance.CurrentTimeInSeconds;
+            CurrentVoice.NoteOff(note);
+            // var now = AudioContext.Instance.CurrentTimeInSeconds;
 
-            // Remove the released note from the stack
-            var tempStack = new Stack<int>();
-            while (NoteVelocityRegister.Count > 0)
-            {
-                var n = NoteVelocityRegister.Pop();
-                if (n != note)
-                {
-                    tempStack.Push(n);
-                }
-            }
+            // // Remove the released note from the stack
+            // var tempStack = new Stack<int>();
+            // while (NoteVelocityRegister.Count > 0)
+            // {
+            //     var n = NoteVelocityRegister.Pop();
+            //     if (n != note)
+            //     {
+            //         tempStack.Push(n);
+            //     }
+            // }
 
-            // Restore the remaining notes back into the original stack
-            while (tempStack.Count > 0)
-            {
-                NoteVelocityRegister.Push(tempStack.Pop());
-            }
+            // // Restore the remaining notes back into the original stack
+            // while (tempStack.Count > 0)
+            // {
+            //     NoteVelocityRegister.Push(tempStack.Pop());
+            // }
 
-            // Now determine the behavior based on the remaining notes
-            if (NoteVelocityRegister.Count > 0)
-            {
-                // If there's another note in the stack, glide to it
-                int nextNote = NoteVelocityRegister.Peek();
-                float nextFrequency = 440.0f * (float)Math.Pow(2.0, (nextNote - 69) / 12.0);
-                if (PortamentoTime > 0.001)
-                {
-                    freq.LinearRampToValueAtTime(nextFrequency, now + PortamentoTime);
-                }
-                else
-                {
-                    freq.SetValueAtTime(nextFrequency, now);
-                }
-            }
-            else
-            {
-                // No more notes, stop the sound
-                foreach (var env in envelopes)
-                {
-                    env.ScheduleGateClose(now);  // Close envelope gates
-                }
-                foreach (var osc in oscillators)
-                {
-                    osc.ScheduleGateClose(now);  // Close oscillator gates
-                }
-            }
+            // // Now determine the behavior based on the remaining notes
+            // if (NoteVelocityRegister.Count > 0)
+            // {
+            //     // If there's another note in the stack, glide to it
+            //     int nextNote = NoteVelocityRegister.Peek();
+            //     float nextFrequency = 440.0f * (float)Math.Pow(2.0, (nextNote - 69) / 12.0);
+            //     if (PortamentoTime > 0.001)
+            //     {
+            //         freq.LinearRampToValueAtTime(nextFrequency, now + PortamentoTime);
+            //     }
+            //     else
+            //     {
+            //         freq.SetValueAtTime(nextFrequency, now);
+            //     }
+            // }
+            // else
+            // {
+            //     // No more notes, stop the sound
+            //     foreach (var env in envelopes)
+            //     {
+            //         env.ScheduleGateClose(now);  // Close envelope gates
+            //     }
+            //     foreach (var osc in oscillators)
+            //     {
+            //         osc.ScheduleGateClose(now);  // Close oscillator gates
+            //     }
+            // }
         }
     }
 
@@ -807,6 +838,24 @@ public class SynthPatch
     {
         lock (_lock)
         {
+            voiceMixerNode.Clear();
+            // process voices in parallel
+            Parallel.For(0, MaxVoices, i =>
+            {
+                voices[i].Process(increment);
+            });
+
+            
+            for (int i = 0; i < MaxVoices; i++)
+            {
+                voiceMixerNode.MixIn(voices[i]);
+            }
+
+            // CurrentVoice.Process(increment);
+            // voiceMixerNode.MixIn(CurrentVoice);
+
+            // GD.Print(CurrentVoice.GetOuputNode().LeftBuffer[0]);
+
             graph.Process(increment);
             //var node = graph.GetNode("Speaker") as PassThroughNode;
             return speakerNode;

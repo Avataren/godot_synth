@@ -238,38 +238,43 @@ public partial class PatchEditor : Node2D
 
 	private void _on_panel_container_enabled_changed(bool enabled)
 	{
-		AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.noiseNode, enabled);
+		//todo: fix for voices
+		//AudioOutputNode.CurrentPatch.graph.SetNodeEnabled(AudioOutputNode.CurrentPatch.noiseNode, enabled);
 	}
 
 	private void _on_panel_container_gain_changed(float value)
 	{
-		AudioOutputNode.CurrentPatch.noiseNode.Amplitude = value;
+		//todo: fix for voices
+		//AudioOutputNode.CurrentPatch.noiseNode.Amplitude = value;
 	}
 
 	private void _on_panel_container_slope_changed(float value)
 	{
-		AudioOutputNode.CurrentPatch.noiseNode.Cutoff = value;
+		//todo: fix for voices
+		//AudioOutputNode.CurrentPatch.noiseNode.Cutoff = value;
 	}
 
 	private void _on_panel_container_noisetype_changed(string noiseType)
 	{
-		if (noiseType == "white")
-		{
-			AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.White);
-		}
-		else if (noiseType == "pink")
-		{
-			AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.Pink);
-		}
-		else if (noiseType == "brown")
-		{
-			AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.Brownian);
-		}
+		// todo: fix for voices
+		// if (noiseType == "white")
+		// {
+		// 	AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.White);
+		// }
+		// else if (noiseType == "pink")
+		// {
+		// 	AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.Pink);
+		// }
+		// else if (noiseType == "brown")
+		// {
+		// 	AudioOutputNode.CurrentPatch.noiseNode.SetNoiseType(NoiseType.Brownian);
+		// }
 	}
 
 	private void _on_panel_container_offset_changed(float value)
 	{
-		AudioOutputNode.CurrentPatch.noiseNode.DCOffset = value;
+		//todo: fix for voices
+		//AudioOutputNode.CurrentPatch.noiseNode.DCOffset = value;
 	}
 
 	private void _on_distortion_bias_changed(float value)

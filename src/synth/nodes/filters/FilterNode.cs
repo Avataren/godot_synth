@@ -118,7 +118,6 @@ namespace Synth
                 rightFilter.Resonance = value; // Assuming both channels have the same resonance
                 leftBiQuadFilter.SetQ(value);
                 rightBiQuadFilter.SetQ(value);
-
             }
         }
 

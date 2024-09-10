@@ -49,7 +49,7 @@ public class SynthPatch
     {
         for (int i = 0; i < MaxVoices; i++)
         {
-            voices[i] = new Voice();
+            voices[i] = new Voice(waveTableBank);
         }
         voiceMixerNode = graph.CreateNode<VoiceMixerNode>("VoiceMixer");
 
@@ -314,22 +314,22 @@ public class SynthPatch
     {
         filterNode.Resonance = resonance;
     }
-    public void SetAttack(float attack, int oscillatorIndex = 0)
-    {
-        envelopes[oscillatorIndex].AttackTime = attack;
-    }
-    public void SetDecay(float decay, int oscillatorIndex = 0)
-    {
-        envelopes[oscillatorIndex].DecayTime = decay;
-    }
-    public void SetSustain(float sustain, int oscillatorIndex = 0)
-    {
-        envelopes[oscillatorIndex].SustainLevel = sustain;
-    }
-    public void SetRelease(float release, int oscillatorIndex = 0)
-    {
-        envelopes[oscillatorIndex].ReleaseTime = release;
-    }
+    // public void SetAttack(float attack, int oscillatorIndex = 0)
+    // {
+    //     envelopes[oscillatorIndex].AttackTime = attack;
+    // }
+    // public void SetDecay(float decay, int oscillatorIndex = 0)
+    // {
+    //     envelopes[oscillatorIndex].DecayTime = decay;
+    // }
+    // public void SetSustain(float sustain, int oscillatorIndex = 0)
+    // {
+    //     envelopes[oscillatorIndex].SustainLevel = sustain;
+    // }
+    // public void SetRelease(float release, int oscillatorIndex = 0)
+    // {
+    //     envelopes[oscillatorIndex].ReleaseTime = release;
+    // }
 
     // public void SetCustomAttack(float attack, int idx)
     // {
@@ -357,61 +357,33 @@ public class SynthPatch
 
     public void SetFeedback(float feedback, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].SelfModulationStrength = feedback;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].SelfModulationStrength = feedback;
+            voice.SetFeedback(feedback, OscillatorIndex);
         }
     }
 
     public void SetBalance(float balance, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            //GD.Print("Setting balance for oscillator " + OscillatorIndex + " to " + balance);
-            oscillators[OscillatorIndex].Balance = balance;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-
-            oscillators[idx].Balance = balance;
+            voice.SetBalance(balance, OscillatorIndex);
         }
     }
 
     public void SetModulationStrength(float strength, int OscillatorIndex = -1)
     {
-        GD.Print("Setting modulation strength for oscillator " + OscillatorIndex + " to " + strength);
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-
-            oscillators[OscillatorIndex].ModulationStrength = strength;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].ModulationStrength = strength;
+            voice.SetModulationStrength(strength, OscillatorIndex);
         }
     }
 
     public void SetPWM(float pwm, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].PWMDutyCycle = pwm;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].PWMDutyCycle = pwm;
+            voice.SetPWM(pwm, OscillatorIndex);
         }
     }
 
@@ -432,16 +404,9 @@ public class SynthPatch
 
     public void SetLFOWaveform(LFOWaveform waveform, int LFOIndex = -1)
     {
-        //convert from waveTypeName to enum
-        if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+        foreach (var voice in voices)
         {
-            LFOs[LFOIndex].CurrentWaveform = waveform;
-            return;
-        }
-
-        for (int idx = 0; idx < LFOs.Count; idx++)
-        {
-            LFOs[idx].CurrentWaveform = waveform;
+            voice.SetLFOWaveform(waveform, LFOIndex);
         }
     }
 
@@ -453,101 +418,53 @@ public class SynthPatch
             GD.Print("SynthPatch not initialized");
             return;
         }
-        if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+        foreach (var voice in voices)
         {
-            GD.Print("Setting LFO " + LFOIndex + " frequency to " + freq);
-            LFOs[LFOIndex].Frequency = freq;
-            return;
-        }
-
-        for (int idx = 0; idx < LFOs.Count; idx++)
-        {
-            LFOs[idx].Frequency = freq;
+            voice.SetLFOFrequency(freq, LFOIndex);
         }
     }
 
     public void SetLFOGain(float gain, int LFOIndex = -1)
     {
-        if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+        foreach (var voice in voices)
         {
-            GD.Print("Setting LFO " + LFOIndex + " gain to " + gain);
-            LFOs[LFOIndex].Amplitude = gain;
-            return;
-        }
-
-        for (int idx = 0; idx < LFOs.Count; idx++)
-        {
-            LFOs[idx].Amplitude = gain;
+            voice.SetLFOGain(gain, LFOIndex);
         }
     }
 
     public void SetOscillatorPhaseOffset(float phase, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].PhaseOffset = phase;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].PhaseOffset = phase;
+            voice.SetOscillatorPhaseOffset(phase, OscillatorIndex);
         }
     }
 
     public void SetHardSync(bool enabled, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].HardSync = enabled;
-            return;
-        }
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].HardSync = enabled;
+            voice.SetHardSync(enabled, OscillatorIndex);
         }
     }
 
     public void SetAmplitude(float amplitude, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].Amplitude = amplitude;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].Amplitude = amplitude;
+            voice.SetAmplitude(amplitude, OscillatorIndex);
         }
     }
 
 
     public void SetOscillatorEnabled(bool enabled, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            graph.SetNodeEnabled(oscillators[OscillatorIndex], enabled);
-            //graph.DebugPrint();
-            ResetAllOscillatorPhases();
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            graph.SetNodeEnabled(oscillators[idx], enabled);
-            //graph.DebugPrint();
-        }
-        ResetAllOscillatorPhases();
-    }
-
-    public void ResetAllOscillatorPhases()
-    {
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].ResetPhase();
+            voice.SetOscillatorEnabled(enabled, OscillatorIndex);
         }
     }
+
 
     // public void SetAttack(float attack, int EnvelopeIndex = -1)
     // {
@@ -607,37 +524,9 @@ public class SynthPatch
 
     public void SetWaveform(WaveTableWaveType waveType, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            if (waveType == WaveTableWaveType.PWM)
-            {
-                oscillators[OscillatorIndex].IsPWM = true;
-                oscillators[OscillatorIndex].WaveTableMemory = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
-                oscillators[OscillatorIndex].UpdateSampleFunction();
-            }
-            else
-            {
-                oscillators[OscillatorIndex].IsPWM = false;
-                oscillators[OscillatorIndex].WaveTableMemory = waveTableBank.GetWave(waveType);
-                oscillators[OscillatorIndex].UpdateSampleFunction();
-            }
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            if (waveType == WaveTableWaveType.PWM)
-            {
-                oscillators[idx].IsPWM = true;
-                oscillators[idx].WaveTableMemory = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
-                oscillators[idx].UpdateSampleFunction();
-            }
-            else
-            {
-                oscillators[idx].IsPWM = false;
-                oscillators[idx].WaveTableMemory = waveTableBank.GetWave(waveType);
-                oscillators[idx].UpdateSampleFunction();
-            }
+            voice.SetWaveform(waveType, OscillatorIndex);
         }
     }
 

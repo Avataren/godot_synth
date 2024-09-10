@@ -13,6 +13,7 @@ namespace Synth
         List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
         List<LFONode> LFOs = new List<LFONode>();
         public List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
+        WaveTableBank waveTableBank;
         MixerNode mixerNode;
         ConstantNode freqNode;
         NoiseNode noiseNode;
@@ -20,8 +21,9 @@ namespace Synth
         // let Voice inherit audio node and have a dedicated graph for each?
         // patch can then mix the voices as needed
         // and voices can easily be processed in parallel
-        public Voice()
+        public Voice(WaveTableBank waveTableBank)
         {
+            this.waveTableBank = waveTableBank;
             Initialize();
         }
 
@@ -67,7 +69,7 @@ namespace Synth
             for (int i = 1; i < oscillators.Count; i++)
             {
                 graph.SetNodeEnabled(oscillators[i], false);
-            }            
+            }
         }
 
         public void NoteOn(int note, float velocity = 1.0f)
@@ -157,13 +159,225 @@ namespace Synth
                 {
                     osc.ScheduleGateClose(now);  // Close oscillator gates
                 }
-            }            
+            }
         }
 
         public override void Process(double increment)
         {
             graph.Process(increment);
         }
+
+        public void SetFeedback(float feedback, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].SelfModulationStrength = feedback;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].SelfModulationStrength = feedback;
+            }
+        }
+
+        public void SetBalance(float balance, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].Balance = balance;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+
+                oscillators[idx].Balance = balance;
+            }
+        }
+
+        public void SetModulationStrength(float strength, int OscillatorIndex = -1)
+        {
+            GD.Print("Setting modulation strength for oscillator " + OscillatorIndex + " to " + strength);
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+
+                oscillators[OscillatorIndex].ModulationStrength = strength;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].ModulationStrength = strength;
+            }
+        }
+
+        public void SetPWM(float pwm, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].PWMDutyCycle = pwm;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].PWMDutyCycle = pwm;
+            }
+        }
+
+
+        public void SetLFOWaveform(LFOWaveform waveform, int LFOIndex = -1)
+        {
+            //convert from waveTypeName to enum
+            if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+            {
+                LFOs[LFOIndex].CurrentWaveform = waveform;
+                return;
+            }
+
+            for (int idx = 0; idx < LFOs.Count; idx++)
+            {
+                LFOs[idx].CurrentWaveform = waveform;
+            }
+        }
+
+        public void SetLFOFrequency(float freq, int LFOIndex = -1)
+        {
+            GD.Print("Trying to set LFO frequency to " + freq);
+            if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+            {
+                GD.Print("Setting LFO " + LFOIndex + " frequency to " + freq);
+                LFOs[LFOIndex].Frequency = freq;
+                return;
+            }
+
+            for (int idx = 0; idx < LFOs.Count; idx++)
+            {
+                LFOs[idx].Frequency = freq;
+            }
+        }
+
+        public void SetLFOGain(float gain, int LFOIndex = -1)
+        {
+            if (LFOIndex >= 0 && LFOIndex < LFOs.Count)
+            {
+                GD.Print("Setting LFO " + LFOIndex + " gain to " + gain);
+                LFOs[LFOIndex].Amplitude = gain;
+                return;
+            }
+
+            for (int idx = 0; idx < LFOs.Count; idx++)
+            {
+                LFOs[idx].Amplitude = gain;
+            }
+        }
+
+        public void SetOscillatorPhaseOffset(float phase, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].PhaseOffset = phase;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].PhaseOffset = phase;
+            }
+        }
+
+        public void SetHardSync(bool enabled, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].HardSync = enabled;
+                return;
+            }
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].HardSync = enabled;
+            }
+        }
+
+        public void SetAmplitude(float amplitude, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].Amplitude = amplitude;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].Amplitude = amplitude;
+            }
+        }
+
+        public void SetOscillatorEnabled(bool enabled, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                graph.SetNodeEnabled(oscillators[OscillatorIndex], enabled);
+                //graph.DebugPrint();
+                ResetAllOscillatorPhases();
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                graph.SetNodeEnabled(oscillators[idx], enabled);
+                //graph.DebugPrint();
+            }
+            ResetAllOscillatorPhases();
+        }
+
+        public void ResetAllOscillatorPhases()
+        {
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].ResetPhase();
+            }
+        }
+
+        public void SetWaveform(WaveTableWaveType waveType, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                if (waveType == WaveTableWaveType.PWM)
+                {
+                    oscillators[OscillatorIndex].IsPWM = true;
+                    oscillators[OscillatorIndex].WaveTableMemory = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+                    oscillators[OscillatorIndex].UpdateSampleFunction();
+                }
+                else
+                {
+                    oscillators[OscillatorIndex].IsPWM = false;
+                    oscillators[OscillatorIndex].WaveTableMemory = waveTableBank.GetWave(waveType);
+                    oscillators[OscillatorIndex].UpdateSampleFunction();
+                }
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                if (waveType == WaveTableWaveType.PWM)
+                {
+                    oscillators[idx].IsPWM = true;
+                    oscillators[idx].WaveTableMemory = waveTableBank.GetWave(WaveTableWaveType.SAWTOOTH);
+                    oscillators[idx].UpdateSampleFunction();
+                }
+                else
+                {
+                    oscillators[idx].IsPWM = false;
+                    oscillators[idx].WaveTableMemory = waveTableBank.GetWave(waveType);
+                    oscillators[idx].UpdateSampleFunction();
+                }
+            }
+        }
+
+
+
     }
 
 }

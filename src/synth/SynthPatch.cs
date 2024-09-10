@@ -15,7 +15,7 @@ public class SynthPatch
     // List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     WaveTableBank waveTableBank;
     public AudioGraph graph { get; set; } = new AudioGraph();
-    List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
+    //List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
     ConstantNode freq;
     DelayEffectNode delayEffectNode;
     ReverbEffectNode reverbEffectNode;
@@ -527,43 +527,25 @@ public class SynthPatch
 
     public void SetDetuneOctaves(float detuneOctaves, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].DetuneOctaves = detuneOctaves;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].DetuneOctaves = detuneOctaves;
+            voice.SetDetuneOctaves(detuneOctaves, OscillatorIndex);
         }
     }
 
     public void SetDetuneSemi(float detuneSemi, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].DetuneSemitones = detuneSemi;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].DetuneSemitones = detuneSemi;
+            voice.SetDetuneSemi(detuneSemi, OscillatorIndex);
         }
     }
 
     public void SetDetuneCents(float detuneCents, int OscillatorIndex = -1)
     {
-        if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+        foreach (var voice in voices)
         {
-            oscillators[OscillatorIndex].DetuneCents = detuneCents;
-            return;
-        }
-
-        for (int idx = 0; idx < oscillators.Count; idx++)
-        {
-            oscillators[idx].DetuneCents = detuneCents;
+            voice.SetDetuneCents(detuneCents, OscillatorIndex);
         }
     }
 
@@ -572,20 +554,25 @@ public class SynthPatch
         GD.Print("Clearing key stack");
         lock (_lock)
         {
-            NoteVelocityRegister.Clear();
-            var now = AudioContext.Instance.CurrentTimeInSeconds;
+            VoiceMidiDictionary.Clear();
+            foreach (var voice in voices)
+            {
+                voice.Silence();
+            }
+            //NoteVelocityRegister.Clear();
+            // var now = AudioContext.Instance.CurrentTimeInSeconds;
 
-            foreach (var env in envelopes)
-            {
-                if (env.Enabled)
-                {
-                    env.ScheduleGateClose(now);  // Open with full envelope
-                }
-            }
-            foreach (var osc in oscillators)
-            {
-                osc.ScheduleGateClose(now);  // Open oscillator gates
-            }
+            // foreach (var env in envelopes)
+            // {
+            //     if (env.Enabled)
+            //     {
+            //         env.ScheduleGateClose(now);  // Open with full envelope
+            //     }
+            // }
+            // foreach (var osc in oscillators)
+            // {
+            //     osc.ScheduleGateClose(now);  // Open oscillator gates
+            // }
         }
     }
 

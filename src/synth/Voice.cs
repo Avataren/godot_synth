@@ -181,6 +181,28 @@ namespace Synth
             }
         }
 
+        public void Silence()
+        {
+
+            // lock (_lock)
+            {
+                // NoteVelocityRegister.Clear();
+                var now = AudioContext.Instance.CurrentTimeInSeconds;
+
+                foreach (var env in envelopes)
+                {
+                    if (env.Enabled)
+                    {
+                        env.ScheduleGateClose(now);  // Open with full envelope
+                    }
+                }
+                foreach (var osc in oscillators)
+                {
+                    osc.ScheduleGateClose(now);  // Open oscillator gates
+                }
+            }
+        }
+
         public void SetBalance(float balance, int OscillatorIndex = -1)
         {
             if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
@@ -226,6 +248,48 @@ namespace Synth
             }
         }
 
+
+        public void SetDetuneOctaves(float detuneOctaves, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].DetuneOctaves = detuneOctaves;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].DetuneOctaves = detuneOctaves;
+            }
+        }
+
+        public void SetDetuneSemi(float detuneSemi, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].DetuneSemitones = detuneSemi;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].DetuneSemitones = detuneSemi;
+            }
+        }
+
+        public void SetDetuneCents(float detuneCents, int OscillatorIndex = -1)
+        {
+            if (OscillatorIndex >= 0 && OscillatorIndex < oscillators.Count)
+            {
+                oscillators[OscillatorIndex].DetuneCents = detuneCents;
+                return;
+            }
+
+            for (int idx = 0; idx < oscillators.Count; idx++)
+            {
+                oscillators[idx].DetuneCents = detuneCents;
+            }
+        }
 
         public void SetLFOWaveform(LFOWaveform waveform, int LFOIndex = -1)
         {

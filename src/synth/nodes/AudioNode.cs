@@ -69,6 +69,7 @@ namespace Synth
 		{
 			if (!AudioParameters.ContainsKey(param))
 			{
+				//GD.Print ("No audionode parameter found for " + param);
 				return null;
 			}
 			return AudioParameters[param].ConvertAll(x => x.SourceNode);

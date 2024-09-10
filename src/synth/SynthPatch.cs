@@ -56,35 +56,7 @@ public class SynthPatch
             VoiceActive[i] = false;
         }
         voiceMixerNode = graph.CreateNode<VoiceMixerNode>("VoiceMixer");
-
-        // freq = graph.CreateNode<ConstantNode>("Freq");
         mix1 = graph.CreateNode<MixerNode>("Mix1");
-        // filterNode = graph.CreateNode<FilterNode>("MoogFilter");
-        // noiseNode = graph.CreateNode<NoiseNode>("Noise");
-        // for (int i = 0; i < MaxOscillators; i++)
-        // {
-        //     var osc = graph.CreateNode<WaveTableOscillatorNode>("Osc" + i);
-        //     oscillators.Add(osc);
-        //     graph.Connect(osc, mix1, AudioParam.Input, ModulationType.Add);
-        //     graph.Connect(freq, osc, AudioParam.Pitch, ModulationType.Add);
-        // }
-
-        // for (int i = 0; i < MaxEnvelopes; i++)
-        // {
-        //     //CustomEnvelopes.Add(graph.CreateNode<EnvelopeNode>("CustomEnv" + i, BufferSize, SampleRate));
-        //     var env = graph.CreateNode<EnvelopeNode>("Envelope" + (i + 1));
-        //     envelopes.Add(env);
-        //     if (i == 0)
-        //     {
-        //         graph.Connect(env, mix1, AudioParam.Gain, ModulationType.Multiply);
-        //     }
-        // }
-
-        // for (int i = 0; i < MaxLFOs; i++)
-        // {
-        //     LFOs.Add(graph.CreateNode<LFONode>("LFO" + i));
-        // }        
-
         speakerNode = graph.CreateNode<PassThroughNode>("Speaker");
         fuzzNode = graph.CreateNode<FuzzNode>("Fuzz");
         chorusEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
@@ -200,15 +172,8 @@ public class SynthPatch
         //         }
         // #endif
 
-
-        //graph.Connect(noiseNode, mix1, AudioParam.Input, ModulationType.Add);
-        //graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
-        //graph.Connect(fuzzNode, filterNode, AudioParam.StereoInput, ModulationType.Add);
-
-        //graph.Connect(filterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
-        
-        //graph.Connect(voiceMixerNode, mix1, AudioParam.StereoInput, ModulationType.Add);
-        graph.Connect(voiceMixerNode, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(voiceMixerNode, mix1, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(mix1, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(fuzzNode, flangerEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(flangerEffectNode, chorusEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(chorusEffectNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
@@ -219,11 +184,6 @@ public class SynthPatch
         graph.TopologicalSortWorkingGraph();
         GD.Print("Initial setup:");
 
-        // disable various nodes by default
-        // for (int i = 1; i < oscillators.Count; i++)
-        // {
-        //     graph.SetNodeEnabled(oscillators[i], false);
-        // }
         this.waveTableBank = waveTableBank;
         //graph.SetNodeEnabled(filterNode, false);
         graph.SetNodeEnabled(flangerEffectNode, false);

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Godot;
 namespace Synth
 {
     public class MixerNode : AudioNode
@@ -38,7 +39,9 @@ namespace Synth
         public override void Process(double increment)
         {
             List<AudioNode> nodes = GetParameterNodes(AudioParam.Input);
-            if (nodes == null || nodes.Count == 0)
+            List<AudioNode> stereoNodes = GetParameterNodes(AudioParam.StereoInput);
+
+            if ((nodes == null || nodes.Count == 0) && (stereoNodes == null || stereoNodes.Count == 0))
             {
                 Array.Clear(LeftBuffer, 0, NumSamples);
                 Array.Clear(RightBuffer, 0, NumSamples);
@@ -51,14 +54,30 @@ namespace Synth
             // Clear accumulators
             Array.Clear(leftAccumulators, 0, numVectors);
             Array.Clear(rightAccumulators, 0, numVectors);
-
-            foreach (var node in nodes)
+            if (nodes != null)
             {
-                if (node == null || !node.Enabled) continue;
-
-                for (int i = 0; i < numVectors; i++)
+                foreach (var node in nodes)
                 {
-                    ProcessVectorizedSamples(i * vectorSize, node, ref leftAccumulators[i], ref rightAccumulators[i]);
+                    if (node == null || !node.Enabled) continue;
+
+                    for (int i = 0; i < numVectors; i++)
+                    {
+                        ProcessVectorizedSamples(i * vectorSize, node, ref leftAccumulators[i], ref rightAccumulators[i]);
+                    }
+                }
+            }
+
+            // Process stereo nodes
+            if (stereoNodes != null)
+            {
+                foreach (var stereoNode in stereoNodes)
+                {
+                    if (stereoNode == null || !stereoNode.Enabled) continue;
+
+                    for (int i = 0; i < numVectors; i++)
+                    {
+                        ProcessStereoSamples(i * vectorSize, stereoNode, ref leftAccumulators[i], ref rightAccumulators[i]);
+                    }
                 }
             }
 
@@ -70,6 +89,34 @@ namespace Synth
                 rightAccumulators[i].CopyTo(RightBuffer, offset);
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ProcessStereoSamples(int startIndex, AudioNode stereoNode, ref Vector<SynthType> leftAccumulator, ref Vector<SynthType> rightAccumulator)
+        {
+            Vector<SynthType> nodeBalanceVector = new Vector<SynthType>(stereoNode.Balance);
+
+            // Separate left and right buffers for stereo nodes
+            ReadOnlySpan<SynthType> leftBuffer = stereoNode.GetLeftBuffer().Slice(startIndex, Vector<SynthType>.Count);
+            ReadOnlySpan<SynthType> rightBuffer = stereoNode.GetRightBuffer().Slice(startIndex, Vector<SynthType>.Count);
+
+            LoadParameters(startIndex, stereoNode);
+
+            var gainParam = new Vector<SynthType>(gainArray);
+
+            // Process left channel
+            var sampleLeft = new Vector<SynthType>(leftBuffer) * gainParam;
+            var balanceParam1 = new Vector<SynthType>(balanceArray1) + nodeBalanceVector;
+            var balance = Vector.Max(negOne, Vector.Min(balanceParam1, posOne));
+            var leftVolume = Vector.ConditionalSelect(Vector.LessThan(balance, Vector<SynthType>.Zero), posOne, posOne - balance);
+
+            // Process right channel
+            var sampleRight = new Vector<SynthType>(rightBuffer) * gainParam;
+            var rightVolume = Vector.ConditionalSelect(Vector.GreaterThan(balance, Vector<SynthType>.Zero), posOne, posOne + balance);
+
+            leftAccumulator += leftVolume * sampleLeft * Gain;
+            rightAccumulator += rightVolume * sampleRight * Gain;
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessVectorizedSamples(int startIndex, AudioNode node, ref Vector<SynthType> leftAccumulator, ref Vector<SynthType> rightAccumulator)

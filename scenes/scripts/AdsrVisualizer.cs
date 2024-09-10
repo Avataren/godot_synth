@@ -1,7 +1,5 @@
 using Godot;
-using System;
 using Synth;
-using System.Collections.Generic;
 public partial class AdsrVisualizer : PanelContainer
 {
 	[Export]
@@ -23,15 +21,33 @@ public partial class AdsrVisualizer : PanelContainer
 	[Signal]
 	public delegate void ReleaseUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void AttackCoeffEventHandler(float attackTime);
+	public delegate void AttackCoeffUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void DecayCoeffEventHandler(float attackTime);
+	public delegate void DecayCoeffUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void ReleaseCoeffEventHandler(float attackTime);
+	public delegate void ReleaseCoeffUpdatedEventHandler(float attackTime);
 	[Signal]
-	public delegate void TimeScaleUpdateEventHandler(float attackTime);
+	public delegate void TimeScaleUpdatedEventHandler(float attackTime);
 
 
+	[Signal]
+	public delegate void AttackVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+	[Signal]
+	public delegate void DecayVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+	[Signal]
+	public delegate void SustainVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+	[Signal]
+	public delegate void ReleaseVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+	[Signal]
+	public delegate void AttackCoeffVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+	[Signal]
+	public delegate void DecayCoeffVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+	[Signal]
+	public delegate void ReleaseCoeffVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+	[Signal]
+	public delegate void TimeScaleVoiceUpdatedEventHandler(float attackTime, int envelopeIndex);
+
+	int EnvelopeIndex = 0;
 	float TimeScale = 1.0f;
 	public override void _Ready()
 	{
@@ -81,10 +97,10 @@ public partial class AdsrVisualizer : PanelContainer
 		EmitSignal(SignalName.DecayUpdated, currentEnvelopeNode.DecayTime / currentEnvelopeNode.TimeScale);
 		EmitSignal(SignalName.SustainUpdated, currentEnvelopeNode.SustainLevel);
 		EmitSignal(SignalName.ReleaseUpdated, currentEnvelopeNode.ReleaseTime / currentEnvelopeNode.TimeScale);
-		EmitSignal(SignalName.AttackCoeff, currentEnvelopeNode.AttackCtrl);
-		EmitSignal(SignalName.DecayCoeff, currentEnvelopeNode.DecayCtrl);
-		EmitSignal(SignalName.ReleaseCoeff, currentEnvelopeNode.ReleaseCtrl);
-		EmitSignal(SignalName.TimeScaleUpdate, currentEnvelopeNode.TimeScale);
+		EmitSignal(SignalName.AttackCoeffUpdated, currentEnvelopeNode.AttackCtrl);
+		EmitSignal(SignalName.DecayCoeffUpdated, currentEnvelopeNode.DecayCtrl);
+		EmitSignal(SignalName.ReleaseCoeffUpdated, currentEnvelopeNode.ReleaseCtrl);
+		EmitSignal(SignalName.TimeScaleUpdated, currentEnvelopeNode.TimeScale);
 
 
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512);
@@ -104,6 +120,7 @@ public partial class AdsrVisualizer : PanelContainer
 			GD.PrintErr("Envelope node not set!");
 			return;
 		}
+		EnvelopeIndex = index;
 		currentEnvelopeNode = envelopeNodes[index];
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
@@ -123,7 +140,8 @@ public partial class AdsrVisualizer : PanelContainer
 	private void _on_time_knob_value_changed(float val)
 	{
 		TimeScale = val;
-		currentEnvelopeNode.TimeScale = val;
+		//currentEnvelopeNode.TimeScale = val;
+		EmitSignal(SignalName.TimeScaleVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 		node_shader_material.SetShaderParameter("total_time", TimeScale * 3.0f);
@@ -133,7 +151,8 @@ public partial class AdsrVisualizer : PanelContainer
 	{
 		if (Mathf.Abs(val) < 0.0015)
 			val = 0.0015f;
-		currentEnvelopeNode.AttackCtrl = val;
+		//currentEnvelopeNode.AttackCtrl = val;
+		EmitSignal(SignalName.AttackCoeffVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
@@ -142,7 +161,8 @@ public partial class AdsrVisualizer : PanelContainer
 	{
 		if (Mathf.Abs(val) < 0.0015)
 			val = 0.0015f;
-		currentEnvelopeNode.DecayCtrl = val;
+		//currentEnvelopeNode.DecayCtrl = val;
+		EmitSignal(SignalName.DecayCoeffVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
@@ -151,35 +171,40 @@ public partial class AdsrVisualizer : PanelContainer
 	{
 		if (Mathf.Abs(val) < 0.0015)
 			val = 0.0015f;
-		currentEnvelopeNode.ReleaseCtrl = val;
+		//currentEnvelopeNode.ReleaseCtrl = val;
+		EmitSignal(SignalName.ReleaseCoeffVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 
 	private void _on_attack_knob_value_changed(float val)
 	{
-		currentEnvelopeNode.AttackTime = val;
+		//currentEnvelopeNode.AttackTime = val;
+		EmitSignal(SignalName.AttackVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 
 	private void _on_decay_knob_value_changed(float val)
 	{
-		currentEnvelopeNode.DecayTime = val;
+		//currentEnvelopeNode.DecayTime = val;
+		EmitSignal(SignalName.DecayVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 
 	private void _on_sustain_knob_value_changed(float val)
 	{
-		currentEnvelopeNode.SustainLevel = val;
+		//currentEnvelopeNode.SustainLevel = val;
+		EmitSignal(SignalName.SustainVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}
 
 	private void _on_release_knob_value_changed(float val)
 	{
-		currentEnvelopeNode.ReleaseTime = val;
+		//currentEnvelopeNode.ReleaseTime = val;
+		EmitSignal(SignalName.ReleaseVoiceUpdated, val, EnvelopeIndex);
 		visualBuffer = currentEnvelopeNode.GetVisualBuffer(512, 3.0f);
 		node_shader_material.SetShaderParameter("wave_data", visualBuffer);
 	}

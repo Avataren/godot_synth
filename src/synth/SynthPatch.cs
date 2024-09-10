@@ -10,13 +10,8 @@ public class SynthPatch
     public const int MaxLFOs = 2;
     public const int MaxEnvelopes = 3;
     public float PortamentoTime = 0.0f;
-    List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
-    List<LFONode> LFOs = new List<LFONode>();
-    // List<EnvelopeNode> AmpEnvelopes = new List<EnvelopeNode>();
     WaveTableBank waveTableBank;
     public AudioGraph graph { get; set; } = new AudioGraph();
-    //List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
-    ConstantNode freq;
     DelayEffectNode delayEffectNode;
     ReverbEffectNode reverbEffectNode;
     public FilterNode filterNode;
@@ -26,25 +21,13 @@ public class SynthPatch
     public ChorusEffectNode chorusEffectNode;
     public ChorusEffectNode flangerEffectNode;
     MixerNode mix1;
-
     //Dictionary<int, float> NoteVelocityRegister = new Dictionary<int, float>();
     Stack<int> NoteVelocityRegister = new Stack<int>();
     bool initialized = false;
 
     private const int MaxVoices = 8;
-    Voice[] voices = new Voice[MaxVoices];
-
+    public Voice[] voices = new Voice[MaxVoices];
     VoiceMixerNode voiceMixerNode;
-
-    int currentVoice = 0;
-    Voice CurrentVoice
-    {
-        get
-        {
-            return voices[currentVoice];
-        }
-    }
-
     Dictionary<int, int> VoiceMidiDictionary = new Dictionary<int, int>();
     bool[] VoiceActive = new bool[MaxVoices];
 
@@ -63,8 +46,6 @@ public class SynthPatch
         flangerEffectNode = graph.CreateNode<ChorusEffectNode>("ChorusEffect");
         delayEffectNode = graph.CreateNode<DelayEffectNode>("DelayEffect");
         reverbEffectNode = graph.CreateNode<ReverbEffectNode>("ReverbEffect");
-
-
 
         // #if false
         //         float speed = 0.3f; // Adjust speed to match the desired tempo
@@ -514,11 +495,6 @@ public class SynthPatch
     //         AmpEnvelopes[idx].ReleaseTime = release;
     //     }
     // }
-
-    public WaveTableOscillatorNode GetOscillator(int idx)
-    {
-        return oscillators[idx];
-    }
 
     public EnvelopeNode GetEnvelope(int idx)
     {

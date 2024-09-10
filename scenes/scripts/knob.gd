@@ -122,6 +122,11 @@ func _update_pointer_rotation() -> void:
 	#value = min_value + normalized_value * (max_value - min_value)
 	#return lerp(start_angle, end_angle, (value - min_value) / (max_value - min_value))
 
+func _on_value_updated_no_emit(val: float) -> void:
+	current_value = val
+	update_value_label()
+	previous_value = current_value
+	_update_pointer_rotation()	
 
 func _on_value_updated(val: float) -> void:
 	current_value = val

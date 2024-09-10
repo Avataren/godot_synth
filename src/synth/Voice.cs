@@ -14,7 +14,7 @@ namespace Synth
         List<LFONode> LFOs = new List<LFONode>();
         public List<EnvelopeNode> envelopes = new List<EnvelopeNode>();
         WaveTableBank waveTableBank;
-        MixerNode mixerNode;
+        public MixerNode mixerNode;
         ConstantNode freqNode;
         NoiseNode noiseNode;
         public AudioGraph graph { get; set; } = new AudioGraph();

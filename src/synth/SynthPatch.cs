@@ -180,7 +180,11 @@ public class SynthPatch
     public void SetMasterGain(float gain)
     {
         //speakerNode.Gain = gain;
-        mix1.Gain = gain;
+        //mix1.Gain = gain;
+        foreach (var voice in voices)
+        {
+            voice.mixerNode.Gain = gain;
+        }
     }
 
     public SynthType[] CreateWaveform(WaveTableWaveType waveType, int bufSize)

@@ -208,7 +208,8 @@ public class SynthPatch
         //graph.Connect(filterNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         
         //graph.Connect(voiceMixerNode, mix1, AudioParam.StereoInput, ModulationType.Add);
-        graph.Connect(voiceMixerNode, flangerEffectNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(voiceMixerNode, fuzzNode, AudioParam.StereoInput, ModulationType.Add);
+        graph.Connect(fuzzNode, flangerEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(flangerEffectNode, chorusEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(chorusEffectNode, delayEffectNode, AudioParam.StereoInput, ModulationType.Add);
         graph.Connect(delayEffectNode, reverbEffectNode, AudioParam.StereoInput, ModulationType.Add);

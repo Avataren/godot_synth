@@ -45,11 +45,15 @@ public class SynthPatch
         }
     }
 
+    Dictionary<int, int> VoiceMidiDictionary = new Dictionary<int, int>();
+    bool[] VoiceActive = new bool[MaxVoices];
+
     public SynthPatch(WaveTableBank waveTableBank, int bufferSize, float sampleRate = 44100)
     {
         for (int i = 0; i < MaxVoices; i++)
         {
             voices[i] = new Voice(waveTableBank);
+            VoiceActive[i] = false;
         }
         voiceMixerNode = graph.CreateNode<VoiceMixerNode>("VoiceMixer");
 
@@ -628,7 +632,27 @@ public class SynthPatch
     {
         lock (_lock)
         {
-            CurrentVoice.NoteOn(note, velocity);
+            if (VoiceMidiDictionary.ContainsKey(note))
+            {
+                //currentVoice = VoiceDictionary[note];
+                GD.Print("VoiceMidiDictionary already contains note");
+            }
+            else
+            {
+                for (int i = 0; i < MaxVoices; i++)
+                {
+                    if (!VoiceActive[i])
+                    {
+                        VoiceMidiDictionary[note] = i;
+                        VoiceActive[i] = true;
+                        voices[i].NoteOn(note, velocity);
+                        //currentVoice = i;
+                        break;
+                    }
+                }
+            }
+
+            
             // if (NoteVelocityRegister.Contains(note))
             // {
             //     GD.Print("Note already playing");
@@ -672,7 +696,14 @@ public class SynthPatch
     {
         lock (_lock)
         {
-            CurrentVoice.NoteOff(note);
+            if (VoiceMidiDictionary.ContainsKey(note))
+            {
+                int voiceIndex = VoiceMidiDictionary[note];
+                VoiceMidiDictionary.Remove(note);
+                VoiceActive[voiceIndex] = false;
+                voices[voiceIndex].NoteOff(note);
+            }
+            //CurrentVoice.NoteOff(note);
             // var now = AudioContext.Instance.CurrentTimeInSeconds;
 
             // // Remove the released note from the stack

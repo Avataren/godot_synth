@@ -9,7 +9,7 @@ namespace Synth
         private const int MaxOscillators = 6;
         private const int MaxEnvelopes = 3;
         private const int MaxLFOs = 3;
-        FilterNode filterNode;
+        public FilterNode filterNode;
         List<WaveTableOscillatorNode> oscillators = new List<WaveTableOscillatorNode>();
         List<LFONode> LFOs = new List<LFONode>();
         public List<EnvelopeNode> envelopes = new List<EnvelopeNode>();

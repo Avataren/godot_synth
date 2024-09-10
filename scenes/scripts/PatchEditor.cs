@@ -86,68 +86,70 @@ public partial class PatchEditor : Node2D
 			for (int i = 0; i < SynthPatch.MaxEnvelopes; i++)
 			{
 				AdsrVisualizer.SetADSRNodeReference(AudioOutputNode.CurrentPatch.GetEnvelope(i), i);
-				AdsrVisualizer.AttackVoiceUpdated += (attack, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].AttackTime = attack;
-					}
-				};
-				AdsrVisualizer.DecayVoiceUpdated += (decay, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].DecayTime = decay;
-					}
-				};
-				AdsrVisualizer.SustainVoiceUpdated += (sustain, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].SustainLevel = sustain;
-					}
-				};
-				AdsrVisualizer.ReleaseVoiceUpdated += (release, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].ReleaseTime = release;
-					}
-				};
-
-				AdsrVisualizer.AttackCoeffVoiceUpdated += (attack_coeff, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].AttackCtrl = attack_coeff;
-					}
-				};
-
-				AdsrVisualizer.DecayCoeffVoiceUpdated += (decay_coeff, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].DecayCtrl = decay_coeff;
-					}
-				};
-
-				AdsrVisualizer.ReleaseCoeffVoiceUpdated += (release_coeff, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].ReleaseCtrl = release_coeff;
-					}
-				};				
-
-				AdsrVisualizer.TimeScaleVoiceUpdated += (timescale, index) =>
-				{
-					foreach (var voice in AudioOutputNode.CurrentPatch.voices)
-					{
-						voice.envelopes[index].TimeScale = timescale;
-					}
-				};
 			}
 			AdsrVisualizer.SetActiveEnvelopeIndex(0);
+
+			AdsrVisualizer.AttackVoiceUpdated += (attack, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].AttackTime = attack;
+				}
+			};
+			AdsrVisualizer.DecayVoiceUpdated += (decay, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].DecayTime = decay;
+				}
+			};
+			AdsrVisualizer.SustainVoiceUpdated += (sustain, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].SustainLevel = sustain;
+				}
+			};
+			AdsrVisualizer.ReleaseVoiceUpdated += (release, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].ReleaseTime = release;
+				}
+			};
+
+			AdsrVisualizer.AttackCoeffVoiceUpdated += (attack_coeff, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].AttackCtrl = attack_coeff;
+				}
+			};
+
+			AdsrVisualizer.DecayCoeffVoiceUpdated += (decay_coeff, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].DecayCtrl = decay_coeff;
+				}
+			};
+
+			AdsrVisualizer.ReleaseCoeffVoiceUpdated += (release_coeff, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].ReleaseCtrl = release_coeff;
+				}
+			};
+
+			AdsrVisualizer.TimeScaleVoiceUpdated += (timescale, index) =>
+			{
+				foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+				{
+					voice.envelopes[index].TimeScale = timescale;
+				}
+			};
+
 
 			// AdsrVisualizer.AttackUpdated += (attackTime) =>
 			// {
@@ -298,7 +300,11 @@ public partial class PatchEditor : Node2D
 				ftype = FilterType.HighShelf;
 				break;
 		}
-		AudioOutputNode.CurrentPatch.filterNode.SetFilterType(ftype);
+		//AudioOutputNode.CurrentPatch.filterNode.SetFilterType(ftype);
+		foreach (var voice in AudioOutputNode.CurrentPatch.voices)
+		{
+			voice.filterNode.SetFilterType(ftype);
+		}
 	}
 
 	private void _on_panel_container_enabled_changed(bool enabled)

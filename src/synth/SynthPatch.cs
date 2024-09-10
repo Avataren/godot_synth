@@ -254,7 +254,10 @@ public class SynthPatch
 
     public void SetCutoff(float cutoff)
     {
-        filterNode.CutOff = cutoff;
+        foreach (var voice in voices)
+        {
+            voice.filterNode.CutOff = cutoff;
+        }
     }
     public void SetResonance(float resonance)
     {

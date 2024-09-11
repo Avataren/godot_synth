@@ -72,6 +72,30 @@ namespace Synth
             }
         }
 
+        public void Connect(string srcName, string dstName, string param, ModulationType modType, float strength = 1.0f)
+        {
+            var srcNode = graph.GetNode(srcName);
+            var dstNode = graph.GetNode(dstName);
+            var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
+            if (srcName.StartsWith("Osc"))
+            {
+                graph.Disconnect(srcNode, graph.GetNode("Mix"), AudioParam.Input);
+            }
+            graph.Connect(srcNode, dstNode, paramEnum, modType, strength);
+        }
+
+        public void Disconnect(string srcName, string dstName, string param)
+        {
+            var srcNode = graph.GetNode(srcName);
+            var dstNode = graph.GetNode(dstName);
+            var paramEnum = (AudioParam)Enum.Parse(typeof(AudioParam), param);
+            graph.Disconnect(srcNode, dstNode, paramEnum);
+            if (srcName.StartsWith("Osc"))
+            {
+                graph.Connect(srcNode, graph.GetNode("Mix"), AudioParam.Input, ModulationType.Add, 1.0f);
+            }
+        }
+
         public void NoteOn(int note, float velocity = 1.0f)
         {
             // if (NoteVelocityRegister.Contains(note))

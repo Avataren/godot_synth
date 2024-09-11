@@ -177,6 +177,22 @@ public class SynthPatch
         initialized = true;
     }
 
+    public void ConnectInVoices(string srcName, string dstName, string param, ModulationType modType, float strength = 1.0f)
+    {
+        foreach (var voice in voices)
+        {
+            voice.Connect(srcName, dstName, param, modType, strength);
+        }
+    }
+
+    public void DisconnectInVoices(string srcName, string dstName, string param)
+    {
+        foreach (var voice in voices)
+        {
+            voice.Disconnect(srcName, dstName, param);
+        }
+    }
+
     public void SetMasterGain(float gain)
     {
         //speakerNode.Gain = gain;
@@ -583,7 +599,7 @@ public class SynthPatch
                 }
             }
 
-            
+
             // if (NoteVelocityRegister.Contains(note))
             // {
             //     GD.Print("Note already playing");
@@ -696,7 +712,7 @@ public class SynthPatch
                 voices[i].Process(increment);
             });
 
-            
+
             for (int i = 0; i < MaxVoices; i++)
             {
                 voiceMixerNode.MixIn(voices[i]);

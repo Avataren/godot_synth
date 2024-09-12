@@ -281,7 +281,10 @@ public class SynthPatch
     }
     public void SetResonance(float resonance)
     {
-        filterNode.Resonance = resonance;
+        foreach (var voice in voices)
+        {
+            voice.filterNode.Resonance = resonance;
+        }
     }
     // public void SetAttack(float attack, int oscillatorIndex = 0)
     // {

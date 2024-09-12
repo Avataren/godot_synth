@@ -25,10 +25,9 @@ namespace Synth
 
     public class AudioGraph
     {
-        private readonly object _lock = new object();
-        protected List<AudioNode> OriginalNodes = new List<AudioNode>();
-        protected List<AudioNode> WorkingNodes = new List<AudioNode>();
-        protected List<AudioNode> SortedNodes = null;
+        private readonly object _graphLock = new object();
+        private List<AudioNode> Nodes = new List<AudioNode>();
+        private List<AudioNode> SortedNodes = null;
         private Dictionary<AudioNode, List<AudioConnection>> OriginalConnections = new Dictionary<AudioNode, List<AudioConnection>>();
 
         public T CreateNode<T>(string name) where T : AudioNode, new()
@@ -53,10 +52,9 @@ namespace Synth
 
         public void RegisterNode(AudioNode node)
         {
-            lock (_lock)
+            lock (_graphLock)
             {
-                OriginalNodes.Add(node);
-                WorkingNodes.Add(node);
+                Nodes.Add(node);
                 OriginalConnections[node] = new List<AudioConnection>();
             }
         }
@@ -71,12 +69,9 @@ namespace Synth
             destination.AudioParameters[param].Add(new ParameterConnection(source, strength, modType));
         }
 
-        // Flag to prevent recursive calls when restoring oscillator connections
-        // private bool _restoringOscillatorConnection = false;
-
         public void Connect(AudioNode source, AudioNode destination, AudioParam param, ModulationType modType, float strength = 1.0f)
         {
-            lock (_lock)
+            lock (_graphLock)
             {
                 if (!OriginalConnections.ContainsKey(source))
                 {
@@ -98,9 +93,10 @@ namespace Synth
                 TopologicalSortWorkingGraph();
             }
         }
+
         public void Disconnect(AudioNode source, AudioNode destination, AudioParam param)
         {
-            lock (_lock)
+            lock (_graphLock)
             {
                 GD.Print($"Disconnecting {source.Name} from {destination.Name} on {param}");
 
@@ -138,12 +134,12 @@ namespace Synth
         private AudioNode FindMixerNode()
         {
             // Implement logic to find the mixer node in your graph
-            return OriginalNodes.FirstOrDefault(node => node is MixerNode); // Assuming MixerNode is the type for mixers
+            return Nodes.FirstOrDefault(node => node is MixerNode); // Assuming MixerNode is the type for mixers
         }
 
         public void SetNodeEnabled(AudioNode node, bool enabled)
         {
-            lock (_lock)
+            lock (_graphLock)
             {
                 if (node.Enabled != enabled)
                 {
@@ -156,11 +152,13 @@ namespace Synth
 
         private void ReconstructWorkingGraph()
         {
-            foreach (var node in WorkingNodes)
+            // Clear all audio parameters for each node
+            foreach (var node in Nodes)
             {
                 node.AudioParameters.Clear();
             }
 
+            // Rebuild connections based on enabled status
             foreach (var source in OriginalConnections.Keys)
             {
                 if (source.Enabled)
@@ -171,14 +169,26 @@ namespace Synth
 
                         if (destination.Enabled)
                         {
-                            AddConnectionToWorkingGraph(source, destination, Enum.Parse<AudioParam>(connection.Param), Enum.Parse<ModulationType>(connection.ModType), connection.Strength);
+                            AddConnectionToWorkingGraph(
+                                source,
+                                destination,
+                                Enum.Parse<AudioParam>(connection.Param),
+                                Enum.Parse<ModulationType>(connection.ModType),
+                                connection.Strength
+                            );
                         }
                         else
                         {
                             var reroutedNode = FindNextEnabledDownstreamNode(destination);
                             if (reroutedNode != null)
                             {
-                                AddConnectionToWorkingGraph(source, reroutedNode, Enum.Parse<AudioParam>(connection.Param), Enum.Parse<ModulationType>(connection.ModType), connection.Strength);
+                                AddConnectionToWorkingGraph(
+                                    source,
+                                    reroutedNode,
+                                    Enum.Parse<AudioParam>(connection.Param),
+                                    Enum.Parse<ModulationType>(connection.ModType),
+                                    connection.Strength
+                                );
                             }
                         }
                     }
@@ -186,8 +196,20 @@ namespace Synth
             }
         }
 
-        private AudioNode FindNextEnabledDownstreamNode(AudioNode node)
+        private AudioNode FindNextEnabledDownstreamNode(AudioNode node, HashSet<AudioNode> visited = null)
         {
+            if (visited == null)
+            {
+                visited = new HashSet<AudioNode>();
+            }
+
+            if (visited.Contains(node))
+            {
+                return null; // Cycle detected
+            }
+
+            visited.Add(node);
+
             var downstreamNodes = FindDownstreamNodes(node);
 
             foreach (var downstreamNode in downstreamNodes)
@@ -198,7 +220,7 @@ namespace Synth
                 }
                 else
                 {
-                    var nextNode = FindNextEnabledDownstreamNode(downstreamNode);
+                    var nextNode = FindNextEnabledDownstreamNode(downstreamNode, visited);
                     if (nextNode != null)
                     {
                         return nextNode;
@@ -211,15 +233,16 @@ namespace Synth
 
         private IEnumerable<AudioNode> FindDownstreamNodes(AudioNode node)
         {
-            return OriginalConnections.Values
-                .SelectMany(connections => connections)
-                .Where(connection => connection.Source == node)
-                .Select(connection => connection.Destination);
+            if (OriginalConnections.TryGetValue(node, out var connections))
+            {
+                return connections.Select(connection => connection.Destination);
+            }
+            return Enumerable.Empty<AudioNode>();
         }
 
         public void Process(double increment)
         {
-            lock (_lock)
+            lock (_graphLock)
             {
                 if (SortedNodes == null)
                 {
@@ -236,32 +259,25 @@ namespace Synth
             }
         }
 
-        // Handle the potential cycles in Topological Sort
-        // Handle the potential cycles in Topological Sort
         public void TopologicalSortWorkingGraph()
         {
             SortedNodes = new List<AudioNode>();
             HashSet<AudioNode> visited = new HashSet<AudioNode>();
             HashSet<AudioNode> stack = new HashSet<AudioNode>();
 
-            foreach (AudioNode node in WorkingNodes)
+            foreach (AudioNode node in Nodes.Where(n => n.Enabled))
             {
-                if (!visited.Contains(node) && node.Enabled)
+                if (!visited.Contains(node))
                 {
                     if (!Visit(node, visited, stack))
                     {
-                        // Handle cycle detection (perhaps log it, throw an exception, or handle it based on your application logic)
-                        GD.PrintErr($"Cycle detected in graph with node: {node.Name}");
-                        return;
+                        throw new InvalidOperationException($"Cycle detected in graph involving node: {node.Name}");
                     }
                 }
             }
 
-            // GD.Print("Topological sort completed. Node order:");
-            // foreach (var node in SortedNodes)
-            // {
-            //     GD.Print($" - {node.Name}");
-            // }
+            // Reverse the list to get correct processing order
+            SortedNodes.Reverse();
         }
 
         private bool Visit(AudioNode node, HashSet<AudioNode> visited, HashSet<AudioNode> stack)
@@ -275,9 +291,9 @@ namespace Synth
                 stack.Add(node);
                 visited.Add(node);
 
-                foreach (var paramlist in node.AudioParameters.Values)
+                foreach (var paramConnections in node.AudioParameters.Values)
                 {
-                    foreach (var connection in paramlist)
+                    foreach (var connection in paramConnections)
                     {
                         AudioNode dependentNode = connection.SourceNode;
                         if (dependentNode.Enabled)
@@ -299,7 +315,7 @@ namespace Synth
 
         public AudioNode GetNode(string name)
         {
-            return OriginalNodes.FirstOrDefault(n => n.Name == name);
+            return Nodes.FirstOrDefault(n => n.Name == name);
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Godot;
 
 namespace Synth
 {
@@ -74,6 +75,7 @@ namespace Synth
         // Internal method that assumes the lock is already held
         private void CancelScheduledValuesInternal(AudioNode node, AudioParam param, double cancelSampleTime)
         {
+            // Remove events where Node, Param match and SampleTime >= cancelSampleTime
             _globalEventQueue.RemoveWhere(ev => ev.Node == node && ev.Param == param && ev.SampleTime >= cancelSampleTime);
         }
 
@@ -111,6 +113,11 @@ namespace Synth
 
                 var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
 
+                if (newEvent == null)
+                {
+                    throw new InvalidOperationException("Failed to create ScheduleEvent.");
+                }
+
                 var globalEvent = new GlobalScheduleEvent
                 {
                     SampleTime = sampleTime,
@@ -119,6 +126,11 @@ namespace Synth
                     Event = newEvent
                 };
 
+                if (globalEvent.Event == null)
+                {
+                    throw new InvalidOperationException("GlobalScheduleEvent has a null Event.");
+                }
+
                 _globalEventQueue.Add(globalEvent);
             }
             finally
@@ -126,6 +138,7 @@ namespace Synth
                 nodeLock.ExitWriteLock();
             }
         }
+
 
         public void LinearRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
@@ -255,11 +268,25 @@ namespace Synth
             while (_globalEventQueue.Count > 0 && _globalEventQueue.Min.SampleTime <= processingEndSample)
             {
                 var globalEvent = _globalEventQueue.Min;
+
+                if (globalEvent == null)
+                {
+                    GD.PrintErr("Encountered a null GlobalScheduleEvent in the queue.");
+                    _globalEventQueue.Remove(globalEvent); // Remove the null event
+                    continue;
+                }
+
                 _globalEventQueue.Remove(globalEvent);
 
                 var node = globalEvent.Node;
                 var param = globalEvent.Param;
                 var scheduleEvent = globalEvent.Event;
+
+                if (scheduleEvent == null)
+                {
+                    GD.PrintErr("GlobalScheduleEvent contains a null ScheduleEvent for Node: {Node}, Param: {Param}, SampleTime: {SampleTime}", node, param, globalEvent.SampleTime);
+                    continue;
+                }
 
                 if (!_nodeLocks.TryGetValue(node, out var nodeLock))
                     continue;
@@ -327,6 +354,10 @@ namespace Synth
                         break; // No more events to process for this buffer
                     }
                 }
+                catch (Exception ex)
+                {
+                    GD.PrintErr(ex, "Error processing GlobalScheduleEvent for Node: {Node}, Param: {Param}, SampleTime: {SampleTime}", node, param, globalEvent.SampleTime);
+                }
                 finally
                 {
                     nodeLock.ExitWriteLock();
@@ -336,6 +367,7 @@ namespace Synth
             // Advance the current sample
             _currentSample += _bufferSize;
         }
+
 
         private bool ApplyEventToBuffer(double[] buffer, ScheduleEvent scheduleEvent, int startIndex)
         {
@@ -488,38 +520,29 @@ namespace Synth
             public AudioParam Param { get; set; }
             public ScheduleEvent Event { get; set; }
         }
-
         private class GlobalScheduleEventComparer : IComparer<GlobalScheduleEvent>
         {
             public int Compare(GlobalScheduleEvent x, GlobalScheduleEvent y)
             {
-                // Check for null references
-                if (x == null)
-                {
-                    return y == null ? 0 : -1;
-                }
-                if (y == null)
-                {
-                    return 1;
-                }
+                // Handle null references
+                if (x == null && y == null) return 0;
+                if (x == null) return -1;
+                if (y == null) return 1;
 
+                // Compare SampleTime first
                 int timeComparison = x.SampleTime.CompareTo(y.SampleTime);
                 if (timeComparison != 0) return timeComparison;
 
-                // Check if Event is null
-                if (x.Event == null)
-                {
-                    return y.Event == null ? 0 : -1;
-                }
-                if (y.Event == null)
-                {
-                    return 1;
-                }
+                // Handle null Events
+                if (x.Event == null && y.Event == null) return 0;
+                if (x.Event == null) return -1;
+                if (y.Event == null) return 1;
 
-                // Prioritize events based on their scheduling order
+                // Compare Event IDs to ensure uniqueness
                 return x.Event.Id.CompareTo(y.Event.Id);
             }
         }
+
 
         private class ScheduleEvent
         {

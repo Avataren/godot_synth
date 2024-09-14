@@ -98,42 +98,29 @@ namespace Synth
 
         public void NoteOn(int note, float velocity = 1.0f)
         {
-            // if (NoteVelocityRegister.Contains(note))
-            // {
-            //     GD.Print("Note already playing");
-            //     //this will cause an issue when key is release
-            //     return;
-            // }
-            GD.Print("Voice noite on ", note);
+            GD.Print("Voice note on ", note);
             float newFrequency = 440.0f * (float)Math.Pow(2.0, (note - 69) / 12.0);
             var now = AudioContext.Instance.CurrentTimeInSeconds;
 
-            //if (NoteVelocityRegister.Count == 0 || PortamentoTime < 0.001)
+            // Schedule frequency change slightly earlier
+            var frequencyChangeTime = now - 0.01f;
+            var gateOpenTime = now;// + 0.01f;
+
+            freqNode.SetValueAtTime(newFrequency, frequencyChangeTime);
+
+            foreach (var env in envelopes)
             {
-                // No note is currently playing, start the new note with full envelope
-                //NoteVelocityRegister.Push(note);
-
-                freqNode.SetValueAtTime(newFrequency, now);
-
-                foreach (var env in envelopes)
+                if (env.Enabled)
                 {
-                    if (env.Enabled)
-                    {
-                        env.ScheduleGateOpen(now, true);  // Open with full envelope
-                    }
-                }
-                foreach (var osc in oscillators)
-                {
-                    osc.ScheduleGateOpen(now, true);  // Open oscillator gates
+                    env.ScheduleGateOpen(gateOpenTime, true);  // Open with full envelope
                 }
             }
-            // else
-            // {
-            //     A note is already playing, apply portamento (legato)
-            //     NoteVelocityRegister.Push(note);
-            //     freqNode.ExponentialRampToValueAtTime(newFrequency, now + PortamentoTime);  // Glide to new note
-            // }
+            foreach (var osc in oscillators)
+            {
+                osc.ScheduleGateOpen(gateOpenTime, true);  // Open oscillator gates
+            }
         }
+
 
         public void NoteOff(int note)
         {

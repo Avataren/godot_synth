@@ -30,7 +30,9 @@ namespace Synth
 
         public double CurrentTimeInSeconds
         {
-            get => Scheduler.CurrentTimeInSeconds;
+           // get => Scheduler.CurrentTimeInSeconds;
+           get => (_scheduler.CurrentSample + _scheduler.BufferSize) / (double)_scheduler.SampleRate;
+            
         }
 
         public static ParameterScheduler Scheduler

@@ -1,30 +1,35 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using Godot;
 
 namespace Synth
 {
     public class ParameterScheduler : IDisposable
     {
-        private const double TIME_EPSILON = 1e-10;
-        private const double MIN_EXPONENTIAL_VALUE = 1e-6;
-        private const double VALUE_EPSILON = 1e-6;
+        private const double TIME_EPSILON = 1e-9;
+        private const double MIN_EXPONENTIAL_VALUE = 1e-10;
+        private const double VALUE_EPSILON = 1e-8;
 
         private readonly int _bufferSize;
         private readonly double _sampleRate;
 
         private readonly Dictionary<AudioNode, Dictionary<AudioParam, double[]>> _nodeParameterBuffers = new();
-        private readonly Dictionary<AudioNode, Dictionary<AudioParam, SortedSet<ScheduleEvent>>> _nodeEventDictionary = new();
         private readonly Dictionary<AudioNode, Dictionary<AudioParam, double>> _nodeLastScheduledValues = new();
         private readonly ScheduleEventPool _eventPool = new();
         private double _currentSample = 0;
+
+        public double CurrentSample => _currentSample;
+        public int BufferSize => _bufferSize;
+        public double SampleRate => _sampleRate;
+
         private readonly ReaderWriterLockSlim _globalLock = new();
         private readonly ConcurrentDictionary<AudioNode, ReaderWriterLockSlim> _nodeLocks = new();
 
         public double CurrentTimeInSeconds => _currentSample / _sampleRate;
+
+        // Global event queue
+        private readonly SortedSet<GlobalScheduleEvent> _globalEventQueue = new(new GlobalScheduleEventComparer());
 
         public ParameterScheduler(int bufferSize, int sampleRate)
         {
@@ -46,19 +51,17 @@ namespace Synth
                 if (!_nodeParameterBuffers.ContainsKey(node))
                 {
                     var paramBuffers = new Dictionary<AudioParam, double[]>();
-                    var eventDictionary = new Dictionary<AudioParam, SortedSet<ScheduleEvent>>();
                     var lastScheduledValues = new Dictionary<AudioParam, double>();
 
                     foreach (var param in parameters)
                     {
                         paramBuffers[param] = new double[_bufferSize];
-                        eventDictionary[param] = new SortedSet<ScheduleEvent>(new ScheduleEventComparer());
                         lastScheduledValues[param] = 0.0;
                     }
 
                     _nodeParameterBuffers[node] = paramBuffers;
-                    _nodeEventDictionary[node] = eventDictionary;
                     _nodeLastScheduledValues[node] = lastScheduledValues;
+
                     _nodeLocks[node] = new ReaderWriterLockSlim();
                 }
             }
@@ -68,37 +71,23 @@ namespace Synth
             }
         }
 
-        public void ScheduleValuesAtTimeBulk(AudioNode node, AudioParam param, IEnumerable<(double timeInSeconds, double value)> eventsToAdd)
+        // Internal method that assumes the lock is already held
+        private void CancelScheduledValuesInternal(AudioNode node, AudioParam param, double cancelSampleTime)
+        {
+            _globalEventQueue.RemoveWhere(ev => ev.Node == node && ev.Param == param && ev.SampleTime >= cancelSampleTime);
+        }
+
+        public void CancelScheduledValues(AudioNode node, AudioParam param, double cancelTimeInSeconds)
         {
             if (!_nodeLocks.TryGetValue(node, out var nodeLock))
                 throw new ParameterSchedulerException($"Node {node} is not registered.");
 
+            double cancelSampleTime = cancelTimeInSeconds * _sampleRate;
+
             nodeLock.EnterWriteLock();
             try
             {
-                var events = _nodeEventDictionary[node][param];
-
-                // Prepare new events
-                var newEvents = new List<ScheduleEvent>();
-                foreach (var (timeInSeconds, value) in eventsToAdd)
-                {
-                    double sampleTime = timeInSeconds * _sampleRate;
-                    newEvents.Add(_eventPool.Get(sampleTime, value, isSetValueAtTime: true));
-                }
-
-                // Sort and insert new events in bulk
-                newEvents.Sort((e1, e2) => e1.SampleTime.CompareTo(e2.SampleTime));
-                foreach (var ev in newEvents)
-                {
-                    events.Add(ev);
-                }
-
-                // Update the last scheduled value based on the latest event
-                var lastEvent = newEvents.LastOrDefault();
-                if (lastEvent != null && lastEvent.SampleTime <= _currentSample + TIME_EPSILON)
-                {
-                    _nodeLastScheduledValues[node][param] = lastEvent.Value;
-                }
+                CancelScheduledValuesInternal(node, param, cancelSampleTime);
             }
             finally
             {
@@ -116,91 +105,21 @@ namespace Synth
             nodeLock.EnterWriteLock();
             try
             {
-                var events = _nodeEventDictionary[node][param];
+                // Cancel future events without acquiring the lock again
+                double cancelSampleTime = sampleTime;
+                CancelScheduledValuesInternal(node, param, cancelSampleTime);
 
-                // Clear conflicting events
-                ClearConflictingEvents(events, sampleTime);
-
-                // Add new event
                 var newEvent = _eventPool.Get(sampleTime, value, isSetValueAtTime: true);
-                events.Add(newEvent);
 
-                // Update the last scheduled value if necessary
-                if (sampleTime <= _currentSample + TIME_EPSILON)
+                var globalEvent = new GlobalScheduleEvent
                 {
-                    _nodeLastScheduledValues[node][param] = value;
-                }
-            }
-            finally
-            {
-                nodeLock.ExitWriteLock();
-            }
-        }
+                    SampleTime = sampleTime,
+                    Node = node,
+                    Param = param,
+                    Event = newEvent
+                };
 
-        private void ClearConflictingEvents(SortedSet<ScheduleEvent> events, double newEventTime)
-        {
-            var conflictingEvents = events
-                .Where(e => Math.Abs(e.SampleTime - newEventTime) < TIME_EPSILON ||
-                            (e.EndSampleTime.HasValue && newEventTime > e.SampleTime && newEventTime <= e.EndSampleTime.Value))
-                .ToList();
-
-            foreach (var existingEvent in conflictingEvents)
-            {
-                if (existingEvent.EndSampleTime.HasValue && newEventTime < existingEvent.EndSampleTime.Value)
-                {
-                    // Truncate the event
-                    double clippedTime = newEventTime - 1 / _sampleRate;
-                    double truncatedValue = CalculateValueAtTime(existingEvent, clippedTime);
-
-                    events.Remove(existingEvent);
-                    existingEvent.EndSampleTime = clippedTime;
-                    existingEvent.TargetValue = truncatedValue;
-                    events.Add(existingEvent);
-                }
-                else
-                {
-                    events.Remove(existingEvent);
-                    _eventPool.Return(existingEvent);
-                }
-            }
-        }
-
-        public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
-        {
-            if (targetValue <= 0)
-            {
-                throw new InvalidParameterValueException(nameof(targetValue), targetValue);
-            }
-
-            if (!_nodeLocks.TryGetValue(node, out var nodeLock))
-                throw new ParameterSchedulerException($"Node {node} is not registered.");
-
-            nodeLock.EnterWriteLock();
-            try
-            {
-                double startSampleTime = _currentSample;
-                double endSampleTime = endTimeInSeconds * _sampleRate;
-                var events = _nodeEventDictionary[node][param];
-
-                double currentValue = CalculateCurrentValue(node, param);
-
-                if (endSampleTime <= startSampleTime + TIME_EPSILON)
-                {
-                    ScheduleValueAtTime(node, param, targetValue, endTimeInSeconds);
-                    return;
-                }
-
-                // Remove any events that start after or at the same time as this new ramp
-                events.RemoveWhere(e => e.SampleTime >= startSampleTime);
-
-                // Truncate the last event if it overlaps with this new ramp
-                TruncateOngoingEvent(events, startSampleTime);
-
-                // Add the new exponential ramp
-                events.Add(_eventPool.Get(startSampleTime, currentValue, endSampleTime, targetValue, isExponential: true));
-
-                // Update the last scheduled value
-                _nodeLastScheduledValues[node][param] = currentValue;
+                _globalEventQueue.Add(globalEvent);
             }
             finally
             {
@@ -218,7 +137,10 @@ namespace Synth
             {
                 double startSampleTime = _currentSample;
                 double endSampleTime = endTimeInSeconds * _sampleRate;
-                var events = _nodeEventDictionary[node][param];
+
+                // Cancel future events starting from current time
+                double cancelSampleTime = startSampleTime;
+                CancelScheduledValuesInternal(node, param, cancelSampleTime);
 
                 double currentValue = CalculateCurrentValue(node, param);
 
@@ -228,17 +150,17 @@ namespace Synth
                     return;
                 }
 
-                // Remove any events that start after or at the same time as this new ramp
-                events.RemoveWhere(e => e.SampleTime >= startSampleTime);
+                var scheduleEvent = _eventPool.Get(startSampleTime, currentValue, endSampleTime, targetValue, isExponential: false);
 
-                // Truncate the last event if it overlaps with this new ramp
-                TruncateOngoingEvent(events, startSampleTime);
+                var globalEvent = new GlobalScheduleEvent
+                {
+                    SampleTime = startSampleTime,
+                    Node = node,
+                    Param = param,
+                    Event = scheduleEvent
+                };
 
-                // Add the new linear ramp
-                events.Add(_eventPool.Get(startSampleTime, currentValue, endSampleTime, targetValue, isExponential: false));
-
-                // Update the last scheduled value
-                _nodeLastScheduledValues[node][param] = currentValue;
+                _globalEventQueue.Add(globalEvent);
             }
             finally
             {
@@ -246,133 +168,217 @@ namespace Synth
             }
         }
 
-        private void TruncateOngoingEvent(SortedSet<ScheduleEvent> events, double sampleTime)
+        public void ExponentialRampToValueAtTime(AudioNode node, AudioParam param, double targetValue, double endTimeInSeconds)
         {
-            if (events.Count > 0)
+            if (targetValue <= 0 || CalculateCurrentValue(node, param) <= 0)
             {
-                var lastEvent = events.Max;
+                throw new InvalidParameterValueException(nameof(targetValue), targetValue);
+            }
 
-                if (!lastEvent.EndSampleTime.HasValue)
+            if (!_nodeLocks.TryGetValue(node, out var nodeLock))
+                throw new ParameterSchedulerException($"Node {node} is not registered.");
+
+            nodeLock.EnterWriteLock();
+            try
+            {
+                double startSampleTime = _currentSample;
+                double endSampleTime = endTimeInSeconds * _sampleRate;
+
+                // Cancel future events starting from current time
+                double cancelSampleTime = startSampleTime;
+                CancelScheduledValuesInternal(node, param, cancelSampleTime);
+
+                double currentValue = CalculateCurrentValue(node, param);
+
+                if (endSampleTime <= startSampleTime + TIME_EPSILON)
                 {
+                    ScheduleValueAtTime(node, param, targetValue, endTimeInSeconds);
                     return;
                 }
 
-                if (sampleTime <= lastEvent.SampleTime + TIME_EPSILON)
+                var scheduleEvent = _eventPool.Get(startSampleTime, currentValue, endSampleTime, targetValue, isExponential: true);
+
+                var globalEvent = new GlobalScheduleEvent
                 {
-                    return;
-                }
+                    SampleTime = startSampleTime,
+                    Node = node,
+                    Param = param,
+                    Event = scheduleEvent
+                };
 
-                double truncatedValue = CalculateValueAtTime(lastEvent, sampleTime);
-
-                events.Remove(lastEvent);
-                lastEvent.EndSampleTime = sampleTime;
-                lastEvent.TargetValue = truncatedValue;
-                events.Add(lastEvent);
+                _globalEventQueue.Add(globalEvent);
+            }
+            finally
+            {
+                nodeLock.ExitWriteLock();
             }
         }
 
         private double CalculateCurrentValue(AudioNode node, AudioParam param)
         {
-            var events = _nodeEventDictionary[node][param];
-            double currentValue = _nodeLastScheduledValues[node][param];
-            double sampleTime = _currentSample;
-
-            if (events.Count > 0)
+            if (_nodeLastScheduledValues.TryGetValue(node, out var paramValues) &&
+                paramValues.TryGetValue(param, out var lastValue))
             {
-                var activeEvent = events.FirstOrDefault(e => e.SampleTime <= sampleTime && (!e.EndSampleTime.HasValue || sampleTime <= e.EndSampleTime.Value + TIME_EPSILON));
-                if (activeEvent != null)
-                {
-                    if (!activeEvent.EndSampleTime.HasValue || sampleTime >= activeEvent.EndSampleTime.Value - TIME_EPSILON)
-                    {
-                        currentValue = activeEvent.TargetValue;
-                    }
-                    else
-                    {
-                        double progress = (sampleTime - activeEvent.SampleTime) / (activeEvent.EndSampleTime.Value - activeEvent.SampleTime);
-                        currentValue = activeEvent.IsExponential
-                            ? InterpolateExponential(activeEvent.Value, activeEvent.TargetValue, progress)
-                            : InterpolateLinear(activeEvent.Value, activeEvent.TargetValue, progress);
-                    }
-                }
+                return lastValue;
             }
-
-            return Math.Max(MIN_EXPONENTIAL_VALUE, currentValue);
-        }
-
-        private double CalculateValueAtTime(ScheduleEvent scheduleEvent, double sampleTime)
-        {
-            if (!scheduleEvent.EndSampleTime.HasValue || scheduleEvent.EndSampleTime.Value <= scheduleEvent.SampleTime + TIME_EPSILON)
-            {
-                return scheduleEvent.Value;
-            }
-
-            double progress = (sampleTime - scheduleEvent.SampleTime) / (scheduleEvent.EndSampleTime.Value - scheduleEvent.SampleTime);
-            progress = Math.Clamp(progress, 0, 1);
-
-            return scheduleEvent.IsExponential
-                ? InterpolateExponential(scheduleEvent.Value, scheduleEvent.TargetValue, progress)
-                : InterpolateLinear(scheduleEvent.Value, scheduleEvent.TargetValue, progress);
+            return VALUE_EPSILON; // Use a small value to avoid issues with exponential ramps
         }
 
         public void Process()
         {
+            double processingEndSample = _currentSample + _bufferSize;
+
+            // Initialize parameter buffers for all nodes and parameters
             foreach (var node in _nodeParameterBuffers.Keys)
             {
                 if (!_nodeLocks.TryGetValue(node, out var nodeLock))
                     continue;
 
-                nodeLock.EnterReadLock();
+                nodeLock.EnterWriteLock();
                 try
                 {
                     foreach (var param in _nodeParameterBuffers[node].Keys)
                     {
                         var buffer = _nodeParameterBuffers[node][param];
-                        var events = _nodeEventDictionary[node][param];
-                        double currentValue = _nodeLastScheduledValues[node][param];
-
-                        for (int i = 0; i < _bufferSize; i++)
-                        {
-                            double sampleTime = _currentSample + i;
-
-                            while (events.Count > 0 && sampleTime >= events.Min.SampleTime - TIME_EPSILON)
-                            {
-                                var activeEvent = events.Min;
-
-                                if (activeEvent.IsSetValueAtTime)
-                                {
-                                    currentValue = activeEvent.Value;
-                                    events.Remove(activeEvent);
-                                    _eventPool.Return(activeEvent);
-                                }
-                                else if (!activeEvent.EndSampleTime.HasValue || sampleTime >= activeEvent.EndSampleTime.Value - TIME_EPSILON)
-                                {
-                                    currentValue = activeEvent.TargetValue;
-                                    events.Remove(activeEvent);
-                                    _eventPool.Return(activeEvent);
-                                }
-                                else
-                                {
-                                    double progress = (sampleTime - activeEvent.SampleTime) / (activeEvent.EndSampleTime.Value - activeEvent.SampleTime);
-                                    currentValue = activeEvent.IsExponential
-                                        ? InterpolateExponential(activeEvent.Value, activeEvent.TargetValue, progress)
-                                        : InterpolateLinear(activeEvent.Value, activeEvent.TargetValue, progress);
-                                    break;
-                                }
-                            }
-
-                            buffer[i] = Math.Max(MIN_EXPONENTIAL_VALUE, currentValue);
-                        }
-
-                        _nodeLastScheduledValues[node][param] = currentValue;
+                        // Initialize buffer with the last known value
+                        double lastValue = _nodeLastScheduledValues[node][param];
+                        Array.Fill(buffer, lastValue);
                     }
                 }
                 finally
                 {
-                    nodeLock.ExitReadLock();
+                    nodeLock.ExitWriteLock();
                 }
             }
 
+            // Process all events up to the end of the current buffer
+            while (_globalEventQueue.Count > 0 && _globalEventQueue.Min.SampleTime <= processingEndSample)
+            {
+                var globalEvent = _globalEventQueue.Min;
+                _globalEventQueue.Remove(globalEvent);
+
+                var node = globalEvent.Node;
+                var param = globalEvent.Param;
+                var scheduleEvent = globalEvent.Event;
+
+                if (!_nodeLocks.TryGetValue(node, out var nodeLock))
+                    continue;
+
+                nodeLock.EnterWriteLock();
+                try
+                {
+                    if (!_nodeParameterBuffers[node].ContainsKey(param))
+                    {
+                        _nodeParameterBuffers[node][param] = new double[_bufferSize];
+                        // Initialize buffer with last value
+                        double lastValue = _nodeLastScheduledValues[node][param];
+                        Array.Fill(_nodeParameterBuffers[node][param], lastValue);
+                    }
+
+                    var buffer = _nodeParameterBuffers[node][param];
+
+                    // Calculate the sample index within the current buffer
+                    int sampleIndex = (int)(globalEvent.SampleTime - _currentSample);
+
+                    if (sampleIndex >= 0 && sampleIndex < _bufferSize)
+                    {
+                        // Apply the event to the parameter buffer at the correct sample index
+                        bool eventCompleted = ApplyEventToBuffer(buffer, scheduleEvent, sampleIndex);
+
+                        if (!eventCompleted)
+                        {
+                            // Event is not complete, update for next buffer
+                            globalEvent.SampleTime = _currentSample + _bufferSize;
+                            scheduleEvent.SampleTime = globalEvent.SampleTime;
+                            scheduleEvent.Value = buffer[_bufferSize - 1]; // Last value in buffer
+                            _globalEventQueue.Add(globalEvent);
+                        }
+                        else
+                        {
+                            // Event is complete
+                            _nodeLastScheduledValues[node][param] = scheduleEvent.TargetValue;
+                            _eventPool.Return(scheduleEvent);
+                        }
+                    }
+                    else if (sampleIndex < 0)
+                    {
+                        // Event time is in the past; apply immediately at the start of the buffer
+                        bool eventCompleted = ApplyEventToBuffer(buffer, scheduleEvent, 0);
+
+                        if (!eventCompleted)
+                        {
+                            // Event is not complete, update for next buffer
+                            globalEvent.SampleTime = _currentSample + _bufferSize;
+                            scheduleEvent.SampleTime = globalEvent.SampleTime;
+                            scheduleEvent.Value = buffer[_bufferSize - 1]; // Last value in buffer
+                            _globalEventQueue.Add(globalEvent);
+                        }
+                        else
+                        {
+                            // Event is complete
+                            _nodeLastScheduledValues[node][param] = scheduleEvent.TargetValue;
+                            _eventPool.Return(scheduleEvent);
+                        }
+                    }
+                    else
+                    {
+                        // Event is beyond the current buffer; re-add to the queue for future processing
+                        _globalEventQueue.Add(globalEvent);
+                        break; // No more events to process for this buffer
+                    }
+                }
+                finally
+                {
+                    nodeLock.ExitWriteLock();
+                }
+            }
+
+            // Advance the current sample
             _currentSample += _bufferSize;
+        }
+
+        private bool ApplyEventToBuffer(double[] buffer, ScheduleEvent scheduleEvent, int startIndex)
+        {
+            if (scheduleEvent.EndSampleTime.HasValue)
+            {
+                int endIndex = _bufferSize;
+                int endSampleIndex = (int)(scheduleEvent.EndSampleTime.Value - _currentSample);
+                endIndex = Math.Min(endSampleIndex, _bufferSize);
+
+                for (int i = startIndex; i < endIndex; i++)
+                {
+                    double t = (_currentSample + i - scheduleEvent.SampleTime) / (scheduleEvent.EndSampleTime.Value - scheduleEvent.SampleTime);
+
+                    if (scheduleEvent.IsExponential)
+                    {
+                        buffer[i] = InterpolateExponential(scheduleEvent.Value, scheduleEvent.TargetValue, t);
+                    }
+                    else
+                    {
+                        buffer[i] = InterpolateLinear(scheduleEvent.Value, scheduleEvent.TargetValue, t);
+                    }
+                }
+
+                if (endIndex < _bufferSize)
+                {
+                    // Event is complete within this buffer
+                    return true; // Event is complete
+                }
+                else
+                {
+                    // Event is not complete, will continue in next buffer
+                    return false; // Event is not complete
+                }
+            }
+            else
+            {
+                // Instant value change, set buffer value directly from startIndex to end
+                for (int i = startIndex; i < _bufferSize; i++)
+                {
+                    buffer[i] = scheduleEvent.Value;
+                }
+                return true; // Event is complete
+            }
         }
 
         private static double InterpolateLinear(double start, double end, double progress)
@@ -401,7 +407,21 @@ namespace Synth
             nodeLock.EnterReadLock();
             try
             {
-                return _nodeParameterBuffers[node][param][sampleIndex];
+                if (_nodeParameterBuffers[node].TryGetValue(param, out var buffer))
+                {
+                    if (sampleIndex >= 0 && sampleIndex < buffer.Length)
+                    {
+                        return buffer[sampleIndex];
+                    }
+                    else
+                    {
+                        return _nodeLastScheduledValues[node][param];
+                    }
+                }
+                else
+                {
+                    return _nodeLastScheduledValues[node][param];
+                }
             }
             finally
             {
@@ -414,13 +434,15 @@ namespace Synth
             _globalLock.EnterWriteLock();
             try
             {
+                _globalEventQueue.Clear();
+                // Do not reset _nodeLastScheduledValues
+                // Instead, fill parameter buffers with last known values
                 foreach (var node in _nodeParameterBuffers.Keys)
                 {
                     foreach (var param in _nodeParameterBuffers[node].Keys)
                     {
                         var currentValue = _nodeLastScheduledValues[node][param];
                         Array.Fill(_nodeParameterBuffers[node][param], currentValue);
-                        _nodeEventDictionary[node][param].Clear();
                     }
                 }
             }
@@ -436,7 +458,6 @@ namespace Synth
             try
             {
                 _nodeParameterBuffers.Remove(node);
-                _nodeEventDictionary.Remove(node);
                 _nodeLastScheduledValues.Remove(node);
                 if (_nodeLocks.TryRemove(node, out var nodeLock))
                 {
@@ -458,22 +479,53 @@ namespace Synth
             }
         }
 
-        private class ScheduleEventComparer : IComparer<ScheduleEvent>
+        // Classes for the global event queue
+
+        private class GlobalScheduleEvent
         {
-            public int Compare(ScheduleEvent x, ScheduleEvent y)
+            public double SampleTime { get; set; }
+            public AudioNode Node { get; set; }
+            public AudioParam Param { get; set; }
+            public ScheduleEvent Event { get; set; }
+        }
+
+        private class GlobalScheduleEventComparer : IComparer<GlobalScheduleEvent>
+        {
+            public int Compare(GlobalScheduleEvent x, GlobalScheduleEvent y)
             {
+                // Check for null references
+                if (x == null)
+                {
+                    return y == null ? 0 : -1;
+                }
+                if (y == null)
+                {
+                    return 1;
+                }
+
                 int timeComparison = x.SampleTime.CompareTo(y.SampleTime);
                 if (timeComparison != 0) return timeComparison;
 
-                if (x.IsSetValueAtTime && !y.IsSetValueAtTime) return -1;
-                if (!x.IsSetValueAtTime && y.IsSetValueAtTime) return 1;
+                // Check if Event is null
+                if (x.Event == null)
+                {
+                    return y.Event == null ? 0 : -1;
+                }
+                if (y.Event == null)
+                {
+                    return 1;
+                }
 
-                return 0;
+                // Prioritize events based on their scheduling order
+                return x.Event.Id.CompareTo(y.Event.Id);
             }
         }
 
         private class ScheduleEvent
         {
+            private static long _nextId = 0;
+            public long Id { get; private set; }
+
             public double SampleTime { get; set; }
             public double Value { get; set; }
             public double? EndSampleTime { get; set; }
@@ -483,6 +535,7 @@ namespace Synth
 
             public ScheduleEvent(double sampleTime, double value, double? endSampleTime = null, double targetValue = 0.0, bool isExponential = false, bool isSetValueAtTime = false)
             {
+                Id = Interlocked.Increment(ref _nextId);
                 Reset(sampleTime, value, endSampleTime, targetValue, isExponential, isSetValueAtTime);
             }
 

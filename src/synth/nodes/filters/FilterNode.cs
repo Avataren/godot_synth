@@ -102,7 +102,7 @@ namespace Synth
             set
             {
                 leftFilter.Cutoff = TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f);
-                GD.Print("Cutoff: " + leftFilter.Cutoff);
+                // GD.Print("Cutoff: " + leftFilter.Cutoff);
                 rightFilter.Cutoff = TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f);
                 leftBiQuadFilter.SetFrequency(TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f));
                 rightBiQuadFilter.SetFrequency(TransformToCutoff(value, SynthTypeHelper.Zero, SampleRate / 2.0f));
